@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     int gpu_id = 0;
     model->initialize(cfg_file, weights_file, names_file, gpu_id);
 
+    setWindowTitle("Play Qt");
     test();
 }
 

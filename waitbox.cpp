@@ -14,7 +14,7 @@ WaitBox::WaitBox(QMainWindow *parent) : QDialog(parent)
     layout->addWidget(text,     1, 0, 1, 1, Qt::AlignCenter);
     setLayout(layout);
     setMinimumSize(QSize(300, 200));
-    setWindowTitle("Dark Viewer");
+    setWindowTitle("Darknet Model Loader");
     setModal(true);
     movie->start();
 }
