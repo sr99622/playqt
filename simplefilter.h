@@ -5,6 +5,11 @@
 #include "Display.h"
 #include "Frame.h"
 #include "yolo_v2_class.hpp"
+//#include <ImagesCPU.h>
+//#include <ImageIO.h>
+#include <npp.h>
+#include "cudaexception.h"
+
 
 class SimpleFilter : public QObject
 {
@@ -15,7 +20,6 @@ public:
     ~SimpleFilter();
     void initialize(AVFrame *f);
     void destroy();
-    void test(AVFrame *f);
 
     QMainWindow *mainWindow;
     bool first_pass;
@@ -27,7 +31,15 @@ public:
     void processGPU(Frame *vp);
     void process(Frame *vp);
     void infer(Frame *vp);
+    void test();
 
+    void cuda_example(Frame *vp);
+    void nppi_example(Frame *vp);
+    void box_filter(Frame *vp);
+
+    NppStreamContext initializeNppStreamContext();
+
+    CudaExceptionHandler eh;
 };
 
 #endif // SIMPLEFILTER_H

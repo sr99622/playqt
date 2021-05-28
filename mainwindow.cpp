@@ -3,17 +3,38 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     av_log_set_level(AV_LOG_PANIC);
+
+    setWindowTitle("Play Qt");
+    settings = new QSettings("PlayQt", "Program Settings");
+
     mainPanel = new MainPanel(this);
     model = new Model(this);
     setCentralWidget(mainPanel);
 
-    QString names_file = "C:/Users/sr996/models/reduced/ami1/coco.names";
-    QString cfg_file = "C:/Users/sr996/models/reduced/ami1/yolov4.cfg";
-    QString weights_file = "C:/Users/sr996/models/reduced/ami1/yolov4_final.weights";
-    int gpu_id = 0;
-    model->initialize(cfg_file, weights_file, names_file, gpu_id);
+    names_file = settings->value("MainWindow/names_file", "").toString();
+    cfg_file = settings->value("MainWindow/cfg_file", "").toString();
+    weights_file = settings->value("MainWindow/weights_file", "").toString();
+    initializeModelOnStartup = settings->value("MainWindow/initializeModelOnStartup", false).toBool();
 
-    setWindowTitle("Play Qt");
+    if (initializeModelOnStartup)
+        model->initialize(cfg_file, weights_file, names_file, 0);
+
+    cout << "open event: " << names_file.toStdString() << endl;
+
+    modelConfigureDialog = new ModelConfigureDialog(this);
+
+    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction("&Next");
+    fileMenu->addAction("&Previous");
+    fileMenu->addAction("&Save");
+    fileMenu->addAction("&Quit");
+
+    QMenu *toolsMenu = menuBar()->addMenu(tr("&Tools"));
+    toolsMenu->addAction("&Model Options");
+    toolsMenu->addAction("&File Filters");
+    connect(fileMenu, SIGNAL(triggered(QAction*)), this, SLOT(fileMenuAction(QAction*)));
+    connect(toolsMenu, SIGNAL(triggered(QAction*)), this, SLOT(toolsMenuAction(QAction*)));
+
     test();
 }
 
@@ -50,56 +71,50 @@ void MainWindow::initializeSDL()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    cout << "close event: " << names_file.toStdString() << endl;
+
+    settings->setValue("MainWindow/geometry", saveGeometry());
+    settings->setValue("MainWindow/names_file",names_file);
+    settings->setValue("MainWindow/cfg_file", cfg_file);
+    settings->setValue("MainWindow/weights_file", weights_file);
+    settings->setValue("MainWindow/initializeModelOnStartup", initializeModelOnStartup);
+
     SDL_Event sdl_event;
     sdl_event.type = SDL_KEYDOWN;
     sdl_event.key.keysym.sym = SDLK_ESCAPE;
     int result = SDL_PushEvent(&sdl_event);
     if (result < 0)
         cout << "SDL_PushEvent Failure" << SDL_GetError() << endl;
+
     QMainWindow::closeEvent(event);
+}
+
+void MainWindow::fileMenuAction(QAction *action)
+{
+    cout << action->text().toStdString() << endl;
+}
+
+void MainWindow::toolsMenuAction(QAction *action)
+{
+    cout << action->text().toStdString() << endl;
+    if (action->text() == "&Model Options")
+        modelConfigureDialog->show();
+}
+
+void MainWindow::get_names(QString names_file)
+{
+    this->names_file = names_file;
+    ifstream file(names_file.toLatin1().data());
+    if (!file.is_open())
+        return;
+
+    for (string line; getline(file, line);)
+        obj_names.push_back(line);
 }
 
 void MainWindow::test()
 {
-    cout << "test 1" << endl;
-    cudaMallocManaged(&ptr_image, 1024 * sizeof(uint8_t));
-    cudaMallocManaged(&ptr_data, 1024 * sizeof(float));
-    cudaMemset(ptr_image, 128, 1024 * sizeof(uint8_t));
-    cudaMemset(ptr_data, 0, 1024 * sizeof(float));
-    cudaFree(ptr_image);
-    cudaFree(ptr_data);
-    cout << "test 2" << endl;
-
-    Npp32f * pSrc;
-    Npp32f * pSum;
-    Npp8u * pDeviceBuffer;
-    int nLength = 1024;
-
-    // Allocate the device memroy.
-    cudaMalloc((void **)(&pSrc), sizeof(Npp32f) * nLength);
-    nppsSet_32f(1.0f, pSrc, nLength);
-    cudaMalloc((void **)(&pSum), sizeof(Npp32f) * 1);
-
-    // Compute the appropriate size of the scratch-memory buffer
-    int nBufferSize;
-    nppsSumGetBufferSize_32f(nLength, &nBufferSize);
-    // Allocate the scratch buffer
-    cudaMalloc((void **)(&pDeviceBuffer), nBufferSize);
-
-    // Call the primitive with the scratch buffer
-    nppsSum_32f(pSrc, nLength, pSum, pDeviceBuffer);
-    Npp32f nSumHost;
-    cudaMemcpy(&nSumHost, pSum, sizeof(Npp32f) * 1, cudaMemcpyDeviceToHost);
-    cout << "sum = " << nSumHost << endl;
-
-    // Free the device memory
-    cudaFree(pSrc);
-    cudaFree(pDeviceBuffer);
-    cudaFree(pSum);
-
-    QString filename = "C:/Users/sr996/Pictures/20210502091315.jpg";
-    cout << "filename: " << filename.toStdString() << endl;
-    QPixmap pixmap(filename);
-    cout << "width: " << pixmap.size().width() << " height: " << pixmap.size().height() << endl;
+    cout << "MainWindow::test" << endl;
+    //is->filter->test();
 }
 

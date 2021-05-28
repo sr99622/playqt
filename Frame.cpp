@@ -49,7 +49,7 @@ void Frame::fillPixel(int x, int y, const YUVColor &color)
 
 void Frame::drawBox(const QRect &rect, int line_width, const YUVColor &color)
 {
-    cout << "rect x: " << rect.x() << " y: " << rect.y() << " width: " << rect.width() << " height: " << rect.height() << endl;
+    //cout << "rect x: " << rect.x() << " y: " << rect.y() << " width: " << rect.width() << " height: " << rect.height() << endl;
     QMargins margins(1, 1, 1, 1);
 
     for (int i = 0; i < line_width; i++) {

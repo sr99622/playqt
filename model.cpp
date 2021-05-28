@@ -30,11 +30,11 @@ vector<bbox_t> Model::infer(Frame *vp, float detection_threshold)
     vector<bbox_t> result;
 
     try {
-        image_t img = get_image(vp);
+        image_t img = hw_get_image(vp);
         result = detector->detect(img, detection_threshold);
         detector->free_image(img);
     }
-    catch(exception &e) {
+    catch(const exception &e) {
         cout << "Model::infer error: " << e.what() << endl;
         QString error_msg = QString("Model::infer error: %1").arg(e.what());
         emit msg(error_msg);
@@ -43,18 +43,90 @@ vector<bbox_t> Model::infer(Frame *vp, float detection_threshold)
     return result;
 }
 
+image_t Model::get_image(Frame *vp)
+{
+    image_t img;
+
+    img.h = vp->frame->height;
+    img.w = vp->frame->width;
+    img.c = 3;
+    img.data = (float*)malloc(sizeof(float) * img.w * img.h * 3);
+
+    for (int y = 0; y < img.h; y++) {
+        for (int x = 0; x < img.w; x++) {
+            int i = y * img.w + x;
+            img.data[i] = (float)vp->frame->data[0][i] / 255.0f;
+        }
+    }
+
+    return img;
+}
+
+image_t Model::hw_get_image(Frame *vp)
+{
+    int width = vp->width;
+    int height = vp->height;
+    int frame_size = width * height;
+
+    Npp8u *pSrc;
+    Npp32f *pNorm;
+    image_t img;
+    img.h = vp->frame->height;
+    img.w = vp->frame->width;
+    img.c = 3;
+    img.data = (float*)malloc(sizeof(float) * img.w * img.h * 3);
+
+    try {
+        eh.ck(cudaMalloc((void**)(& pSrc), sizeof(Npp8u) * frame_size), "Allocate device source buffer");
+        eh.ck(cudaMemcpy(pSrc, vp->frame->data[0], sizeof(Npp8u) * frame_size, cudaMemcpyHostToDevice), "Copy frame picture data buffer to device");
+        eh.ck(cudaMalloc((void **)(&pNorm), sizeof(Npp32f) * frame_size), "Allocate a float buffer version of source for device");
+        eh.ck(nppsConvert_8u32f(pSrc, pNorm, frame_size), "Convert frame date to float");
+        eh.ck(nppsDivC_32f_I(255.0f, pNorm, frame_size), "normalize frame data");
+        eh.ck(cudaMemcpy(img.data, pNorm, sizeof(Npp32f) * frame_size, cudaMemcpyDeviceToHost), "copy normalized frame data to img");
+        eh.ck(cudaFree(pNorm));;
+        eh.ck(cudaFree(pSrc));
+    }
+    catch (const exception& e) {
+        cout << e.what() << endl;
+    }
+
+    return img;
+}
+
 void Model::initialize(QString cfg_file, QString weights_file, QString names_file, int gpu_id)
 {
     if (detector != nullptr)
         delete detector;
 
+    MW->cfg_file = cfg_file;
+    MW->weights_file = weights_file;
+    MW->names_file = names_file;
+
+    if (!QFile::exists(cfg_file)) {
+        QString str;
+        QTextStream(&str) << "Unable to load config file: " << cfg_file;
+        QMessageBox::critical(MW, "Model Config Load Error", str);
+        return;
+    }
+
+    if (!QFile::exists(weights_file)) {
+        QString str;
+        QTextStream(&str) << "Unable to load weights file: " << weights_file;
+        QMessageBox::critical(MW, "Model Weights Load Error", str);
+        return;
+    }
+
 
     ifstream file(names_file.toLatin1().data());
-    if (!file.is_open())
+    if (!file.is_open()) {
+        QString str;
+        QTextStream(&str) << "Unable to load model names file: " << names_file;
+        QMessageBox::critical(MW, "Model Names Load Error", str);
         return;
+    }
 
     for (string line; getline(file, line);)
-        obj_names.push_back(line);
+        MW->obj_names.push_back(line);
 
 
     if (show_wait_box) {
@@ -68,36 +140,6 @@ void Model::initialize(QString cfg_file, QString weights_file, QString names_fil
         detector = new Detector(cfg_file.toStdString(), weights_file.toStdString(), gpu_id);
     }
 
-}
-
-image_t Model::get_image(Frame *vp)
-{
-    AVFrame *frame            = NULL;
-    image_t img;
-
-    try {
-        frame = vp->frame;
-        int width = frame->width;
-        int height = frame->height;
-
-        img.h = height;
-        img.w = width;
-        img.c = 3;
-        img.data = (float*)malloc(sizeof(float) * width * height * 3);
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < frame->linesize[0]; x++) {
-                int i = y * frame->linesize[0] + x;
-                img.data[i] = (float)frame->data[0][i] / 255.0f;
-            }
-        }
-
-    }
-    catch (AVException *e) {
-        cout << "ERROR " << av.tag(e->cmd_tag).toLatin1().data() << " " << e->error_text << endl;
-    }
-
-    return img;
 }
 
 void Model::show_console_result(vector<bbox_t> const result_vec, vector<string> const obj_names, int frame_id)

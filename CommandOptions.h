@@ -115,6 +115,8 @@ public:
     inline static int64_t audio_callback_time;
 
 
+    inline static OptionDef options[77];
+        /*
     inline static const OptionDef options[] = {
     CMDUTILS_COMMON_OPTIONS
     { "x", HAS_ARG, {.func_arg = opt_width }, "force displayed width", "width" },
@@ -169,5 +171,6 @@ public:
     { "filter_threads", HAS_ARG | OPT_INT | OPT_EXPERT, { &filter_nbthreads }, "number of filter threads per graph" },
     { NULL, },
     };
+            */
 };
 

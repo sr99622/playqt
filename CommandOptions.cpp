@@ -2,6 +2,37 @@
 
 CommandOptions::CommandOptions()
 {
+
+    options[0].name = "L";
+    options[0].flags = OPT_EXIT;
+    options[0].u.func_arg = show_license;
+    options[0].help = "show_license";
+
+    options[1].name = "h";
+    options[1].flags = OPT_EXIT;
+    options[1].u.func_arg = show_help;
+    options[1].help = "show_help";
+    options[1].argname = "topic";
+
+    options[2].name = "?";
+    options[2].flags = OPT_EXIT;
+    options[2].u.func_arg = show_help;
+    options[2].help = "show_help";
+    options[2].argname = "topic";
+
+    options[3].name = "help";
+    options[3].flags = OPT_EXIT;
+    options[3].u.func_arg = show_help;
+    options[3].help = "show_help";
+    options[3].argname = "topic";
+
+    options[4].name = "-help";
+    options[4].flags = OPT_EXIT;
+    options[4].u.func_arg = show_help;
+    options[4].help = "show_help";
+    options[4].argname = "topic";
+
+
 }
 
 int CommandOptions::opt_frame_size(void* optctx, const char* opt, const char* arg)

@@ -3,12 +3,18 @@
 
 #include <QMainWindow>
 #include <QGridLayout>
+#include <QMenuBar>
+#include <QMenu>
+#include <QFile>
+#include <QMessageBox>
+#include <QSettings>
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <iomanip>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <helper_cuda.h>
 
 #include "npp.h"
 #include "nppi.h"
@@ -19,7 +25,9 @@
 #include "CommandOptions.h"
 #include "EventHandler.h"
 #include "avexception.h"
+#include "cudaexception.h"
 #include "model.h"
+#include "modelconfigure.h"
 
 using namespace std;
 
@@ -34,9 +42,7 @@ public:
     ~MainWindow();
     void closeEvent(QCloseEvent *event) override;
     void initializeSDL();
-
-    uint8_t *ptr_image;
-    float *ptr_data;
+    void get_names(QString names_file);
 
     CommandOptions *co;
     MainPanel *mainPanel;
@@ -45,10 +51,20 @@ public:
     EventHandler e;
     VideoState *is;
     Model *model;
+    ModelConfigureDialog *modelConfigureDialog;
     AVExceptionHandler av;
+    QSettings *settings;
+
+    QString cfg_file;
+    QString weights_file;
+    QString names_file;
+    vector<string> obj_names;
+    bool initializeModelOnStartup = false;
 
 public slots:
     void runLoop();
+    void fileMenuAction(QAction*);
+    void toolsMenuAction(QAction*);
     void test();
 };
 #endif // MAINWINDOW_H

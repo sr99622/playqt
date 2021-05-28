@@ -23,7 +23,7 @@
 #define FFTOOLS_CMDUTILS_H
 
 #include <stdint.h>
-
+#include <stdio.h>
 #include "config.h"
 #include "libavcodec/avcodec.h"
 #include "libavfilter/avfilter.h"
