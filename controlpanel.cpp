@@ -20,15 +20,15 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     engageFilter = new QCheckBox("Engage Filter");
 
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(play,         0, 0, 1, 1, Qt::AlignCenter);
-    layout->addWidget(rewind,       0, 1, 1, 1, Qt::AlignCenter);
-    layout->addWidget(fastforward,  0, 2, 1, 1, Qt::AlignCenter);
-    layout->addWidget(pause,        0, 3, 1, 1, Qt::AlignCenter);
-    layout->addWidget(mute,         0, 4, 1, 1, Qt::AlignCenter);
-    layout->addWidget(quit,         0, 5, 1, 1, Qt::AlignCenter);
-    layout->addWidget(test,         0, 6, 1, 1, Qt::AlignCenter);
-    layout->addWidget(infer,        0, 7, 1, 1, Qt::AlignCenter);
-    layout->addWidget(engageFilter, 0, 8, 1, 1, Qt::AlignCenter);
+    layout->addWidget(play,         1, 0, 1, 1, Qt::AlignCenter);
+    layout->addWidget(rewind,       1, 1, 1, 1, Qt::AlignCenter);
+    layout->addWidget(fastforward,  1, 2, 1, 1, Qt::AlignCenter);
+    layout->addWidget(pause,        1, 3, 1, 1, Qt::AlignCenter);
+    layout->addWidget(mute,         1, 4, 1, 1, Qt::AlignCenter);
+    layout->addWidget(quit,         1, 5, 1, 1, Qt::AlignCenter);
+    layout->addWidget(test,         1, 6, 1, 1, Qt::AlignCenter);
+    layout->addWidget(infer,        1, 7, 1, 1, Qt::AlignCenter);
+    layout->addWidget(engageFilter, 1, 8, 1, 1, Qt::AlignCenter);
     setLayout(layout);
 
     connect(play, SIGNAL(clicked()), mainWindow, SLOT(runLoop()));
@@ -40,6 +40,10 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     //connect(infer, SIGNAL(clicked()), mainWindow, SLOT(infer()));
     connect(test, SIGNAL(clicked()), this, SLOT(test()));
 
+}
+
+void ControlPanel::resizeEvent(QResizeEvent *event) {
+    cout << "ControlPanel width: " << event->size().width() << " height: " << event->size().height() << endl;
 }
 
 void ControlPanel::test()

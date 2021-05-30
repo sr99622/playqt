@@ -5,9 +5,10 @@
 #include <QPushButton>
 #include <QCheckBox>
 
-#include "Frame.h"
-#include "avexception.h"
-#include "yolo_v2_class.hpp"
+//#include "Frame.h"
+//#include "avexception.h"
+//#include "yolo_v2_class.hpp"
+#include "Utilities/displayslider.h"
 
 class ControlPanel : public QWidget
 {
@@ -15,10 +16,12 @@ class ControlPanel : public QWidget
 
 public:
     ControlPanel(QMainWindow *parent);
+    void resizeEvent(QResizeEvent *event) override;
 
     QMainWindow *mainWindow;
     QCheckBox *engageFilter;
-    AVExceptionHandler av;
+    DisplaySlider *slider;
+    //AVExceptionHandler av;
 
 public slots:
     void test();

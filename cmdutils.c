@@ -1497,13 +1497,13 @@ static char get_media_type_char(enum AVMediaType type)
 static const AVCodec *next_codec_for_id(enum AVCodecID id, const AVCodec *prev,
                                         int encoder)
 {
-    /*
+    /**/
     while ((prev = av_codec_next(prev))) {
         if (prev->id == id &&
             (encoder ? av_codec_is_encoder(prev) : av_codec_is_decoder(prev)))
             return prev;
     }
-    */
+    /**/
     return NULL;
 }
 
@@ -1609,7 +1609,7 @@ static void print_codecs(int encoder)
     const AVCodecDescriptor **codecs;
     unsigned i, nb_codecs = get_codecs_sorted(&codecs);
 
-    printf("%s:\n"
+    fprintf(stderr, "%s:\n"
            " V..... = Video\n"
            " A..... = Audio\n"
            " S..... = Subtitle\n"
@@ -1625,21 +1625,22 @@ static void print_codecs(int encoder)
         const AVCodec *codec = NULL;
 
         while ((codec = next_codec_for_id(desc->id, codec, encoder))) {
-            printf(" %c", get_media_type_char(desc->type));
-            printf((codec->capabilities & AV_CODEC_CAP_FRAME_THREADS) ? "F" : ".");
-            printf((codec->capabilities & AV_CODEC_CAP_SLICE_THREADS) ? "S" : ".");
-            printf((codec->capabilities & AV_CODEC_CAP_EXPERIMENTAL)  ? "X" : ".");
-            printf((codec->capabilities & AV_CODEC_CAP_DRAW_HORIZ_BAND)?"B" : ".");
-            printf((codec->capabilities & AV_CODEC_CAP_DR1)           ? "D" : ".");
+            fprintf(stderr, " %c", get_media_type_char(desc->type));
+            fprintf(stderr, (codec->capabilities & AV_CODEC_CAP_FRAME_THREADS) ? "F" : ".");
+            fprintf(stderr, (codec->capabilities & AV_CODEC_CAP_SLICE_THREADS) ? "S" : ".");
+            fprintf(stderr, (codec->capabilities & AV_CODEC_CAP_EXPERIMENTAL)  ? "X" : ".");
+            fprintf(stderr, (codec->capabilities & AV_CODEC_CAP_DRAW_HORIZ_BAND)?"B" : ".");
+            fprintf(stderr, (codec->capabilities & AV_CODEC_CAP_DR1)           ? "D" : ".");
 
-            printf(" %-20s %s", codec->name, codec->long_name ? codec->long_name : "");
+            fprintf(stderr, " %-20s %s", codec->name, codec->long_name ? codec->long_name : "");
             if (strcmp(codec->name, desc->name))
-                printf(" (codec %s)", desc->name);
+                fprintf(stderr, " (codec %s)", desc->name);
 
-            printf("\n");
+            fprintf(stderr, "\n");
         }
     }
     av_free(codecs);
+    //fflush(stdout);
 }
 
 int show_decoders(void *optctx, const char *opt, const char *arg)

@@ -10,11 +10,19 @@ SOURCES += \
     Decoder.cpp \
     Display.cpp \
     EventHandler.cpp \
+    Filters/filter.cpp \
+    Filters/filterchain.cpp \
+    Filters/filterlistmodel.cpp \
+    Filters/filterlistview.cpp \
+    Filters/filterpanel.cpp \
+    Filters/subpicture.cpp \
     Frame.cpp \
     FrameQueue.cpp \
     Packet.cpp \
     PacketQueue.cpp \
     Utilities/directorysetter.cpp \
+    Utilities/displaycontainer.cpp \
+    Utilities/displayslider.cpp \
     Utilities/filesetter.cpp \
     Utilities/numbertextbox.cpp \
     Utilities/paneldialog.cpp \
@@ -29,6 +37,7 @@ SOURCES += \
     model.cpp \
     modelconfigure.cpp \
     npperror.cpp \
+    optionpanel.cpp \
     simplefilter.cpp \
     waitbox.cpp \
     yuvcolor.cpp
@@ -39,11 +48,19 @@ HEADERS += \
     Decoder.h \
     Display.h \
     EventHandler.h \
+    Filters/filter.h \
+    Filters/filterchain.h \
+    Filters/filterlistmodel.h \
+    Filters/filterlistview.h \
+    Filters/filterpanel.h \
+    Filters/subpicture.h \
     Frame.h \
     FrameQueue.h \
     Packet.h \
     PacketQueue.h \
     Utilities/directorysetter.h \
+    Utilities/displaycontainer.h \
+    Utilities/displayslider.h \
     Utilities/filesetter.h \
     Utilities/numbertextbox.h \
     Utilities/paneldialog.h \
@@ -58,6 +75,7 @@ HEADERS += \
     model.h \
     modelconfigure.h \
     npperror.h \
+    optionpanel.h \
     simplefilter.h \
     waitbox.h \
     yuvcolor.h

@@ -23,9 +23,9 @@ void SimpleFilter::process(Frame *vp)
         return;
     }
 
-    box_filter(vp);
+    //box_filter(vp);
     //cuda_example(vp);
-    //infer(vp);
+    infer(vp);
     //processGPU(vp);
     //processCPU(vp);
 }
@@ -254,6 +254,11 @@ void SimpleFilter::processCPU(Frame *vp)
 
 void SimpleFilter::infer(Frame *vp)
 {
+    if (MW->model == nullptr) {
+        MW->model = new Model(MW);
+        MW->model->initialize(MW->cfg_file, MW->weights_file, MW->names_file, 0);
+    }
+
     vector<bbox_t> result = MW->model->infer(vp, 0.2);
     for (int i = 0; i < result.size(); i++) {
         QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
