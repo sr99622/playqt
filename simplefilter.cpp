@@ -1,7 +1,5 @@
 #include "simplefilter.h"
 #include "mainwindow.h"
-#include <ImagesCPU.h>
-#include <ImageIO.h>
 
 SimpleFilter::SimpleFilter(QMainWindow *parent) : QObject(parent)
 {

@@ -58,7 +58,7 @@ void VideoState::video_image_display()
         }
     }
 
-    filter->process(vp);
+    filter->process(vp);  //  hook into playqt filtering system
     disp->calculate_display_rect(&rect, xleft, ytop, width, height, vp->width, vp->height, vp->sar);
 
     if (!vp->uploaded) {
@@ -2151,8 +2151,6 @@ VideoState* VideoState::stream_open(const char* filename, AVInputFormat* iformat
 {
     VideoState* is;
 
-    //std::cout << "test 1" << std::endl;
-
     is = (VideoState*)av_mallocz(sizeof(VideoState));
 
     //is = new VideoState();
@@ -2169,10 +2167,6 @@ VideoState* VideoState::stream_open(const char* filename, AVInputFormat* iformat
     is->ytop = 0;
     is->xleft = 0;
 
-    //std::cout << "test 2" << std::endl;
-
-
-    // start video display
     if (is->pictq.init(&is->videoq, VIDEO_PICTURE_QUEUE_SIZE, 1) < 0)
         goto fail;
     if (is->subpq.init(&is->subtitleq, SUBPICTURE_QUEUE_SIZE, 0) < 0)
@@ -2180,44 +2174,24 @@ VideoState* VideoState::stream_open(const char* filename, AVInputFormat* iformat
     if (is->sampq.init(&is->audioq, SAMPLE_QUEUE_SIZE, 1) < 0)
         goto fail;
 
-    //std::cout << "test 3" << std::endl;
-
-    /*
-    if (is->videoq.init() < 0 ||
-        is->audioq.init() < 0 ||
-        is->subtitleq.init() < 0)
-        goto fail;
-    */
-
-    std::cout << "test a" << std::endl;
     if (is->videoq.init() < 0)
         goto fail;
 
-    std::cout << "test b" << std::endl;
-    std::cout << "audioq size: " << is->audioq.size << std::endl;
     if (is->audioq.init() < 0)
         goto fail;
 
-    std::cout << "test c" << std::endl;
     if (is->subtitleq.init() < 0)
         goto fail;
-
-
-    std::cout << "test d" << std::endl;
 
     if (!(is->continue_read_thread = SDL_CreateCond())) {
         av_log(NULL, AV_LOG_FATAL, "SDL_CreateCond(): %s\n", SDL_GetError());
         goto fail;
     }
 
-    //std::cout << "test 5" << std::endl;
-
     is->vidclk.init_clock(&is->videoq.serial);
     is->audclk.init_clock(&is->audioq.serial);
     is->extclk.init_clock(&is->extclk.serial);
     is->audio_clock_serial = -1;
-
-    //std::cout << "test 6" << std::endl;
 
     if (co->startup_volume < 0)
         av_log(NULL, AV_LOG_WARNING, "-volume=%d < 0, setting to 0\n", co->startup_volume);
@@ -2230,18 +2204,13 @@ VideoState* VideoState::stream_open(const char* filename, AVInputFormat* iformat
     is->av_sync_type = co->av_sync_type;
     is->read_tid = SDL_CreateThread(readThread, "read_thread", is);
 
-    //std::cout << "test 7" << std::endl;
-
     if (!is->read_tid) {
         av_log(NULL, AV_LOG_FATAL, "SDL_CreateThread(): %s\n", SDL_GetError());
     fail:
-        std::cout << "FUCK ME" << std::endl;
         //stream_close(is);
         is->stream_close();
         return NULL;
     }
-
-    //std::cout << "test 8" << std::endl;
 
     return is;
 }

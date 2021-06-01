@@ -1,12 +1,13 @@
 #include "mainwindow.h"
+#include "cmdutils.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent)
 {
+    this->co = co;
     av_log_set_level(AV_LOG_PANIC);
 
     QScreen *screen = QApplication::primaryScreen();
     QRect screenSize = screen->geometry();
-    cout << "width: " << screenSize.width() << " height: " << screenSize.height() << endl;
     int aw = 1300;
     int ah = 800;
     int cx = screenSize.center().x();
@@ -32,7 +33,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     modelConfigureDialog = new ModelConfigureDialog(this);
 
-
     filterDialog = new FilterDialog(this);
     optionDialog = new OptionDialog(this);
 
@@ -48,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     toolsMenu->addAction("&Options");
     connect(fileMenu, SIGNAL(triggered(QAction*)), this, SLOT(fileMenuAction(QAction*)));
     connect(toolsMenu, SIGNAL(triggered(QAction*)), this, SLOT(toolsMenuAction(QAction*)));
+    connect(co, SIGNAL(showHelp(const QString&)), this, SLOT(showHelp(const QString&)));
 
     move(ax, ay);
 
@@ -60,24 +61,13 @@ MainWindow::~MainWindow()
 
 }
 
-void MainWindow::printSizes()
-{
-    QSize windowSize = size();
-    cout << "window width: " << windowSize.width() << " height: " << windowSize.height() << endl;
-
-    QSize displaySize = mainPanel->displayContainer->display->size();
-    cout << "display width: " << displaySize.width() << " height: " << displaySize.height() << endl;
-
-    QSize controlSize = mainPanel->controlPanel->size();
-    cout << "control width: " << controlSize.width() << " height: " << controlSize.height() << endl;
-}
-
 void MainWindow::runLoop()
 {
     av_init_packet(&flush_pkt);
     flush_pkt.data = (uint8_t*)&flush_pkt;
 
     is = VideoState::stream_open(co->input_filename, NULL, co, &display);
+    is->mainWindow = this;
     is->filter = new SimpleFilter(this);
     is->flush_pkt = &flush_pkt;
 
@@ -89,7 +79,6 @@ void MainWindow::runLoop()
 
 void MainWindow::initializeSDL()
 {
-    cout << "test 3" << endl;
     display.window = SDL_CreateWindowFrom((void*)mainPanel->displayContainer->display->winId());
     display.renderer = SDL_CreateRenderer(display.window, -1, 0);
     SDL_GetRendererInfo(display.renderer, &display.renderer_info);
@@ -97,46 +86,21 @@ void MainWindow::initializeSDL()
     if (!display.window || !display.renderer || !display.renderer_info.num_texture_formats) {
         av_log(NULL, AV_LOG_FATAL, "Failed to create window or renderer: %s", SDL_GetError());
     }
-    cout << "test 4" << endl;
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    QSize old_size = event->oldSize();
-    QSize new_size = event->size();
-
-    cout << "RESIZE old width: " << old_size.width() << " height: " << old_size.height() << endl;
-    cout << "RESIZE new width: " << new_size.width() << " height: " << new_size.height() << endl;
-
-    printSizes();
-
-    if (mainPanel->displayContainer->windowHeightDifferential == -1) {
-        mainPanel->displayContainer->windowHeightDifferential
-                = event->size().height() - mainPanel->displayContainer->displayInitialHeight;
-    }
-    /*
-    else {
-        mainPanel->displayContainer->setDisplayHeight(event->size().height());
-    }
-    */
-
-
-    cout << "resizeEvent done" << endl;
+    //is->video_audio_display();
+    QMainWindow::resizeEvent(event);
 }
 
 void MainWindow::moveEvent(QMoveEvent *event)
 {
-    QPoint old_pos = event->oldPos();
-    QPoint new_pos = event->pos();
-
-    cout << "MOVE old pos x: " << old_pos.x() << " y: " << old_pos.y() << endl;
-    cout << "MOVE new pos x: " << new_pos.x() << " y: " << new_pos.y() << endl;
+    QMainWindow::moveEvent(event);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    cout << "close event: " << names_file.toStdString() << endl;
-
     settings->setValue("MainWindow/geometry", saveGeometry());
     settings->setValue("MainWindow/names_file",names_file);
     settings->setValue("MainWindow/cfg_file", cfg_file);
@@ -148,7 +112,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     sdl_event.key.keysym.sym = SDLK_ESCAPE;
     int result = SDL_PushEvent(&sdl_event);
     if (result < 0)
-        cout << "SDL_PushEvent Failure" << SDL_GetError() << endl;
+        cout << "SDL_PushEvent Failure: " << SDL_GetError() << endl;
 
     QMainWindow::closeEvent(event);
 }
@@ -169,7 +133,7 @@ void MainWindow::toolsMenuAction(QAction *action)
         optionDialog->show();
 }
 
-void MainWindow::get_names(QString names_file)
+void MainWindow::getNames(QString names_file)
 {
     this->names_file = names_file;
     ifstream file(names_file.toLatin1().data());
@@ -180,11 +144,18 @@ void MainWindow::get_names(QString names_file)
         obj_names.push_back(line);
 }
 
+void MainWindow::showHelp(const QString &str)
+{
+    cout << str.toStdString();
+}
+
 void MainWindow::test()
 {
+    //show_help_default(NULL, NULL);
+    //print_buildconf(1|0, AV_LOG_INFO);
+    show_program_configs();
+
     cout << "MainWindow::test" << endl;
-    cout << "x: " <<geometry().x() << " y: " << geometry().y() << " w: " << geometry().width() << " h: " << geometry().height() << endl;
-    printSizes();
-    //is->filter->test();
+    //co->opt_add_vfilter(NULL, NULL, " sobel");
 }
 

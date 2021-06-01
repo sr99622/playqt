@@ -110,11 +110,6 @@ void ModelConfigure::loadModel()
         delete MW->model;
     }
     MW->model = new Model(MW);
-
-    cout << "cfg_file: " << MW->cfg_file.toStdString() << endl;
-    cout << "names_file: " << MW->names_file.toStdString() << endl;
-    cout << "weights_file: " << MW->weights_file.toStdString() << endl;
-
     MW->model->initialize(MW->cfg_file, MW->weights_file, MW->names_file, 0);
 }
 
@@ -185,21 +180,10 @@ void ModelConfigure::cfgEdited(const QString &text)
     setDims->setEnabled(true);
 }
 
-/*
-void ModelConfigure::setFileDirectory(QString path)
-{
-    MW->fileView->reset();
-    MW->filePath = path;
-    MW->fileView->model->loadFilenames(path);
-    //MW->filePanel->currentDirectory->setText(path);
-    MW->fileView->setModel(MW->fileView->model);
-}
-*/
-
 void ModelConfigure::setNamesFile(QString path)
 {
     MW->names_file = path;
-    MW->get_names(path);
+    MW->getNames(path);
 }
 
 void ModelConfigure::setCfgFile(QString path)

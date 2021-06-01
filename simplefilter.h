@@ -5,8 +5,6 @@
 #include "Display.h"
 #include "Frame.h"
 #include "yolo_v2_class.hpp"
-//#include <ImagesCPU.h>
-//#include <ImageIO.h>
 #include <npp.h>
 #include "cudaexception.h"
 

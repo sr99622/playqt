@@ -36,7 +36,6 @@ SOURCES += \
     mainwindow.cpp \
     model.cpp \
     modelconfigure.cpp \
-    npperror.cpp \
     optionpanel.cpp \
     simplefilter.cpp \
     waitbox.cpp \
@@ -74,7 +73,6 @@ HEADERS += \
     mainwindow.h \
     model.h \
     modelconfigure.h \
-    npperror.h \
     optionpanel.h \
     simplefilter.h \
     waitbox.h \
@@ -82,12 +80,8 @@ HEADERS += \
 
 #CUDA_DIR = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2"
 #CONTRIB_DIR = "C:/Users/sr996/Projects/contrib
-FREE_IMAGE = "C:/ProgramData/NVIDIA Corporation/CUDA Samples/v11.3/7_CUDALibraries/common/FreeImage/Dist/x64"
 
 INCLUDEPATH += $$(CUDA_PATH)/include \
-               $$(NVCUDASAMPLES_ROOT)/common/inc \
-               $$(NVCUDASAMPLES_ROOT)/7_CUDALibraries/common/UtilNPP \
-               $$FREE_IMAGE \
                $$(CONTRIB_PATH)/include/SDL \
                $$(CONTRIB_PATH)/include \
                $$(CONTRIB_PATH)/include/darknet
@@ -106,8 +100,6 @@ LIBS += -L$$(CUDA_PATH)/lib/x64 \
         -lnppist \
         -lnppisu \
         -lnppitc
-
-LIBS += -L$$FREE_IMAGE -lFreeImage
 
 LIBS += -L$$(CONTRIB_PATH)/lib \
     -llibavcodec \

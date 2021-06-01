@@ -5,13 +5,14 @@ extern "C" {
 #include "libavformat/avformat.h"
 #include "libavdevice/avdevice.h"
 #include "libavutil/opt.h"
+#include "libavutil/ffversion.h"
 }
 
 #include <SDL.h>
 #include <SDL_thread.h>
 
 #include <assert.h>
-
+#include <functional>
 #include "CommandOptions.h"
 
 #include "PacketQueue.h"
@@ -38,25 +39,59 @@ extern "C" {
 #undef main
 #endif
 
+#define INDENT        1
+#define SHOW_VERSION  2
+#define SHOW_CONFIG   4
+#define SHOW_COPYRIGHT 8
+
 const char program_name[] = "ffplay";
 const int program_birth_year = 2003;
 
-static CommandOptions co;
+CommandOptions co;
+
+void logCallback(void *ptr, int level, const char *fmt, va_list vl)
+{
+    co.showHelpCallback(ptr, level, fmt, vl);
+}
+
+void show_program_configs()
+{
+    co.av_log_on = true;
+    av_log_set_callback(logCallback);
+
+    int flags = INDENT|0;
+    int level = AV_LOG_INFO;
+
+    print_all_libs_info(INDENT|SHOW_CONFIG, AV_LOG_INFO);
+    const char *indent = flags & INDENT? "  " : "";
+    av_log(NULL, level, "%s version " FFMPEG_VERSION, program_name);
+    av_log(NULL, level, " Copyright (c) %d-%d the FFmpeg developers",
+           program_birth_year, CONFIG_THIS_YEAR);
+    av_log(NULL, level, "\n");
+    av_log(NULL, level, "%sbuilt with %s\n", indent, CC_IDENT);
+
+    print_buildconf(INDENT|0, AV_LOG_INFO);
+    //av_log(NULL, level, "%sconfiguration: " FFMPEG_CONFIGURATION "\n", indent);
+
+    print_all_libs_info(INDENT|SHOW_VERSION, AV_LOG_INFO);
+
+
+    co.av_log_on = false;
+}
 
 void show_help_default(const char* opt, const char* arg)
 {
-    av_log_set_callback(log_callback_help);
+    //av_log_set_callback(log_callback_help);
+
+    co.av_log_on = true;
+    av_log_set_callback(logCallback);
     co.show_usage();
     show_help_options(co.options, "Main options:", 0, OPT_EXPERT, 0);
     show_help_options(co.options, "Advanced options:", OPT_EXPERT, 0, 0);
     printf("\n");
     show_help_children(avcodec_get_class(), AV_OPT_FLAG_DECODING_PARAM);
     show_help_children(avformat_get_class(), AV_OPT_FLAG_DECODING_PARAM);
-#if !CONFIG_AVFILTER
-    show_help_children(sws_get_class(), AV_OPT_FLAG_ENCODING_PARAM);
-#else
     show_help_children(avfilter_get_class(), AV_OPT_FLAG_FILTERING_PARAM);
-#endif
     printf("\nWhile playing:\n"
         "q, ESC              quit\n"
         "f                   toggle full screen\n"
@@ -76,6 +111,10 @@ void show_help_default(const char* opt, const char* arg)
         "right mouse click   seek to percentage in file corresponding to fraction of width\n"
         "left double-click   toggle full screen\n"
     );
+    fflush(stdout);
+    co.av_log_on = false;
+    av_log_set_callback(log_callback_help);
+
 }
 
 int main(int argc, char *argv[])
@@ -83,9 +122,7 @@ int main(int argc, char *argv[])
     init_dynload();
     av_log_set_flags(AV_LOG_SKIP_REPEATED);
     parse_loglevel(argc, argv, co.options);
-#if CONFIG_AVDEVICE
     avdevice_register_all();
-#endif
     avformat_network_init();
     init_opts();
     parse_options(NULL, argc, argv, co.options, co.opt_input_file);
@@ -120,15 +157,12 @@ int main(int argc, char *argv[])
     SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
 
     QApplication a(argc, argv);
-    MainWindow w;
-    w.co = &co;
+    MainWindow w(&co);
     w.initializeSDL();
     w.show();
     int result = a.exec();
     uninit_opts();
-#if CONFIG_AVFILTER
     av_freep(&co.vfilters_list);
-#endif
     avformat_network_deinit();
     if (co.show_status)
         printf("\n");

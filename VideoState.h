@@ -12,6 +12,8 @@ extern "C" {
 #include "libavutil\pixdesc.h"
 }
 
+#include <QMainWindow>
+
 #include "Clock.h"
 #include "FrameQueue.h"
 #include "Decoder.h"
@@ -107,10 +109,10 @@ public:
     //static void event_loop();
     void do_exit();
 
+    QMainWindow* mainWindow;
     CommandOptions* co;
     Display* disp;
     SimpleFilter* filter;
-
     AVPacket* flush_pkt;
 
     SDL_Thread* read_tid;

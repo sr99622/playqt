@@ -1125,7 +1125,7 @@ static int warned_cfg = 0;
         }                                                               \
     }                                                                   \
 
-static void print_all_libs_info(int flags, int level)
+void print_all_libs_info(int flags, int level)
 {
     PRINT_LIB_INFO(avutil,     AVUTIL,     flags, level);
     PRINT_LIB_INFO(avcodec,    AVCODEC,    flags, level);
@@ -1138,7 +1138,7 @@ static void print_all_libs_info(int flags, int level)
     PRINT_LIB_INFO(postproc,   POSTPROC,   flags, level);
 }
 
-static void print_program_info(int flags, int level)
+void print_program_info(int flags, int level)
 {
     const char *indent = flags & INDENT? "  " : "";
 
@@ -1152,7 +1152,7 @@ static void print_program_info(int flags, int level)
     av_log(NULL, level, "%sconfiguration: " FFMPEG_CONFIGURATION "\n", indent);
 }
 
-static void print_buildconf(int flags, int level)
+void print_buildconf(int flags, int level)
 {
     const char *indent = flags & INDENT ? "  " : "";
     char str[] = { FFMPEG_CONFIGURATION };
@@ -1173,9 +1173,10 @@ static void print_buildconf(int flags, int level)
     splitconf = strtok(str, "~");
     av_log(NULL, level, "\n%sconfiguration:\n", indent);
     while (splitconf != NULL) {
-        av_log(NULL, level, "%s%s%s\n", indent, indent, splitconf);
+        av_log(NULL, level, " %s", splitconf);
         splitconf = strtok(NULL, "~");
     }
+    av_log(NULL, level, "\n");
 }
 
 void show_banner(int argc, char **argv, const OptionDef *options)

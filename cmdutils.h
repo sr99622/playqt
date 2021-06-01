@@ -447,6 +447,9 @@ void print_error(const char *filename, int err);
  * the program.
  */
 void show_banner(int argc, char **argv, const OptionDef *options);
+void print_program_info(int flags, int level);
+void print_all_libs_info(int flags, int level);
+
 
 /**
  * Print the version of the program to stdout. The version message
@@ -462,6 +465,8 @@ int show_version(void *optctx, const char *opt, const char *arg);
  * This option processing function does not utilize the arguments.
  */
 int show_buildconf(void *optctx, const char *opt, const char *arg);
+void print_buildconf(int flags, int level);
+void show_program_configs();
 
 /**
  * Print the license of the program to stdout. The license depends on

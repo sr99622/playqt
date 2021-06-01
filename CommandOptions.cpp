@@ -1,4 +1,5 @@
 #include "CommandOptions.h"
+#include "mainwindow.h"
 
 CommandOptions::CommandOptions()
 {
@@ -431,6 +432,51 @@ CommandOptions::CommandOptions()
 
     //options[75] = NULL;
 }
+
+void CommandOptions::show_log_level(int log_level)
+{
+    switch (log_level) {
+    case AV_LOG_QUIET:
+        cout << "AV_LOG_QUIET" <<endl;
+        break;
+    case AV_LOG_PANIC:
+        cout << "AV_LOG_PANIC" <<endl;
+        break;
+    case AV_LOG_FATAL:
+        cout << "AV_LOG_FATAL" <<endl;
+        break;
+    case AV_LOG_ERROR:
+        cout << "AV_LOG_ERROR" <<endl;
+        break;
+    case AV_LOG_WARNING:
+        cout << "AV_LOG_WARNING" <<endl;
+        break;
+    case AV_LOG_VERBOSE:
+        cout << "AV_LOG_VERBOSE" <<endl;
+        break;
+    case AV_LOG_DEBUG:
+        cout << "AV_LOG_DEBUG" <<endl;
+        break;
+    case AV_LOG_TRACE:
+        cout << "AV_LOG_TRACE" <<endl;
+        break;
+    }
+}
+
+void CommandOptions::showHelpCallback(void *ptr, int level, const char *fmt, va_list vl)
+{
+    if (!av_log_on)
+        return;
+
+    if (level == AV_LOG_INFO) {
+        char buffer[256];
+        vsprintf_s(buffer, 256, fmt, vl);
+
+        QString str(buffer);
+        emit showHelp(str);
+    }
+}
+
 
 int CommandOptions::opt_frame_size(void* optctx, const char* opt, const char* arg)
 {

@@ -15,7 +15,6 @@
 #include <iomanip>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <helper_cuda.h>
 
 #include "npp.h"
 #include "nppi.h"
@@ -41,14 +40,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(CommandOptions *co, QWidget *parent = nullptr);
     ~MainWindow();
     void closeEvent(QCloseEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void initializeSDL();
-    void get_names(QString names_file);
-    void printSizes();
+    void getNames(QString names_file);
 
     CommandOptions *co;
     MainPanel *mainPanel;
@@ -70,14 +68,11 @@ public:
     FilterDialog *filterDialog;
     OptionDialog *optionDialog;
 
-signals:
-    //void initComplete();
-
 public slots:
     void runLoop();
     void fileMenuAction(QAction*);
     void toolsMenuAction(QAction*);
-    //void initCallback();
+    void showHelp(const QString&);
     void test();
 };
 #endif // MAINWINDOW_H
