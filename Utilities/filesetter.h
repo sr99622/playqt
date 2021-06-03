@@ -13,8 +13,8 @@ class FileSetter : public QWidget
     Q_OBJECT
 
 public:
-    FileSetter(QMainWindow *parent, QString labelText, QString filter);
-    void setPath(QString path);
+    FileSetter(QMainWindow *parent, const QString& labelText, const QString& filter);
+    void setPath(const QString& path);
     void trimHeight();
 
     QLabel *label;
@@ -26,7 +26,7 @@ public:
     QMainWindow *mainWindow;
 
 signals:
-    void fileSet(QString path);
+    void fileSet(const QString&);
 
 public slots:
     void selectFile();

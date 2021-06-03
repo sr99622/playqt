@@ -75,7 +75,6 @@ public:
     QLineEdit *total;
     QWidget *sliderPanel;
 
-    int windowHeightDifferential = -1;  // used to adjust display label size during mainWindow resize events
     QSize resolution;
     bool show_slider;
 
@@ -83,7 +82,7 @@ public:
     const int displayInitialHeight = 540;
 
 signals:
-    void sizeChanged(QSize size);
+    //void sizeChanged(const QSize& size);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

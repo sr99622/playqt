@@ -2,11 +2,11 @@
 #define SIMPLEFILTER_H
 
 #include <QMainWindow>
-#include "Display.h"
-#include "Frame.h"
+#include "Ffplay/Display.h"
+#include "Ffplay/Frame.h"
 #include "yolo_v2_class.hpp"
 #include <npp.h>
-#include "cudaexception.h"
+#include "Utilities/cudaexception.h"
 
 
 class SimpleFilter : public QObject

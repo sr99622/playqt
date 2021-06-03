@@ -5,78 +5,88 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++11
 
 SOURCES += \
-    Clock.cpp \
-    CommandOptions.cpp \
-    Decoder.cpp \
-    Display.cpp \
-    EventHandler.cpp \
+    Ffplay/Clock.cpp \
+    Ffplay/CommandOptions.cpp \
+    Ffplay/Decoder.cpp \
+    Ffplay/Display.cpp \
+    Ffplay/EventHandler.cpp \
+    Ffplay/Frame.cpp \
+    Ffplay/FrameQueue.cpp \
+    Ffplay/Packet.cpp \
+    Ffplay/PacketQueue.cpp \
+    Ffplay/VideoState.cpp \
+    Ffplay/cmdutils.c \
     Filters/filter.cpp \
     Filters/filterchain.cpp \
     Filters/filterlistmodel.cpp \
     Filters/filterlistview.cpp \
     Filters/filterpanel.cpp \
     Filters/subpicture.cpp \
-    Frame.cpp \
-    FrameQueue.cpp \
-    Packet.cpp \
-    PacketQueue.cpp \
+    Utilities/avexception.cpp \
+    Utilities/cudaexception.cpp \
     Utilities/directorysetter.cpp \
     Utilities/displaycontainer.cpp \
     Utilities/displayslider.cpp \
+    Utilities/filepanel.cpp \
     Utilities/filesetter.cpp \
+    Utilities/messagebox.cpp \
     Utilities/numbertextbox.cpp \
     Utilities/paneldialog.cpp \
-    VideoState.cpp \
-    avexception.cpp \
-    cmdutils.c \
+    Utilities/waitbox.cpp \
+    Utilities/yuvcolor.cpp \
+    camerapanel.cpp \
     controlpanel.cpp \
-    cudaexception.cpp \
     main.cpp \
     mainpanel.cpp \
     mainwindow.cpp \
     model.cpp \
     modelconfigure.cpp \
     optionpanel.cpp \
+    parameterpanel.cpp \
     simplefilter.cpp \
-    waitbox.cpp \
-    yuvcolor.cpp
+    streampanel.cpp
 
 HEADERS += \
-    Clock.h \
-    CommandOptions.h \
-    Decoder.h \
-    Display.h \
-    EventHandler.h \
+    Ffplay/Clock.h \
+    Ffplay/CommandOptions.h \
+    Ffplay/Decoder.h \
+    Ffplay/Display.h \
+    Ffplay/EventHandler.h \
+    Ffplay/Frame.h \
+    Ffplay/FrameQueue.h \
+    Ffplay/Packet.h \
+    Ffplay/PacketQueue.h \
+    Ffplay/VideoState.h \
+    Ffplay/cmdutils.h \
+    Ffplay/config.h \
     Filters/filter.h \
     Filters/filterchain.h \
     Filters/filterlistmodel.h \
     Filters/filterlistview.h \
     Filters/filterpanel.h \
     Filters/subpicture.h \
-    Frame.h \
-    FrameQueue.h \
-    Packet.h \
-    PacketQueue.h \
+    Utilities/avexception.h \
+    Utilities/cudaexception.h \
     Utilities/directorysetter.h \
     Utilities/displaycontainer.h \
     Utilities/displayslider.h \
+    Utilities/filepanel.h \
     Utilities/filesetter.h \
+    Utilities/messagebox.h \
     Utilities/numbertextbox.h \
     Utilities/paneldialog.h \
-    VideoState.h \
-    avexception.h \
-    cmdutils.h \
-    config.h \
+    Utilities/waitbox.h \
+    Utilities/yuvcolor.h \
+    camerapanel.h \
     controlpanel.h \
-    cudaexception.h \
     mainpanel.h \
     mainwindow.h \
     model.h \
     modelconfigure.h \
     optionpanel.h \
+    parameterpanel.h \
     simplefilter.h \
-    waitbox.h \
-    yuvcolor.h
+    streampanel.h
 
 #CUDA_DIR = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2"
 #CONTRIB_DIR = "C:/Users/sr996/Projects/contrib

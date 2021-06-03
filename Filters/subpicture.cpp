@@ -31,7 +31,7 @@ SubPicture::SubPicture(QMainWindow *parent)
     name = "Sub Picture";
     panel = new QWidget;
     mainWindow = parent;
-    connect(this, SIGNAL(msg(QString)), mainWindow, SLOT(msg(QString)));
+    connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
 
     buttonUp = new QPushButton("^");
     buttonDown = new QPushButton("v");

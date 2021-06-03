@@ -1,5 +1,5 @@
 /*******************************************************************************
-* directorysetter.h
+* messagedialog.h
 *
 * Copyright (c) 2020 Stephen Rhodes
 *
@@ -19,37 +19,26 @@
 *
 *******************************************************************************/
 
-#ifndef DIRECTORYSETTER_H
-#define DIRECTORYSETTER_H
+#ifndef MESSAGEBOX_H
+#define MESSAGEBOX_H
 
-#include <QWidget>
-#include <QLineEdit>
-#include <QPushButton>
-#include <QLabel>
+#include "paneldialog.h"
 #include <QMainWindow>
+#include <QTextEdit>
 
-class DirectorySetter : public QWidget
+class MessageBox : public PanelDialog
 {
     Q_OBJECT
 
 public:
-    DirectorySetter(QMainWindow *parent, const QString& labelText);
-    void setPath(const QString& path);
-    void trimHeight();
+    MessageBox(QMainWindow *parent);
 
-    QLabel *label;
-    QLineEdit *text;
-    QPushButton *button;
-    QString directory;
-
-    QMainWindow *mainWindow;
-
-signals:
-    void directorySet(const QString&);
+    QTextEdit *message;
 
 public slots:
-    void selectDirectory();
+    void clear();
+    void copy();
 
 };
 
-#endif // DIRECTORYSETTER_H
+#endif // MESSAGEBOX_H

@@ -22,5 +22,5 @@ MainPanel::MainPanel(QMainWindow *parent) : QWidget(parent)
 
 void MainPanel::resizeEvent(QResizeEvent *event)
 {
-    cout << "MainPanel width: " << event->size().width() << " height: " << event->size().height() << endl;
+
 }

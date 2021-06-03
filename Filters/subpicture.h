@@ -87,7 +87,7 @@ public:
                                 }";
 
 signals:
-    void msg(QString);
+    void msg(const QString&);
 
 public slots:
     void move(int p, int t, int z);

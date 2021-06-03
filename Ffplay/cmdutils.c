@@ -42,11 +42,13 @@
 #include "libavutil/attributes.h"
 #include "libavutil/avassert.h"
 #include "libavutil/avstring.h"
+#include "libavutil/avutil.h"
 #include "libavutil/bprint.h"
 #include "libavutil/display.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/libm.h"
+#include "libavutil/log.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/eval.h"
@@ -55,7 +57,7 @@
 #include "libavutil/cpu.h"
 #include "libavutil/ffversion.h"
 #include "libavutil/version.h"
-#include "cmdutils.h"
+#include "Ffplay/cmdutils.h"
 #if CONFIG_NETWORK
 #include "libavformat/network.h"
 #endif
@@ -204,12 +206,101 @@ void show_help_options(const OptionDef *options, const char *msg, int req_flags,
     printf("\n");
 }
 
+const AVOption *av_opt_next_fixed(void *obj, const AVOption *last)
+{
+    AVClass *class = obj;
+    if (!last && class->option[0].name)
+        return class->option;
+    if (last && last[1].name)
+        return ++last;
+    return NULL;
+}
+
+static void opt_list(void *obj, void *av_log_obj, const char *unit,
+                      int req_flags, int rej_flags)
+ {
+     const AVOption *opt = NULL;
+
+     while ((opt = av_opt_next_fixed(obj, opt))) {
+         if (!(opt->flags & req_flags) || (opt->flags & rej_flags))
+             continue;
+
+         /* Don't print CONST's on level one.
+          * Don't print anything but CONST's on level two.
+          * Only print items from the requested unit.
+          */
+
+         if (!unit && opt->type==AV_OPT_TYPE_CONST)
+             continue;
+         else if (unit && opt->type!=AV_OPT_TYPE_CONST)
+             continue;
+         else if (unit && opt->type==AV_OPT_TYPE_CONST && strcmp(unit, opt->unit))
+             continue;
+         else if (unit && opt->type == AV_OPT_TYPE_CONST)
+             av_log(av_log_obj, AV_LOG_INFO, "   %-15s ", opt->name);
+         else
+             av_log(av_log_obj, AV_LOG_INFO, "-%-17s ", opt->name);
+
+         switch (opt->type) {
+             case AV_OPT_TYPE_FLAGS:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "<flags>");
+                 break;
+             case AV_OPT_TYPE_INT:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "<int>");
+                 break;
+             case AV_OPT_TYPE_INT64:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "<int64>");
+                 break;
+             case AV_OPT_TYPE_DOUBLE:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "<double>");
+                 break;
+             case AV_OPT_TYPE_FLOAT:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "<float>");
+                 break;
+             case AV_OPT_TYPE_STRING:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "<string>");
+                 break;
+             case AV_OPT_TYPE_RATIONAL:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "<rational>");
+                 break;
+             case AV_OPT_TYPE_BINARY:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "<binary>");
+                 break;
+             case AV_OPT_TYPE_CONST:
+             default:
+                 av_log(av_log_obj, AV_LOG_INFO, "%-7s ", "");
+                 break;
+         }
+
+
+         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_ENCODING_PARAM) ? 'E' : '.');
+         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_DECODING_PARAM) ? 'D' : '.');
+         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_VIDEO_PARAM   ) ? 'V' : '.');
+         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_AUDIO_PARAM   ) ? 'A' : '.');
+         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_AUDIO_PARAM   ) ? 'A' : '.');
+         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_SUBTITLE_PARAM) ? 'S' : '.');
+
+
+         if (opt->help)
+             av_log(av_log_obj, AV_LOG_INFO, " %s", opt->help);
+         av_log(av_log_obj, AV_LOG_INFO, "\n");
+         if (opt->unit && opt->type != AV_OPT_TYPE_CONST) {
+             opt_list(obj, av_log_obj, opt->unit, req_flags, rej_flags);
+         }
+
+     }
+ }
+
 void show_help_children(const AVClass *class, int flags)
 {
     const AVClass *child = NULL;
     if (class->option) {
-        av_opt_show2(&class, NULL, flags, 0);
-        printf("\n");
+        const char *buffer = class->class_name;
+        av_log(NULL, AV_LOG_INFO, "%s AVOptions:\n", buffer);
+        opt_list(class, NULL, NULL, flags, 0);
+        //av_log(NULL, AV_LOG_INFO, "%s AVOptions:\n", (*(AVClass**)class)->class_name);
+        //av_opt_show2(&class, NULL, flags, 0);
+        //printf("--\n");
     }
 
     while (child = av_opt_child_class_next(class, child))

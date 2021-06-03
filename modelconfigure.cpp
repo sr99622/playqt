@@ -80,9 +80,9 @@ ModelConfigure::ModelConfigure(QMainWindow * parent) : QWidget(parent)
     initializeModelOnStartup->setChecked(MW->initializeModelOnStartup);
 
     connect(test, SIGNAL(clicked()), this, SLOT(test()));
-    connect(namesFile, SIGNAL(fileSet(QString)), this, SLOT(setNamesFile(QString)));
-    connect(cfgFile, SIGNAL(fileSet(QString)), this, SLOT(setCfgFile(QString)));
-    connect(weightsFile, SIGNAL(fileSet(QString)), this, SLOT(setWeightsFile(QString)));
+    connect(namesFile, SIGNAL(fileSet(const QString&)), this, SLOT(setNamesFile(const QString&)));
+    connect(cfgFile, SIGNAL(fileSet(const QString&)), this, SLOT(setCfgFile(const QString&)));
+    connect(weightsFile, SIGNAL(fileSet(const QString&)), this, SLOT(setWeightsFile(const QString&)));
     connect(initializeModelOnStartup, SIGNAL(stateChanged(int)), this, SLOT(setInitializeModelOnStartup(int)));
     connect(loadModel, SIGNAL(clicked()), this, SLOT(loadModel()));
     connect(clearModel, SIGNAL(clicked()), this, SLOT(clearModel()));
@@ -180,13 +180,13 @@ void ModelConfigure::cfgEdited(const QString &text)
     setDims->setEnabled(true);
 }
 
-void ModelConfigure::setNamesFile(QString path)
+void ModelConfigure::setNamesFile(const QString& path)
 {
     MW->names_file = path;
     MW->getNames(path);
 }
 
-void ModelConfigure::setCfgFile(QString path)
+void ModelConfigure::setCfgFile(const QString& path)
 {
     MW->cfg_file = path;
     QSize dims = getModelDimensions();
@@ -201,7 +201,7 @@ void ModelConfigure::setCfgFile(QString path)
     setDims->setEnabled(false);
 }
 
-void ModelConfigure::setWeightsFile(QString path)
+void ModelConfigure::setWeightsFile(const QString& path)
 {
     MW->weights_file = path;
 }

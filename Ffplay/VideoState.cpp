@@ -1,4 +1,5 @@
 #include "VideoState.h"
+#include "mainwindow.h"
 
 VideoState::VideoState()
 {
@@ -2147,7 +2148,7 @@ fail:
     return 0;
 }
 
-VideoState* VideoState::stream_open(const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp)
+VideoState* VideoState::stream_open(QMainWindow *mw, const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp)
 {
     VideoState* is;
 
@@ -2160,9 +2161,16 @@ VideoState* VideoState::stream_open(const char* filename, AVInputFormat* iformat
 
     if (!is)
         return NULL;
-    is->filename = av_strdup(filename);
-    if (!is->filename)
-        goto fail;
+
+    is->filename = av_strdup(((MainWindow*)mw)->filename.toLatin1().data());
+    //is->filename = av_strdup(filename);
+    //if (!is->filename)
+    //    goto fail;
+
+    mw->setWindowTitle(((MainWindow*)mw)->filename);
+    cout << "VideoState::stream_open: mw->filename: " << ((MainWindow*)mw)->filename.toStdString() << endl;
+    //is->filename = ((MainWindow*)mw)->filename.toLatin1().data();
+
     is->iformat = iformat;
     is->ytop = 0;
     is->xleft = 0;

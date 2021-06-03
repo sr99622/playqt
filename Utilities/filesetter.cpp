@@ -6,7 +6,7 @@
 
 using namespace std;
 
-FileSetter::FileSetter(QMainWindow *parent, QString labelText, QString filter)
+FileSetter::FileSetter(QMainWindow *parent, const QString& labelText, const QString& filter)
 {
     mainWindow = parent;
     this->filter = filter;
@@ -24,7 +24,7 @@ FileSetter::FileSetter(QMainWindow *parent, QString labelText, QString filter)
     setLayout(layout);
 }
 
-void FileSetter::setPath(QString path)
+void FileSetter::setPath(const QString& path)
 {
     filename = path;
     text->setText(path);

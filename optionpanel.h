@@ -6,6 +6,8 @@
 #include <QFont>
 #include <QLineEdit>
 #include <QLabel>
+#include <QRunnable>
+#include <QComboBox>
 
 extern "C" {
 #include "libavcodec/avcodec.h"
@@ -16,7 +18,38 @@ extern "C" {
 }
 
 #include "Utilities/paneldialog.h"
-#include "CommandOptions.h"
+#include "Ffplay/CommandOptions.h"
+#include "parameterpanel.h"
+//#include "Utilities/waitbox.h"
+
+/*
+class ParameterPanel : public QWidget
+{
+    Q_OBJECT
+
+public:
+    ParameterPanel(QMainWindow *parent);
+    QMainWindow *mainWindow;
+    QComboBox *options;
+    QLineEdit *parameter;
+    QLabel *cmd_line_equiv;
+
+public slots:
+    void set();
+    void clear();
+};
+
+class ParameterDialog : public PanelDialog
+{
+    Q_OBJECT
+
+public:
+    ParameterDialog(QMainWindow *parent);
+
+    QMainWindow *mainWindow;
+    ParameterPanel *panel;
+};
+*/
 
 class OptionPanel : public QWidget
 {
@@ -57,6 +90,7 @@ public:
     const QString show_help_options(const OptionDef *options, const char *msg, int req_flags, int rej_flags, int alt_flags);
 
     QMainWindow *mainWindow;
+    ParameterDialog *parameterDialog;
 
 public slots:
     void test();
@@ -74,6 +108,10 @@ public slots:
     void demuxers();
     void devices();
     void help();
+    void details();
+    void config();
+    void showConfig(const QString&);
+    void showParameterDialog();
 
 };
 
@@ -93,5 +131,7 @@ public:
     int defaultHeight = 640;
 
 };
+
+
 
 #endif // OPTIONPANEL_H

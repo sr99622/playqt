@@ -1,9 +1,10 @@
 #include "mainwindow.h"
-#include "cmdutils.h"
+#include "Ffplay/cmdutils.h"
 
 MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent)
 {
     this->co = co;
+    filename = QString(co->input_filename);
     av_log_set_level(AV_LOG_PANIC);
 
     QScreen *screen = QApplication::primaryScreen();
@@ -15,11 +16,30 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     int ax = cx - aw/2;
     int ay = cy - ah/2;
 
-    setWindowTitle("Play Qt");
+    setWindowTitle(filename);
     settings = new QSettings("PlayQt", "Program Settings");
 
+    splitter = new QSplitter(Qt::Orientation::Horizontal, this);
+    tabWidget = new QTabWidget(this);
+    tabWidget->setTabPosition(QTabWidget::East);
+    tabWidget->setMinimumWidth(100);
+    videoPanel = new FilePanel(this);
+    videoPanel->setDirectory(QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
+    picturePanel = new FilePanel(this);
+    picturePanel->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    audioPanel = new FilePanel(this);
+    audioPanel->setDirectory(QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
+    cameraPanel = new CameraPanel(this);
+    streamPanel = new StreamPanel(this);
+    tabWidget->addTab(videoPanel, "Videos");
+    tabWidget->addTab(picturePanel, "Pictures");
+    tabWidget->addTab(audioPanel, "Audio");
+    tabWidget->addTab(cameraPanel, "Cameras");
+    tabWidget->addTab(streamPanel, "Streams");
     mainPanel = new MainPanel(this);
-    setCentralWidget(mainPanel);
+    splitter->addWidget(mainPanel);
+    splitter->addWidget(tabWidget);
+    setCentralWidget(splitter);
 
     names_file = settings->value("MainWindow/names_file", "").toString();
     cfg_file = settings->value("MainWindow/cfg_file", "").toString();
@@ -31,10 +51,11 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         model->initialize(cfg_file, weights_file, names_file, 0);
     }
 
+    messageBox = new MessageBox(this);
     modelConfigureDialog = new ModelConfigureDialog(this);
-
     filterDialog = new FilterDialog(this);
     optionDialog = new OptionDialog(this);
+    parameterDialog = new ParameterDialog(this);
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction("&Next");
@@ -45,10 +66,17 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     QMenu *toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction("&Model Options");
     toolsMenu->addAction("&Filters");
-    toolsMenu->addAction("&Options");
+    toolsMenu->addAction("&Set Parameters");
+    toolsMenu->addAction("M&essages");
+
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction("&Options");
+
     connect(fileMenu, SIGNAL(triggered(QAction*)), this, SLOT(fileMenuAction(QAction*)));
     connect(toolsMenu, SIGNAL(triggered(QAction*)), this, SLOT(toolsMenuAction(QAction*)));
-    connect(co, SIGNAL(showHelp(const QString&)), this, SLOT(showHelp(const QString&)));
+    connect(helpMenu, SIGNAL(triggered(QAction*)), this, SLOT(helpMenuAction(QAction*)));
+    //connect(co, SIGNAL(showHelp(const QString&)), this, SLOT(showHelp(const QString&)));
+    connect(co, SIGNAL(showHelp(const QString&)), optionDialog->panel, SLOT(showConfig(const QString&)));
 
     move(ax, ay);
 
@@ -66,8 +94,8 @@ void MainWindow::runLoop()
     av_init_packet(&flush_pkt);
     flush_pkt.data = (uint8_t*)&flush_pkt;
 
-    is = VideoState::stream_open(co->input_filename, NULL, co, &display);
-    is->mainWindow = this;
+    is = VideoState::stream_open(this, co->input_filename, NULL, co, &display);
+    //is->mainWindow = this;
     is->filter = new SimpleFilter(this);
     is->flush_pkt = &flush_pkt;
 
@@ -90,13 +118,12 @@ void MainWindow::initializeSDL()
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    //is->video_audio_display();
-    QMainWindow::resizeEvent(event);
+
 }
 
 void MainWindow::moveEvent(QMoveEvent *event)
 {
-    QMainWindow::moveEvent(event);
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -117,6 +144,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QMainWindow::closeEvent(event);
 }
 
+void MainWindow::msg(const QString &str)
+{
+    messageBox->message->append(str);
+}
+
 void MainWindow::fileMenuAction(QAction *action)
 {
     cout << action->text().toStdString() << endl;
@@ -129,7 +161,15 @@ void MainWindow::toolsMenuAction(QAction *action)
         modelConfigureDialog->show();
     else if (action->text() == "&Filters")
         filterDialog->show();
-    else if (action->text() == "&Options")
+    else if (action->text() == "&Set Parameters")
+        parameterDialog->show();
+    else if (action->text() == "M&essages")
+        messageBox->show();
+}
+
+void MainWindow::helpMenuAction(QAction *action)
+{
+    if (action->text() == "&Options")
         optionDialog->show();
 }
 
@@ -151,11 +191,19 @@ void MainWindow::showHelp(const QString &str)
 
 void MainWindow::test()
 {
-    //show_help_default(NULL, NULL);
-    //print_buildconf(1|0, AV_LOG_INFO);
-    show_program_configs();
+    //QString str = "C:\\Users\\sr996\\Pictures\\test.jpg";
+    //co->opt_input_file(NULL, str.toLatin1().data());
+    QString arg = "crop=712:400:700:200, sobel, fps=5";
 
-    cout << "MainWindow::test" << endl;
-    //co->opt_add_vfilter(NULL, NULL, " sobel");
+    QString str;
+    QTextStream(&str) << "MainWindow::test\n";
+    co->opt_add_vfilter(NULL, NULL, arg.toLatin1().data());
+    //co->opt_add_vfilter(NULL, NULL, " sobel ");
+
+    QTextStream(&str) << "co->nb_vfilters: " << co->nb_vfilters << "\n";
+    for (int i = 0; i < co->nb_vfilters; i++) {
+        QTextStream(&str) << "filter: " << i << " - " << co->vfilters_list[i] << "\n";
+    }
+    msg(str);
 }
 

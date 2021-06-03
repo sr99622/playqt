@@ -9,6 +9,11 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QApplication>
+#include <QSplitter>
+#include <QThreadPool>
+#include <QTabWidget>
+#include <QStandardPaths>
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -20,16 +25,20 @@
 #include "nppi.h"
 #include "npps.h"
 
-#include "mainpanel.h"
-#include "Display.h"
-#include "CommandOptions.h"
-#include "EventHandler.h"
-#include "avexception.h"
-#include "cudaexception.h"
+#include "Ffplay/Display.h"
+#include "Ffplay/CommandOptions.h"
+#include "Ffplay/EventHandler.h"
+#include "Utilities/avexception.h"
+#include "Utilities/cudaexception.h"
+#include "Utilities/filepanel.h"
+#include "Utilities/messagebox.h"
 #include "model.h"
 #include "modelconfigure.h"
 #include "Filters/filterpanel.h"
+#include "mainpanel.h"
 #include "optionpanel.h"
+#include "camerapanel.h"
+#include "streampanel.h"
 
 using namespace std;
 
@@ -48,6 +57,8 @@ public:
     void initializeSDL();
     void getNames(QString names_file);
 
+    QString filename;
+
     CommandOptions *co;
     MainPanel *mainPanel;
     Display display;
@@ -56,6 +67,15 @@ public:
     VideoState *is;
     AVExceptionHandler av;
     QSettings *settings;
+    QSplitter *splitter;
+    FilePanel *videoPanel;
+    FilePanel *picturePanel;
+    FilePanel *audioPanel;
+    CameraPanel *cameraPanel;
+    StreamPanel *streamPanel;
+    QTabWidget *tabWidget;
+    MessageBox *messageBox;
+    ParameterDialog *parameterDialog;
 
     Model *model = nullptr;
     ModelConfigureDialog *modelConfigureDialog;
@@ -72,7 +92,9 @@ public slots:
     void runLoop();
     void fileMenuAction(QAction*);
     void toolsMenuAction(QAction*);
+    void helpMenuAction(QAction*);
     void showHelp(const QString&);
+    void msg(const QString&);
     void test();
 };
 #endif // MAINWINDOW_H

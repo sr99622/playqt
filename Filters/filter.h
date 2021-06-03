@@ -26,7 +26,7 @@
 #include <QWidget>
 #include <QSettings>
 
-#include "Frame.h"
+#include "Ffplay/Frame.h"
 
 class Filter : public QObject
 {

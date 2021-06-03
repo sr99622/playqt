@@ -116,9 +116,7 @@ void DisplayLabel::mousePressEvent(QMouseEvent *event)
 
 void DisplayContainer::resizeEvent(QResizeEvent *event)
 {
-    cout << "DisplayContainer width: " << event->size().width() << " height: " << event->size().height() << endl;
-    //if (event->size().width() == MW->splitter->sizes()[splitter_index])
-    //    emit sizeChanged(event->size());
+
 }
 
 WId DisplayContainer::getWinId()
@@ -135,7 +133,7 @@ void DisplayContainer::setIdle()
 
 void DisplayContainer::setDisplayHeight(int windowHeight)
 {
-    int displayHeight = windowHeight - windowHeightDifferential;
+    //int displayHeight = windowHeight - windowHeightDifferential;
     //display->setMinimumHeight(displayHeight);
     //display->setMaximumHeight(displayHeight);
 }

@@ -9,7 +9,7 @@ extern "C" {
 #include "libavutil/avstring.h"
 #include "libavfilter/buffersink.h"
 #include "libavfilter/buffersrc.h"
-#include "libavutil\pixdesc.h"
+#include "libavutil/pixdesc.h"
 }
 
 #include <QMainWindow>
@@ -44,14 +44,15 @@ typedef struct AudioParams {
     int bytes_per_sec;
 } AudioParams;
 
-class VideoState
+class VideoState : public QObject
 {
+    Q_OBJECT
 
 public:
 
     VideoState();
 
-    static VideoState* stream_open(const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp);
+    static VideoState* stream_open(QMainWindow *mw, const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp);
 
     void video_image_display();
     int compute_mod(int a, int b);
@@ -97,11 +98,9 @@ public:
     void sdl_audio_callback(Uint8* stream, int len);
     int audio_open(int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params);
 
-#if CONFIG_AVFILTER
     int configure_filtergraph(AVFilterGraph* graph, const char* filtergraph, AVFilterContext* source_ctx, AVFilterContext* sink_ctx);
     int configure_video_filters(AVFilterGraph* graph, const char* vfilters, AVFrame* frame);
     int configure_audio_filters(const char* afilters, int force_output_format);
-#endif // CONFIG_AVFILTER
 
     int synchronize_audio(int nb_samples);
     int audio_decode_frame();
@@ -109,7 +108,7 @@ public:
     //static void event_loop();
     void do_exit();
 
-    QMainWindow* mainWindow;
+    //QMainWindow* mainWindow;
     CommandOptions* co;
     Display* disp;
     SimpleFilter* filter;
@@ -164,9 +163,7 @@ public:
     int audio_volume;
     int muted;
     struct AudioParams audio_src;
-#if CONFIG_AVFILTER
     struct AudioParams audio_filter_src;
-#endif
     struct AudioParams audio_tgt;
     struct SwrContext* swr_ctx;
     int frame_drops_early;
@@ -205,14 +202,12 @@ public:
     int width, height, xleft, ytop;
     int step;
 
-#if CONFIG_AVFILTER
     int vfilter_idx;
     AVFilterContext* in_video_filter;   // the first filter in the video chain
     AVFilterContext* out_video_filter;  // the last filter in the video chain
     AVFilterContext* in_audio_filter;   // the first filter in the audio chain
     AVFilterContext* out_audio_filter;  // the last filter in the audio chain
     AVFilterGraph* agraph;              // audio filter graph
-#endif
 
     int last_video_stream, last_audio_stream, last_subtitle_stream;
 

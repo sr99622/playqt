@@ -10,7 +10,7 @@ extern "C" {
 #include <QRect>
 #include <QMargins>
 
-#include "yuvcolor.h"
+#include "Utilities/yuvcolor.h"
 
 using namespace std;
 

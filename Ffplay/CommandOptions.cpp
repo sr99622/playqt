@@ -295,7 +295,7 @@ CommandOptions::CommandOptions()
     options[52].name = "lowres";
     options[52].flags = OPT_INT | HAS_ARG | OPT_EXPERT;
     options[52].u.dst_ptr = &lowres;
-    options[52].help = "";
+    options[52].help = "low resolution";
     options[52].argname = "";
 
     options[53].name = "sync";
@@ -586,8 +586,24 @@ int CommandOptions::opt_codec(void* optctx, const char* opt, const char* arg)
 #if CONFIG_AVFILTER
 int CommandOptions::opt_add_vfilter(void* optctx, const char* opt, const char* arg)
 {
-    GROW_ARRAY(vfilters_list, nb_vfilters);
-    vfilters_list[nb_vfilters - 1] = arg;
+    //const char *filter_string = av_strdup(arg);
+
+    if (strlen(arg) == 0) {
+        for (int i = 0; i < nb_vfilters; i++) {
+            cout << vfilters_list[i] << endl;
+            av_free(&vfilters_list[i]);
+        }
+        if (vfilters_list)
+            av_free(&vfilters_list);
+        vfilters_list = NULL;
+        nb_vfilters = 0;
+    }
+    else {
+        if (nb_vfilters == 0)
+            GROW_ARRAY(vfilters_list, nb_vfilters);
+        vfilters_list[nb_vfilters - 1] = av_strdup(arg);
+    }
+
     return 0;
 }
 #endif

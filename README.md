@@ -1,6 +1,7 @@
 # playqt
 Windows GUI Version of ffplay integrated with darknet neural network.
-Compiled with Qt Creator using Qt version 6.0.2
+Compiled with Qt Creator using Qt version 6.0.2 which in turn
+depends upon MS Visual Studio 2019.
 
 **WORK IN PROGRESS**
 

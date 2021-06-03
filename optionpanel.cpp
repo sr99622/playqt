@@ -1,6 +1,6 @@
 #include "optionpanel.h"
 #include "mainwindow.h"
-#include "cmdutils.h"
+#include "Ffplay/cmdutils.h"
 
 enum show_muxdemuxers {
     SHOW_DEFAULT,
@@ -35,17 +35,23 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     currentOption = new QLabel();
     QPushButton *clear = new QPushButton("clear");
     QPushButton *close = new QPushButton("close");
-    QPushButton *decoders = new QPushButton("-decoders");
-    QPushButton *filters = new QPushButton("-filters");
-    QPushButton *bsfs = new QPushButton("-bsfs");
-    QPushButton *pix_fmts = new QPushButton("-pix_fmts");
-    QPushButton *sample_fmts = new QPushButton("-sample_fmts");
-    QPushButton *protocols = new QPushButton("-protocols");
-    QPushButton *layouts = new QPushButton("-layouts");
-    QPushButton *colors = new QPushButton("-colors");
-    QPushButton *demuxers = new QPushButton("-demuxers");
-    QPushButton *devices = new QPushButton("-devices");
-    QPushButton *help = new QPushButton("-help");
+    QPushButton *decoders = new QPushButton("decoders");
+    QPushButton *decoder_set = new QPushButton("...");
+    decoder_set->setMaximumWidth(30);
+    QPushButton *filters = new QPushButton("filters");
+    QPushButton *filter_set = new QPushButton("...");
+    filter_set->setMaximumWidth(30);
+    QPushButton *bsfs = new QPushButton("bsfs");
+    QPushButton *pix_fmts = new QPushButton("pix_fmts");
+    QPushButton *sample_fmts = new QPushButton("sample_fmts");
+    QPushButton *protocols = new QPushButton("protocols");
+    QPushButton *layouts = new QPushButton("layouts");
+    QPushButton *colors = new QPushButton("colors");
+    QPushButton *demuxers = new QPushButton("demuxers");
+    QPushButton *devices = new QPushButton("devices");
+    QPushButton *help = new QPushButton("help");
+    QPushButton *details = new QPushButton("details");
+    QPushButton *config = new QPushButton("config");
 
     QLabel *lbl00 = new QLabel("| grep");
     filterEdit = new QLineEdit();
@@ -56,23 +62,34 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     helpDisplay->setFontWeight(QFont::Bold);
 
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(lbl00,          0,  1,  1,  1, Qt::AlignRight);
-    layout->addWidget(filterEdit,     0,  2,  1,  5);
-    layout->addWidget(helpDisplay,    1,  1,  14, 6);
-    layout->addWidget(currentOption,  0,  0,  1,  1, Qt::AlignLeft);
-    layout->addWidget(decoders,       1,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(filters,        2,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(bsfs,           3,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(pix_fmts,       4,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(sample_fmts,    5,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(protocols,      6,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(layouts,        7,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(colors,         8,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(demuxers,       9,  0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(devices,        10, 0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(help,           11, 0,  1,  1, Qt::AlignCenter);
-    layout->addWidget(clear,          16, 2,  1,  1, Qt::AlignCenter);
-    layout->addWidget(close,          16, 4,  1,  1, Qt::AlignCenter);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->addWidget(lbl00,          0,  2,  1,  1, Qt::AlignLeft);
+    layout->addWidget(filterEdit,     0,  3,  1,  5, Qt::AlignLeft);
+    layout->addWidget(helpDisplay,    1,  2,  14, 6);
+    layout->addWidget(currentOption,  0,  1,  1,  1, Qt::AlignLeft);
+    layout->addWidget(decoder_set,    1,  0,  1,  1, Qt::AlignCenter);
+    layout->addWidget(decoders,       1,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(filter_set,     2,  0,  1,  1, Qt::AlignCenter);
+    layout->addWidget(filters,        2,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(bsfs,           3,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(pix_fmts,       4,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(sample_fmts,    5,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(protocols,      6,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(layouts,        7,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(colors,         8,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(demuxers,       9,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(devices,        10, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(help,           11, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(details,        12, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(config,         13, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(clear,          16, 3,  1,  1, Qt::AlignCenter);
+    layout->addWidget(close,          16, 5,  1,  1, Qt::AlignCenter);
+
+    //layout->setColumnStretch(0, 1);
+    //layout->setColumnStretch(1, 1);
+    layout->setColumnStretch(2, 10);
+    layout->setColumnStretch(3, 10);
+
     setLayout(layout);
 
     connect(clear, SIGNAL(clicked()), this, SLOT(clear()));
@@ -89,6 +106,29 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     connect(demuxers, SIGNAL(clicked()), this, SLOT(demuxers()));
     connect(devices, SIGNAL(clicked()), this, SLOT(devices()));
     connect(help, SIGNAL(clicked()), this, SLOT(help()));
+    connect(details, SIGNAL(clicked()), this, SLOT(details()));
+    connect(config, SIGNAL(clicked()), this, SLOT(config()));
+    connect(filter_set, SIGNAL(clicked()), this, SLOT(showParameterDialog()));
+
+    parameterDialog = new ParameterDialog(mainWindow);
+}
+
+void OptionPanel::showConfig(const QString& str)
+{
+    helpDisplay->setText(helpDisplay->toPlainText() + str);
+}
+
+void OptionPanel::details()
+{
+    QMessageBox::StandardButton result = QMessageBox::question(MW->optionDialog, "FFMPEG details", "This utility will take a while to complete, during which time the application will become non-responsive.  Would you like to continue?");
+    if (result == QMessageBox::Yes)
+        show_help_default(NULL, NULL);
+}
+
+void OptionPanel::config()
+{
+    show_program_configs();
+    MW->optionDialog->raise();
 }
 
 void OptionPanel::help()
@@ -764,3 +804,72 @@ const QString OptionPanel::show_help_options(const OptionDef *options, const cha
     QTextStream(&str) << "\n";
     return str;
 }
+
+void OptionPanel::showParameterDialog()
+{
+    parameterDialog->show();
+}
+
+/*
+ParameterDialog::ParameterDialog(QMainWindow *parent) : PanelDialog(parent)
+{
+    mainWindow = parent;
+    setWindowTitle("Set Parameter");
+    panel = new ParameterPanel(mainWindow);
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(panel);
+    setLayout(layout);
+}
+
+ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
+{
+    mainWindow = parent;
+
+    options = new QComboBox(mainWindow);
+    for (int i = 0; i < NUM_OPTIONS; i++) {
+        if (MW->co->options[i].flags != OPT_EXIT)
+            options->addItem(MW->co->options[i].help, QVariant(i));
+    }
+    parameter = new QLineEdit();
+    QLabel *lbl00 = new QLabel("Command Line Equivalent: ");
+    cmd_line_equiv = new QLabel();
+    cmd_line_equiv->setStyleSheet("QLabel { background-color : lightGray; font : 10pt 'Courier'; }");
+    cmd_line_equiv->setText("This is a test");
+    QPushButton *set = new QPushButton("Set");
+    QPushButton *clear = new QPushButton("Clear");
+    QGridLayout *layout = new QGridLayout();
+    layout->addWidget(options,         0, 0, 1, 2);
+    layout->addWidget(parameter,       1, 0, 1, 2);
+    layout->addWidget(lbl00,           2, 0, 1, 2);
+    layout->addWidget(cmd_line_equiv,  3, 0, 1, 2);
+    layout->addWidget(clear,           4, 0, 1, 1, Qt::AlignCenter);
+    layout->addWidget(set,             4, 1, 1, 1, Qt::AlignCenter);
+
+    layout->setRowStretch(3, 10);
+
+    setLayout(layout);
+
+    connect(set, SIGNAL(clicked()), this, SLOT(set()));
+    connect(clear, SIGNAL(clicked()), this, SLOT(clear()));
+}
+
+void ParameterPanel::set()
+{
+    int option_index = options->currentData().toInt();
+    QString option_name = MW->co->options[option_index].name;
+    cmd_line_equiv->setText("-" + option_name + " " + parameter->text());
+    MW->co->options[option_index].u.func_arg(NULL, NULL, parameter->text().toLatin1().data());
+
+    //cout << parameter->text().toStdString() << endl;
+    //MW->co->opt_add_vfilter(NULL, NULL, parameter->text().toLatin1().data());
+}
+
+void ParameterPanel::clear()
+{
+    parameter->setText("");
+    int option_index = options->currentData().toInt();
+    QString option_name = MW->co->options[option_index].name;
+    cmd_line_equiv->setText("");
+    MW->co->options[option_index].u.func_arg(NULL, NULL, parameter->text().toLatin1().data());
+}
+*/

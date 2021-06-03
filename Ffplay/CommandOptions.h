@@ -7,10 +7,13 @@ extern"C" {
 
 #include <SDL.h>
 #include <QObject>
+#include <QString>
 
 //#include "VideoState.h"
 
 //#define CO ((CommandOptions*)command_options)
+
+#define NUM_OPTIONS 75
 
 enum ShowMode {
     SHOW_MODE_NONE = -1, 
@@ -116,7 +119,7 @@ public:
     inline static int64_t audio_callback_time;
 
 
-    inline static OptionDef options[77];
+    inline static OptionDef options[NUM_OPTIONS];
 
 signals:
     void showHelp(const QString&);

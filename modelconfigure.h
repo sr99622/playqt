@@ -36,9 +36,9 @@ public:
 public slots:
     void test();
     //void setFileDirectory(QString);
-    void setNamesFile(QString);
-    void setCfgFile(QString);
-    void setWeightsFile(QString);
+    void setNamesFile(const QString&);
+    void setCfgFile(const QString&);
+    void setWeightsFile(const QString&);
     void setInitializeModelOnStartup(int);
     void loadModel();
     void clearModel();

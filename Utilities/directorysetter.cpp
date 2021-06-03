@@ -24,7 +24,7 @@
 #include <QFileDialog>
 #include <QGridLayout>
 
-DirectorySetter::DirectorySetter(QMainWindow *parent, QString labelText)
+DirectorySetter::DirectorySetter(QMainWindow *parent, const QString& labelText)
 {
     mainWindow = parent;
     label = new QLabel(labelText);
@@ -38,12 +38,12 @@ DirectorySetter::DirectorySetter(QMainWindow *parent, QString labelText)
     if (label->text() != "")
         layout->addWidget(label,  0, 0, 1, 1);
     layout->addWidget(text,   0, 1, 1, 4);
-    layout->addWidget(button, 0, 5, 1, 1, Qt::AlignCenter);
+    layout->addWidget(button, 0, 5, 1, 1);
 
     setLayout(layout);
 }
 
-void DirectorySetter::setPath(QString path)
+void DirectorySetter::setPath(const QString& path)
 {
     directory = path;
     text->setText(path);
@@ -58,4 +58,9 @@ void DirectorySetter::selectDirectory()
         text->setText(directory);
         emit directorySet(directory);
     }
+}
+
+void DirectorySetter::trimHeight()
+{
+    setMaximumHeight(label->fontMetrics().boundingRect("Xy").height() * 4);
 }

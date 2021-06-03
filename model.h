@@ -1,17 +1,17 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "Frame.h"
+#include "Ffplay/Frame.h"
 
 #include <QMainWindow>
 #include <QRunnable>
 
-#include "avexception.h"
+#include "Utilities/avexception.h"
 #include "yolo_v2_class.hpp"
-#include "waitbox.h"
+#include "Utilities/waitbox.h"
 
 #include <npp.h>
-#include "cudaexception.h"
+#include "Utilities/cudaexception.h"
 
 class ModelLoader : public QObject, public QRunnable
 {

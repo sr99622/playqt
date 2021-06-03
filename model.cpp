@@ -22,7 +22,7 @@ Model::Model(QMainWindow *parent) : QObject(parent)
     waitBox = new WaitBox(mainWindow);
     modelLoader = new ModelLoader(this);
     connect(modelLoader, SIGNAL(done(int)), waitBox, SLOT(done(int)));
-    //connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
+    connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
 }
 
 vector<bbox_t> Model::infer(Frame *vp, float detection_threshold)

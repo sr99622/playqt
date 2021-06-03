@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 
 extern "C" {
-#include "cmdutils.h"
+#include "Ffplay/cmdutils.h"
 #include "libavformat/avformat.h"
 #include "libavdevice/avdevice.h"
 #include "libavutil/opt.h"
@@ -13,14 +13,14 @@ extern "C" {
 
 #include <assert.h>
 #include <functional>
-#include "CommandOptions.h"
+#include "Ffplay/CommandOptions.h"
 
-#include "PacketQueue.h"
-#include "FrameQueue.h"
-#include "Decoder.h"
-#include "Clock.h"
+#include "Ffplay/PacketQueue.h"
+#include "Ffplay/FrameQueue.h"
+#include "Ffplay/Decoder.h"
+#include "Ffplay/Clock.h"
 //#include "VideoState.h"
-#include "Display.h"
+#include "Ffplay/Display.h"
 //#include "EventHandler.h"
 //#include "model.h"
 
@@ -86,12 +86,13 @@ void show_help_default(const char* opt, const char* arg)
     co.av_log_on = true;
     av_log_set_callback(logCallback);
     co.show_usage();
-    show_help_options(co.options, "Main options:", 0, OPT_EXPERT, 0);
-    show_help_options(co.options, "Advanced options:", OPT_EXPERT, 0, 0);
-    printf("\n");
+    //show_help_options(co.options, "Main options:", 0, OPT_EXPERT, 0);
+    //show_help_options(co.options, "Advanced options:", OPT_EXPERT, 0, 0);
+    //printf("\n");
     show_help_children(avcodec_get_class(), AV_OPT_FLAG_DECODING_PARAM);
-    show_help_children(avformat_get_class(), AV_OPT_FLAG_DECODING_PARAM);
-    show_help_children(avfilter_get_class(), AV_OPT_FLAG_FILTERING_PARAM);
+    //show_help_children(avformat_get_class(), AV_OPT_FLAG_DECODING_PARAM);
+    //show_help_children(avfilter_get_class(), AV_OPT_FLAG_FILTERING_PARAM);
+    /*
     printf("\nWhile playing:\n"
         "q, ESC              quit\n"
         "f                   toggle full screen\n"
@@ -112,6 +113,7 @@ void show_help_default(const char* opt, const char* arg)
         "left double-click   toggle full screen\n"
     );
     fflush(stdout);
+    */
     co.av_log_on = false;
     av_log_set_callback(log_callback_help);
 
@@ -129,8 +131,9 @@ int main(int argc, char *argv[])
 
     if (!co.input_filename) {
         //co.show_usage();
-        co.input_filename = "C:\\Users\\sr996\\Videos\\odessa_0.mp4";
+        co.input_filename = "C:/Users/sr996/Videos/odessa_0.mp4";
         //co.input_filename = "C:\\Users\\sr996\\Pictures\\test.jpg";
+        //co.gui_filename = "C:/Users/sr996/Videos/odess_0.mp4";
     }
 
     if (co.display_disable) {
