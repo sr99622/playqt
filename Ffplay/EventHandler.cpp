@@ -4,14 +4,17 @@ void EventHandler::event_loop(VideoState* cur_stream)
 {
     SDL_Event event;
     double incr, pos, frac;
+    running = true;
 
-    for (;;) {
+    //for (;;) {
+    while (running) {
         double x;
         cur_stream->refresh_loop_wait_event(&event);
         switch (event.type) {
         case SDL_KEYDOWN:
             if (cur_stream->co->exit_on_keydown || event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
                 //do_exit(cur_stream);
+                running = false;
                 goto exit;
                 break;
             }

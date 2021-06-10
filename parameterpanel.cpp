@@ -13,17 +13,34 @@ ParameterDialog::ParameterDialog(QMainWindow *parent) : PanelDialog(parent)
 
 void ParameterDialog::show()
 {
-    panel->initialize();
+    panel->setCmdLine();
     QDialog::show();
+}
+
+OptionBox::OptionBox(QWidget *parent) : QComboBox(parent)
+{
+
+}
+
+void OptionBox::keyPressEvent(QKeyEvent *event)
+{
+    keyInput = true;
+    QComboBox::keyPressEvent(event);
+}
+
+void OptionBox::mousePressEvent(QMouseEvent *event)
+{
+    keyInput = false;
+    QComboBox::mousePressEvent(event);
 }
 
 ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 {
     mainWindow = parent;
 
-    options = new QComboBox(mainWindow);
+    options = new OptionBox(mainWindow);
     for (int i = 0; i < NUM_OPTIONS; i++) {
-        if (MW->co->options[i].flags != OPT_EXIT)
+        if (!(MW->co->options[i].flags & OPT_EXIT))
             options->addItem(MW->co->options[i].help, QVariant(i));
     }
     parameter = new QLineEdit();
@@ -33,6 +50,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     cmd_line_equiv->setText("This is a test");
     QPushButton *set = new QPushButton("Set");
     QPushButton *clear = new QPushButton("Clear");
+    clear->setFocusPolicy(Qt::NoFocus);
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(options,         0, 0, 1, 2);
     layout->addWidget(parameter,       1, 0, 1, 2);
@@ -47,11 +65,21 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 
     connect(set, SIGNAL(clicked()), this, SLOT(set()));
     connect(clear, SIGNAL(clicked()), this, SLOT(clear()));
+    connect(options, SIGNAL(currentIndexChanged(int)), this, SLOT(optionChanged(int)));
+    connect(parameter, SIGNAL(returnPressed()), this, SLOT(parameterEntered()));
 }
 
-void ParameterPanel::initialize()
+void ParameterPanel::setCmdLine()
 {
     QString str;
+
+    if (QString(MW->co->video_codec_name).length() > 0) {
+        QTextStream(&str) << " -vcodec " << MW->co->video_codec_name;
+    }
+
+    if (MW->co->audio_disable > 0) {
+        QTextStream(&str) << " -an";
+    }
 
     if (MW->co->start_time > 0) {
         int arg = MW->co->start_time;
@@ -78,23 +106,59 @@ void ParameterPanel::initialize()
     cmd_line_equiv->setText(str);
 }
 
+void ParameterPanel::parameterEntered()
+{
+    set();
+    options->setFocus();
+}
+
+void ParameterPanel::optionChanged(int index)
+{
+    parameter->setText("");
+    if (!options->keyInput)
+        parameter->setFocus();
+}
+
 void ParameterPanel::set()
 {
-    int option_index = options->currentData().toInt();
-    QString option_name = MW->co->options[option_index].name;
-    //cmd_line_equiv->setText("-" + option_name + " " + parameter->text());
-    MW->co->options[option_index].u.func_arg(NULL, NULL, parameter->text().toLatin1().data());
-    initialize();
+    int index = options->currentData().toInt();
+    QString name = MW->co->options[index].name;
 
-    //cout << parameter->text().toStdString() << endl;
-    //MW->co->opt_add_vfilter(NULL, NULL, parameter->text().toLatin1().data());
+    cout << "name: " << name.toStdString() << endl;
+
+    if (MW->co->options[index].u.dst_ptr == 0)
+        cout << "null ptr" << endl;
+
+    if (!strcmp(MW->co->options[index].name, "vcodec")) {
+        cout << "vcodec" << endl;
+        // believe it or not, the address of video_codec_name changes after program starts running main()
+        if (parameter->text().length() == 0)
+            MW->co->video_codec_name = 0;
+        else
+            MW->co->video_codec_name = av_strdup(parameter->text().toLatin1().data());
+    }
+    else if (MW->co->options[index].flags & OPT_FUNC) {
+        cout << "func_arg: " << parameter->text().toLatin1().data() << endl;
+        MW->co->options[index].u.func_arg(NULL, NULL, parameter->text().toLatin1().data());
+    }
+    else {
+        if (MW->co->options[index].flags & OPT_BOOL) {
+            cout << "opt bool" << endl;
+            *(int *)MW->co->options[index].u.dst_ptr = parse_number_or_die(MW->co->options[index].name, "1", OPT_INT64, INT_MIN, INT_MAX);
+        }
+    }
+
+    cout << "test 1" << endl;
+    setCmdLine();
 }
 
 void ParameterPanel::clear()
 {
     parameter->setText("");
-    int option_index = options->currentData().toInt();
-    QString option_name = MW->co->options[option_index].name;
-    cmd_line_equiv->setText("");
-    MW->co->options[option_index].u.func_arg(NULL, NULL, parameter->text().toLatin1().data());
+    MW->co->duration = AV_NOPTS_VALUE;
+    MW->co->start_time = AV_NOPTS_VALUE;
+    MW->co->opt_add_vfilter(NULL, NULL, "");
+    MW->co->video_codec_name = 0;
+    MW->co->audio_disable = 0;
+    setCmdLine();
 }

@@ -20,37 +20,6 @@ extern "C" {
 #include "Utilities/paneldialog.h"
 #include "Ffplay/CommandOptions.h"
 #include "parameterpanel.h"
-//#include "Utilities/waitbox.h"
-
-/*
-class ParameterPanel : public QWidget
-{
-    Q_OBJECT
-
-public:
-    ParameterPanel(QMainWindow *parent);
-    QMainWindow *mainWindow;
-    QComboBox *options;
-    QLineEdit *parameter;
-    QLabel *cmd_line_equiv;
-
-public slots:
-    void set();
-    void clear();
-};
-
-class ParameterDialog : public PanelDialog
-{
-    Q_OBJECT
-
-public:
-    ParameterDialog(QMainWindow *parent);
-
-    QMainWindow *mainWindow;
-    ParameterPanel *panel;
-};
-*/
-
 class OptionPanel : public QWidget
 {
     Q_OBJECT

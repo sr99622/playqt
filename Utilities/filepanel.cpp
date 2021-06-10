@@ -37,6 +37,8 @@ void FilePanel::doubleClicked(const QModelIndex& index)
     if (index.isValid()) {
         QString str = model->filePath(index);
         cout << str.toStdString() << endl;
-        MW->filename = str;
+        //MW->filename = str;
+        MW->co->input_filename = av_strdup(str.toLatin1().data());
+        MW->runLoop();
     }
 }

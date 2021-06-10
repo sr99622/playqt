@@ -27,6 +27,8 @@ public slots:
     void test();
     void pause();
     void mute();
+    void volup();
+    void voldn();
     void quit();
     void fastforward();
     void rewind();

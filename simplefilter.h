@@ -7,7 +7,9 @@
 #include "yolo_v2_class.hpp"
 #include <npp.h>
 #include "Utilities/cudaexception.h"
+#include "opencv2/opencv.hpp"
 
+using namespace cv;
 
 class SimpleFilter : public QObject
 {
@@ -34,6 +36,10 @@ public:
     void cuda_example(Frame *vp);
     void nppi_example(Frame *vp);
     void box_filter(Frame *vp);
+    void mat_example(Frame *vp);
+    void nppi_convert(Frame *vp);
+    void canny(Frame *vp);
+    void tricky(Frame *vp);
 
     NppStreamContext initializeNppStreamContext();
 

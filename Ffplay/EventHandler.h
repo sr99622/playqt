@@ -6,7 +6,10 @@
 
 class EventHandler
 {
+
 public:
 	void event_loop(VideoState* cur_stream);
+    bool running;
+
 };
 

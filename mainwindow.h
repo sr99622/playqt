@@ -39,6 +39,7 @@
 #include "optionpanel.h"
 #include "camerapanel.h"
 #include "streampanel.h"
+#include "viewer.h"
 
 using namespace std;
 
@@ -76,6 +77,7 @@ public:
     QTabWidget *tabWidget;
     MessageBox *messageBox;
     ParameterDialog *parameterDialog;
+    ViewerDialog *viewerDialog;
 
     Model *model = nullptr;
     ModelConfigureDialog *modelConfigureDialog;

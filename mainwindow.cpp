@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "Ffplay/cmdutils.h"
 
+using namespace cv::cuda;
+
 MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent)
 {
     this->co = co;
@@ -18,6 +20,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     setWindowTitle(filename);
     settings = new QSettings("PlayQt", "Program Settings");
+
+    viewerDialog = new ViewerDialog(this);
 
     splitter = new QSplitter(Qt::Orientation::Horizontal, this);
     tabWidget = new QTabWidget(this);
@@ -94,8 +98,8 @@ void MainWindow::runLoop()
     av_init_packet(&flush_pkt);
     flush_pkt.data = (uint8_t*)&flush_pkt;
 
-    is = VideoState::stream_open(this, co->input_filename, NULL, co, &display);
-    //is->mainWindow = this;
+    is = VideoState::stream_open(/*this, */co->input_filename, NULL, co, &display);
+    is->mainWindow = this;
     is->filter = new SimpleFilter(this);
     is->flush_pkt = &flush_pkt;
 
@@ -191,19 +195,8 @@ void MainWindow::showHelp(const QString &str)
 
 void MainWindow::test()
 {
-    //QString str = "C:\\Users\\sr996\\Pictures\\test.jpg";
-    //co->opt_input_file(NULL, str.toLatin1().data());
-    QString arg = "crop=712:400:700:200, sobel, fps=5";
-
-    QString str;
-    QTextStream(&str) << "MainWindow::test\n";
-    co->opt_add_vfilter(NULL, NULL, arg.toLatin1().data());
-    //co->opt_add_vfilter(NULL, NULL, " sobel ");
-
-    QTextStream(&str) << "co->nb_vfilters: " << co->nb_vfilters << "\n";
-    for (int i = 0; i < co->nb_vfilters; i++) {
-        QTextStream(&str) << "filter: " << i << " - " << co->vfilters_list[i] << "\n";
-    }
-    msg(str);
+    viewerDialog->show();
+    //co->video_codec_name = "h264_qsv";
+    //cout << "video_codec_name: " << co->video_codec_name << endl;
 }
 

@@ -52,7 +52,7 @@ public:
 
     VideoState();
 
-    static VideoState* stream_open(QMainWindow *mw, const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp);
+    static VideoState* stream_open(/*QMainWindow *mw, */const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp);
 
     void video_image_display();
     int compute_mod(int a, int b);
@@ -108,7 +108,7 @@ public:
     //static void event_loop();
     void do_exit();
 
-    //QMainWindow* mainWindow;
+    QMainWindow* mainWindow;
     CommandOptions* co;
     Display* disp;
     SimpleFilter* filter;

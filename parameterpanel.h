@@ -8,22 +8,35 @@
 
 #include "Utilities/paneldialog.h"
 
+class OptionBox : public QComboBox
+{
+public:
+    OptionBox(QWidget *parent = nullptr);
+    bool keyInput = false;
+
+protected:
+    void keyPressEvent(QKeyEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+};
+
 class ParameterPanel : public QWidget
 {
     Q_OBJECT
 
 public:
     ParameterPanel(QMainWindow *parent);
-    void initialize();
+    void setCmdLine();
 
     QMainWindow *mainWindow;
-    QComboBox *options;
+    OptionBox *options;
     QLineEdit *parameter;
     QLabel *cmd_line_equiv;
 
 public slots:
     void set();
     void clear();
+    void optionChanged(int);
+    void parameterEntered();
 };
 
 class ParameterDialog : public PanelDialog

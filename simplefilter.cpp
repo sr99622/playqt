@@ -1,5 +1,8 @@
 #include "simplefilter.h"
 #include "mainwindow.h"
+#include <opencv2/cudaimgproc.hpp>
+
+using namespace cv::cuda;
 
 SimpleFilter::SimpleFilter(QMainWindow *parent) : QObject(parent)
 {
@@ -21,11 +24,103 @@ void SimpleFilter::process(Frame *vp)
         return;
     }
 
+    //canny(vp);
+    //mat_example(vp);
+    //nppi_convert(vp);
     //box_filter(vp);
     //cuda_example(vp);
     infer(vp);
     //processGPU(vp);
     //processCPU(vp);
+    //tricky(vp);
+}
+
+void SimpleFilter::tricky(Frame *vp)
+{
+    Mat mat = vp->toMat();
+    QImage image((uchar*)mat.data, mat.cols, mat.rows, QImage::Format_RGB888);
+    QPixmap pixmap;
+    pixmap.convertFromImage(image);
+    MW->viewerDialog->viewer->displayContainer->display->setPixmap(pixmap);
+}
+
+void SimpleFilter::mat_example(Frame *vp)
+{
+    if (!vp->writable())
+        return;
+
+    //Mat mat = vp->toMat();
+    Mat mat = vp->hwToMat();
+
+    putText(mat, "This is a test", Point(10, mat.rows/2), FONT_HERSHEY_DUPLEX, 1.0, CV_RGB(255, 255, 255), 2);
+
+    //vp->readMat(mat);
+    vp->hwReadMat(mat);
+
+}
+
+void SimpleFilter::nppi_convert(Frame *vp)
+{
+    if (!vp->writable()) {
+        cout << "fuck my ass" << endl;
+        return;
+    }
+
+    Npp8u *pYUV[3], *pBGR;
+
+    try {
+        size_t size = vp->width * vp->height;
+        eh.ck(cudaMalloc(&pYUV[0], size), "cudaMalloc");
+        eh.ck(cudaMalloc(&pYUV[1], size>>2), "cudaMalloc");
+        eh.ck(cudaMalloc(&pYUV[2], size>>2), "cudaMalloc");
+
+        eh.ck(cudaMemcpy(pYUV[0], vp->frame->data[0], size, cudaMemcpyHostToDevice));
+        eh.ck(cudaMemcpy(pYUV[1], vp->frame->data[1], size>>2, cudaMemcpyHostToDevice));
+        eh.ck(cudaMemcpy(pYUV[2], vp->frame->data[2], size>>2, cudaMemcpyHostToDevice));
+
+        eh.ck(cudaMalloc(&pBGR, 4 * size), "cudaMalloc");
+
+        eh.ck(nppiYUV420ToBGR_8u_P3C4R(pYUV, vp->frame->linesize, pBGR, 4 * vp->frame->linesize[0], {vp->width, vp->height}), "convert forwards");
+
+        eh.ck(cudaMemset(pYUV[0], 0, size), "cudaMemset");
+        eh.ck(cudaMemset(pYUV[1], 128, size>>2), "cudaMemset");
+        eh.ck(cudaMemset(pYUV[2], 128, size>>2), "cudaMemset");
+
+        eh.ck(nppiBGRToYUV420_8u_AC4P3R(pBGR, 4 * vp->frame->linesize[0], pYUV, vp->frame->linesize, {vp->width, vp->height}), "convert backwards");
+
+        eh.ck(cudaMemcpy(vp->frame->data[0], pYUV[0], size, cudaMemcpyDeviceToHost), "cudaMemcpy");
+        eh.ck(cudaMemcpy(vp->frame->data[1], pYUV[1], size>>2, cudaMemcpyDeviceToHost), "cudaMemcpy");
+        eh.ck(cudaMemcpy(vp->frame->data[2], pYUV[2], size>>2, cudaMemcpyDeviceToHost), "cudaMemcpy");
+
+        eh.ck(cudaFree(pYUV[0]), "cudaFree");
+        eh.ck(cudaFree(pYUV[1]), "cudaFree");
+        eh.ck(cudaFree(pYUV[2]), "cudaFree");
+
+        eh.ck(cudaFree(pBGR), "cudaFree");
+    }
+    catch (const exception &e) {
+        cout << e.what() << endl;
+    }
+
+}
+
+void SimpleFilter::canny(Frame *vp)
+{
+    if (!vp->writable())
+        return;
+
+    Mat mat = vp->toMat();
+    Mat dst(mat.size(), mat.type());
+    Mat gray;
+    cv::cvtColor(mat, gray, COLOR_BGR2GRAY);
+    Mat edges;
+    blur(gray, edges, Size(3, 3));
+    int threshold = 20;
+    int ratio = 3;
+    Canny(edges, edges, threshold, threshold*ratio, 3);
+    dst = Scalar::all(0);
+    mat.copyTo(dst, edges);
+    vp->readMat(dst);
 }
 
 void SimpleFilter::box_filter(Frame *vp)

@@ -691,6 +691,17 @@ void VideoState::video_display()
     else if (video_st)
         video_image_display();
     SDL_RenderPresent(disp->renderer);
+
+    /*
+    // QImage version
+    Frame *vp = pictq.peek_last();
+    Mat mat = vp->hwToMat();
+    QImage image((uchar*)mat.data, mat.cols, mat.rows, QImage::Format_RGB888);
+    QPixmap pixmap;
+    pixmap.convertFromImage(image);
+    MW->viewerDialog->viewer->displayContainer->display->setPixmap(pixmap);
+    ///////////////////////////////////////////////////////////////////////
+    */
 }
 
 #if CONFIG_AVFILTER
@@ -2001,15 +2012,18 @@ int VideoState::read_thread()
             break;
         if (paused != last_paused) {
             last_paused = paused;
-            if (paused)
+            if (paused) {
                 read_pause_return = av_read_pause(ictx);
-            else
+            }
+            else {
                 av_read_play(ictx);
+            }
         }
 #if CONFIG_RTSP_DEMUXER || CONFIG_MMSH_PROTOCOL
         if (paused &&
             (!strcmp(ictx->iformat->name, "rtsp") ||
                 (ictx->pb && !strncmp(co->input_filename, "mmsh:", 5)))) {
+
             /* wait 10 ms to avoid trying to get another packet */
             /* XXX: horrible */
             SDL_Delay(10);
@@ -2148,7 +2162,7 @@ fail:
     return 0;
 }
 
-VideoState* VideoState::stream_open(QMainWindow *mw, const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp)
+VideoState* VideoState::stream_open(/*QMainWindow *mw, */const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp)
 {
     VideoState* is;
 
@@ -2162,13 +2176,13 @@ VideoState* VideoState::stream_open(QMainWindow *mw, const char* filename, AVInp
     if (!is)
         return NULL;
 
-    is->filename = av_strdup(((MainWindow*)mw)->filename.toLatin1().data());
-    //is->filename = av_strdup(filename);
-    //if (!is->filename)
-    //    goto fail;
+    //is->filename = av_strdup(((MainWindow*)mw)->filename.toLatin1().data());
+    is->filename = av_strdup(filename);
+    if (!is->filename)
+        goto fail;
 
-    mw->setWindowTitle(((MainWindow*)mw)->filename);
-    cout << "VideoState::stream_open: mw->filename: " << ((MainWindow*)mw)->filename.toStdString() << endl;
+    //mw->setWindowTitle(((MainWindow*)mw)->filename);
+    //cout << "VideoState::stream_open: mw->filename: " << ((MainWindow*)mw)->filename.toStdString() << endl;
     //is->filename = ((MainWindow*)mw)->filename.toLatin1().data();
 
     is->iformat = iformat;

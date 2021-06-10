@@ -44,7 +44,8 @@ SOURCES += \
     optionpanel.cpp \
     parameterpanel.cpp \
     simplefilter.cpp \
-    streampanel.cpp
+    streampanel.cpp \
+    viewer.cpp
 
 HEADERS += \
     Ffplay/Clock.h \
@@ -86,7 +87,8 @@ HEADERS += \
     optionpanel.h \
     parameterpanel.h \
     simplefilter.h \
-    streampanel.h
+    streampanel.h \
+    viewer.h
 
 #CUDA_DIR = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2"
 #CONTRIB_DIR = "C:/Users/sr996/Projects/contrib
@@ -94,7 +96,8 @@ HEADERS += \
 INCLUDEPATH += $$(CUDA_PATH)/include \
                $$(CONTRIB_PATH)/include/SDL \
                $$(CONTRIB_PATH)/include \
-               $$(CONTRIB_PATH)/include/darknet
+               $$(CONTRIB_PATH)/include/darknet \
+               C:\Users\sr996\opencv\include \
 
 LIBS += -L$$(CUDA_PATH)/lib/x64 \
         -lcudart \
@@ -121,7 +124,8 @@ LIBS += -L$$(CONTRIB_PATH)/lib \
     -llibavfilter \
     -llibpostproc \
     -ldarknet \
-    -llibsdl2
+    -llibsdl2 \
+    -lopencv_world451
 
 
 RESOURCES += images/images.qrc
