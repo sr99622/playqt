@@ -93,6 +93,10 @@ public:
     int subtitle_thread();
     int read_thread();
     
+    const QString formatTime(double time_in_seconds);
+    double elapsed;
+    double total;
+
     int stream_component_open(int stream_index);
 
     void sdl_audio_callback(Uint8* stream, int len);

@@ -1,4 +1,5 @@
 #include "EventHandler.h"
+#include "mainwindow.h"
 
 void EventHandler::event_loop(VideoState* cur_stream)
 {
@@ -10,6 +11,19 @@ void EventHandler::event_loop(VideoState* cur_stream)
     while (running) {
         double x;
         cur_stream->refresh_loop_wait_event(&event);
+
+        if (event.type == ((MainWindow*)cur_stream->mainWindow)->sdlCustomEventType) {
+            double elapsed = *(double*)(event.user.data1);
+            double total = *(double*)(event.user.data2);
+            int percentage = (1000 * elapsed) / total;
+
+            DisplayContainer *dc = ((MainWindow*)cur_stream->mainWindow)->mainPanel->displayContainer;
+
+            dc->slider->setValue(percentage);
+            dc->elapsed->setText(cur_stream->formatTime(elapsed));
+            dc->total->setText(cur_stream->formatTime(total));
+        }
+
         switch (event.type) {
         case SDL_KEYDOWN:
             if (cur_stream->co->exit_on_keydown || event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {

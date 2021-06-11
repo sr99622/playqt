@@ -90,6 +90,8 @@ public:
     FilterDialog *filterDialog;
     OptionDialog *optionDialog;
 
+    Uint32 sdlCustomEventType;
+
 public slots:
     void runLoop();
     void fileMenuAction(QAction*);

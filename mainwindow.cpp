@@ -84,6 +84,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     move(ax, ay);
 
+    sdlCustomEventType = SDL_RegisterEvents(1);
 
     //test();
 }

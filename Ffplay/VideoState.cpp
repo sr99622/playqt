@@ -1765,6 +1765,16 @@ int VideoState::stream_component_open(int stream_index)
         video_stream = stream_index;
         video_st = ic->streams[stream_index];
 
+        SDL_Event event;
+        SDL_memset(&event, 0, sizeof(event));
+        event.type = MW->sdlCustomEventType;
+        event.user.code = 56181962;
+        elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+        total = ic->duration * av_q2d(av_get_time_base_q());
+        event.user.data1 = &elapsed;
+        event.user.data2 = &total;
+        SDL_PushEvent(&event);
+
         viddec.init(avctx, &videoq, continue_read_thread, flush_pkt);
         if ((ret = viddec.start(videoThread, "video_decoder", this)) < 0)
             goto out;
@@ -1789,6 +1799,15 @@ out:
     av_dict_free(&opts);
 
     return ret;
+}
+
+const QString VideoState::formatTime(double time_in_seconds)
+{
+    int hours = time_in_seconds / 3600;
+    int minutes = (time_in_seconds - (hours *3600) ) / 60;
+    int seconds = time_in_seconds - (hours * 3600) - (minutes * 60);
+    QTime q_time(hours, minutes, seconds);
+    return q_time.toString("hh:mm:ss");
 }
 
 int VideoState::stream_has_enough_packets(AVStream* st, int stream_id, PacketQueue* queue) {
@@ -2137,6 +2156,19 @@ int VideoState::read_thread()
         else if (pkt->stream_index == video_stream && pkt_in_play_range
             && !(video_st->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
             videoq.put(pkt);
+
+            double current_time = pkt_ts * av_q2d(ictx->streams[pkt->stream_index]->time_base);
+
+            SDL_Event event;
+            SDL_memset(&event, 0, sizeof(event));
+            event.type = MW->sdlCustomEventType;
+            event.user.code = 56181962;
+            elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+            total = ic->duration * av_q2d(av_get_time_base_q());
+            event.user.data1 = &current_time;
+            event.user.data2 = &total;
+            SDL_PushEvent(&event);
+
         }
         else if (pkt->stream_index == subtitle_stream && pkt_in_play_range) {
             subtitleq.put(pkt);
