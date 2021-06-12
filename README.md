@@ -11,11 +11,21 @@ https://sourceforge.net/projects/playqt/files/
 
 The build is set up to find the contrib libraries using the
 environment variable CONTRIB_PATH pointing to the location
-where the libraries were unzipped.
+where the libraries were unzipped.  The build will also look
+for the OpenCV include files in relation to an environment
+variable OPENCV_PATH that should point to the root of the
+OpenCV source directory.
 
 You will need to have NVIDIA cuda gpu development toolkit set up as well.
 The build will look for the evironment variable CUDA_PATH which should
 be set up by the toolkit install.
+
+The contrib libraries are only configured for release version of the
+program, so when you set up the Qt Creator environment, be sure to 
+set it for Release configuration, not Debug.
+
+At runtime, the program will look for some dll's in the contrib/lib 
+directory, so you will want to add that to your path.  
 
 https://developer.nvidia.com/cuda-toolkit
 

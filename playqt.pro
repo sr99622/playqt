@@ -92,12 +92,13 @@ HEADERS += \
 
 #CUDA_DIR = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2"
 #CONTRIB_DIR = "C:/Users/sr996/Projects/contrib
+#OPENCV_PATH = "C:/Users/sr996/opencv"
 
 INCLUDEPATH += $$(CUDA_PATH)/include \
                $$(CONTRIB_PATH)/include/SDL \
                $$(CONTRIB_PATH)/include \
                $$(CONTRIB_PATH)/include/darknet \
-               C:\Users\sr996\opencv\include \
+               $$(OPENCV_PATH)/include
 
 LIBS += -L$$(CUDA_PATH)/lib/x64 \
         -lcudart \
