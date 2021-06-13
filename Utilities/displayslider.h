@@ -13,8 +13,11 @@ public:
 
     QMainWindow *mainWindow;
     bool previously_paused;
+    int tick;
 
 protected:
+    void mouseMoveEvent(QMouseEvent *e) override;
+    void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void keyPressEvent(QKeyEvent *e) override;
 

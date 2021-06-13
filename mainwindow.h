@@ -41,6 +41,11 @@
 #include "streampanel.h"
 #include "viewer.h"
 
+enum CustomEventCode {
+    FILE_POSITION_UPDATE,
+    SLIDER_POSITION_UPDATE
+};
+
 using namespace std;
 
 #define MW dynamic_cast<MainWindow*>(mainWindow)

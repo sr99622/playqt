@@ -6,22 +6,34 @@ void EventHandler::event_loop(VideoState* cur_stream)
     SDL_Event event;
     double incr, pos, frac;
     running = true;
+    elapsed = 0;
+    total = 0;
+    percentage = 0;
 
     //for (;;) {
     while (running) {
         double x;
         cur_stream->refresh_loop_wait_event(&event);
+        DisplayContainer *dc = ((MainWindow*)cur_stream->mainWindow)->mainPanel->displayContainer;
 
         if (event.type == ((MainWindow*)cur_stream->mainWindow)->sdlCustomEventType) {
-            double elapsed = *(double*)(event.user.data1);
-            double total = *(double*)(event.user.data2);
-            int percentage = (1000 * elapsed) / total;
-
-            DisplayContainer *dc = ((MainWindow*)cur_stream->mainWindow)->mainPanel->displayContainer;
-
-            dc->slider->setValue(percentage);
-            dc->elapsed->setText(cur_stream->formatTime(elapsed));
-            dc->total->setText(cur_stream->formatTime(total));
+            switch (event.user.code) {
+            case FILE_POSITION_UPDATE:
+                elapsed = *(double*)(event.user.data1);
+                total = *(double*)(event.user.data2);
+                percentage = (1000 * elapsed) / total;
+                dc->slider->setValue(percentage);
+                dc->elapsed->setText(cur_stream->formatTime(elapsed));
+                dc->total->setText(cur_stream->formatTime(total));
+                break;
+            case SLIDER_POSITION_UPDATE:
+                percentage = *(int*)(event.user.data1);
+                ts = percentage * cur_stream->ic->duration / 1000;
+                if (cur_stream->ic->start_time != AV_NOPTS_VALUE)
+                    ts += cur_stream->ic->start_time;
+                cur_stream->stream_seek(ts, 0, 0);
+                break;
+            }
         }
 
         switch (event.type) {

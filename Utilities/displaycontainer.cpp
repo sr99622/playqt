@@ -34,10 +34,10 @@ DisplayContainer::DisplayContainer(QMainWindow *parent)
     //display->setUpdatesEnabled(false);  // This setting prevents flicker in the display, deferred to render
     QGridLayout *layout = new QGridLayout();
     slider = new DisplaySlider(mainWindow);
-    //slider->setOrientation(Qt::Horizontal);
-    //slider->setMinimum(0);
-    //slider->setMaximum(1000);
-    //slider->setValue(0);
+    slider->setOrientation(Qt::Horizontal);
+    slider->setMinimum(0);
+    slider->setMaximum(1000);
+    slider->setValue(0);
 
     elapsed = new QLineEdit;
     elapsed->setMaximumWidth(elapsed->fontMetrics().boundingRect("00:00:00").width() * 1.2);

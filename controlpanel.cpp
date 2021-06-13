@@ -13,6 +13,7 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     QPushButton *rewind = new QPushButton("<<");
     QPushButton *fastforward = new QPushButton(">>");
     QPushButton *pause = new QPushButton("Pause");
+    QPushButton *singlestep = new QPushButton("Single");
     QPushButton *mute = new QPushButton("Mute");
     QPushButton *volup = new QPushButton("^");
     QPushButton *voldn = new QPushButton("v");
@@ -26,19 +27,21 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     layout->addWidget(rewind,       1,  1, 1, 1, Qt::AlignCenter);
     layout->addWidget(fastforward,  1,  2, 1, 1, Qt::AlignCenter);
     layout->addWidget(pause,        1,  3, 1, 1, Qt::AlignCenter);
-    layout->addWidget(mute,         1,  4, 1, 1, Qt::AlignCenter);
-    layout->addWidget(volup,        1,  5, 1, 1, Qt::AlignCenter);
-    layout->addWidget(voldn,        1,  6, 1, 1, Qt::AlignCenter);
-    layout->addWidget(quit,         1,  7, 1, 1, Qt::AlignCenter);
-    layout->addWidget(test,         1,  8, 1, 1, Qt::AlignCenter);
-    layout->addWidget(infer,        1,  9, 1, 1, Qt::AlignCenter);
-    layout->addWidget(engageFilter, 1, 10, 1, 1, Qt::AlignCenter);
+    layout->addWidget(singlestep,   1,  4, 1, 1, Qt::AlignCenter);
+    layout->addWidget(mute,         1,  5, 1, 1, Qt::AlignCenter);
+    layout->addWidget(volup,        1,  6, 1, 1, Qt::AlignCenter);
+    layout->addWidget(voldn,        1,  7, 1, 1, Qt::AlignCenter);
+    layout->addWidget(quit,         1,  8, 1, 1, Qt::AlignCenter);
+    layout->addWidget(test,         1,  9, 1, 1, Qt::AlignCenter);
+    layout->addWidget(infer,        1, 10, 1, 1, Qt::AlignCenter);
+    layout->addWidget(engageFilter, 1, 11, 1, 1, Qt::AlignCenter);
     setLayout(layout);
 
     connect(play, SIGNAL(clicked()), mainWindow, SLOT(runLoop()));
     connect(rewind, SIGNAL(clicked()), this, SLOT(rewind()));
     connect(fastforward, SIGNAL(clicked()), this, SLOT(fastforward()));
     connect(pause, SIGNAL(clicked()), this, SLOT(pause()));
+    connect(singlestep, SIGNAL(clicked()), this, SLOT(singlestep()));
     connect(mute, SIGNAL(clicked()), this, SLOT(mute()));
     connect(volup, SIGNAL(clicked()), this, SLOT(volup()));
     connect(voldn, SIGNAL(clicked()), this, SLOT(voldn()));
@@ -60,6 +63,11 @@ void ControlPanel::test()
     //MW->co->video_codec_name = "h264_qsv";
     //MW->co->opt_add_vfilter(NULL, NULL, "fps=1");
     MW->test();
+}
+
+void ControlPanel::singlestep()
+{
+    MW->is->step_to_next_frame();
 }
 
 void ControlPanel::volup()

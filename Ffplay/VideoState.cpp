@@ -365,7 +365,14 @@ void VideoState::stream_seek(int64_t pos, int64_t rel, int seek_by_bytes)
         if (seek_by_bytes)
             seek_flags |= AVSEEK_FLAG_BYTE;
         seek_req = 1;
-        SDL_CondSignal(continue_read_thread);
+
+        if (!paused) {
+            SDL_CondSignal(continue_read_thread);
+            cout << "stream seek" << endl;
+        }
+        else {
+            cout << "stream is paused" << endl;
+        }
     }
 }
 
@@ -1126,7 +1133,7 @@ void VideoState::video_refresh(double* remaining_time)
             video_display();
             last_vis_time = time;
         }
-        *remaining_time = FFMIN(*remaining_time, last_vis_time + co->rdftspeed - time);
+        //*remaining_time = FFMIN(*remaining_time, last_vis_time + co->rdftspeed - time);
 
     }
 
@@ -1160,7 +1167,7 @@ void VideoState::video_refresh(double* remaining_time)
 
             time = av_gettime_relative() / 1000000.0;
             if (time < frame_timer + delay) {
-                *remaining_time = FFMIN(frame_timer + delay - time, *remaining_time);
+                //*remaining_time = FFMIN(frame_timer + delay - time, *remaining_time);
                 goto display;
             }
 
@@ -1221,8 +1228,10 @@ void VideoState::video_refresh(double* remaining_time)
             pictq.next();
             force_refresh = 1;
 
-            if (step && !paused)
+            if (step && !paused) {
+                cout << "video_refresh step && !paused" << endl;
                 stream_toggle_pause();
+            }
         }
     display:
         // display picture 
@@ -1768,7 +1777,7 @@ int VideoState::stream_component_open(int stream_index)
         SDL_Event event;
         SDL_memset(&event, 0, sizeof(event));
         event.type = MW->sdlCustomEventType;
-        event.user.code = 56181962;
+        event.user.code = FILE_POSITION_UPDATE;
         elapsed = ic->start_time * av_q2d(av_get_time_base_q());
         total = ic->duration * av_q2d(av_get_time_base_q());
         event.user.data1 = &elapsed;
@@ -2058,10 +2067,11 @@ int VideoState::read_thread()
 
             ret = avformat_seek_file(ic, -1, seek_min, seek_target, seek_max, seek_flags);
             if (ret < 0) {
-                av_log(NULL, AV_LOG_ERROR,
-                    "%s: error while seeking\n", ic->url);
+                av_log(NULL, AV_LOG_ERROR, "%s: error while seeking\n", ic->url);
+                cout << "error while seeking" << ic->url << endl;
             }
             else {
+                cout << "buffer flush" << endl;
                 if (audio_stream >= 0) {
                     audioq.flush();
                     audioq.put(flush_pkt);
@@ -2084,8 +2094,34 @@ int VideoState::read_thread()
             seek_req = 0;
             queue_attachments_req = 1;
             eof = 0;
-            if (paused)
-                step_to_next_frame();
+            if (paused) {
+                cout << "pictq: " << pictq.nb_remaining() << endl;
+                cout << "subpq: " << subpq.nb_remaining() << endl;
+                cout << "sampq: " << sampq.nb_remaining() << endl;
+
+                while (pictq.nb_remaining() > 0)
+                    pictq.next();
+                while (subpq.nb_remaining() > 0)
+                    subpq.next();
+                while (sampq.nb_remaining() > 0)
+                    sampq.next();
+
+                //////////////////////////////////////////////stream_toggle_pause();
+
+                frame_timer += av_gettime_relative() / 1000000.0 - vidclk.last_updated;
+                if (read_pause_return != AVERROR(ENOSYS)) {
+                    vidclk.paused = 0;
+                }
+                vidclk.set_clock(vidclk.get_clock(), vidclk.serial);
+                extclk.set_clock(extclk.get_clock(), extclk.serial);
+                paused = audclk.paused = vidclk.paused = extclk.paused = !paused;
+
+                /////////////////////////////////////////////////////
+
+                step = 1;
+
+
+            }
         }
         if (queue_attachments_req) {
             if (video_st && video_st->disposition & AV_DISPOSITION_ATTACHED_PIC) {
@@ -2162,8 +2198,9 @@ int VideoState::read_thread()
             SDL_Event event;
             SDL_memset(&event, 0, sizeof(event));
             event.type = MW->sdlCustomEventType;
-            event.user.code = 56181962;
-            elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+            event.user.code = FILE_POSITION_UPDATE;
+            //elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+            elapsed = current_time;
             total = ic->duration * av_q2d(av_get_time_base_q());
             event.user.data1 = &current_time;
             event.user.data2 = &total;

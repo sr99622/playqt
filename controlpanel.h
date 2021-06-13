@@ -32,6 +32,7 @@ public slots:
     void quit();
     void fastforward();
     void rewind();
+    void singlestep();
 
 };
 
