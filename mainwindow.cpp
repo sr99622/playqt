@@ -62,6 +62,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     filterDialog = new FilterDialog(this);
     optionDialog = new OptionDialog(this);
     parameterDialog = new ParameterDialog(this);
+    filterChain = new FilterChain(this);
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction("&Next");
@@ -101,10 +102,9 @@ void MainWindow::runLoop()
     av_init_packet(&flush_pkt);
     flush_pkt.data = (uint8_t*)&flush_pkt;
 
-    is = VideoState::stream_open(/*this, */co->input_filename, NULL, co, &display);
-    is->mainWindow = this;
+    is = VideoState::stream_open(this);
     is->filter = new SimpleFilter(this);
-    is->flush_pkt = &flush_pkt;
+    //is->flush_pkt = &flush_pkt;
 
     e.event_loop(is);
     if (is) {

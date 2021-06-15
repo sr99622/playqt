@@ -89,9 +89,9 @@ class AVExceptionHandler  // : public QObject
 
 public:
     AVExceptionHandler();
-    void ck(int error_id);
+    void ck(int ret);
     void ck(int ret, int tag);
-    QString tag(int cmd_tag);
+    const QString tag(int cmd_tag);
     QString contextToString(AVCodecContext *arg);
 };
 

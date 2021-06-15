@@ -28,7 +28,7 @@ using namespace std::chrono;
 FilterChain::FilterChain(QMainWindow *parent)
 {
     mainWindow = parent;
-
+    panel = MW->filterDialog->panel;
 }
 
 FilterChain::~FilterChain()

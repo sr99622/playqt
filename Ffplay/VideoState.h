@@ -21,6 +21,7 @@ extern "C" {
 #include "CommandOptions.h"
 #include "simplefilter.h"
 #include "config.h"
+#include "Filters/filterchain.h"
 
 #define AV_SYNC_THRESHOLD_MIN 0.04
 #define AV_SYNC_THRESHOLD_MAX 0.1
@@ -52,7 +53,7 @@ public:
 
     VideoState();
 
-    static VideoState* stream_open(/*QMainWindow *mw, */const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp);
+    static VideoState* stream_open(QMainWindow *mw);
 
     void video_image_display();
     int compute_mod(int a, int b);
@@ -116,9 +117,11 @@ public:
     void do_exit();
 
     QMainWindow* mainWindow;
+    FilterChain* filterChain;
+    SimpleFilter* filter;
+
     CommandOptions* co;
     Display* disp;
-    SimpleFilter* filter;
     AVPacket* flush_pkt;
 
     SDL_Thread* read_tid;

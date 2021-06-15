@@ -36,6 +36,7 @@
 #include "model.h"
 #include "modelconfigure.h"
 #include "Filters/filterpanel.h"
+#include "Filters/filterchain.h"
 #include "mainpanel.h"
 #include "optionpanel.h"
 #include "camerapanel.h"
@@ -95,6 +96,7 @@ public:
     bool initializeModelOnStartup = false;
 
     FilterDialog *filterDialog;
+    FilterChain *filterChain;
     OptionDialog *optionDialog;
 
     Uint32 sdlCustomEventType;

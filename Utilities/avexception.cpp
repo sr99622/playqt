@@ -40,12 +40,17 @@ AVExceptionHandler::AVExceptionHandler()
 
 }
 
-void AVExceptionHandler::ck(int ret, int tag = 0)
+void AVExceptionHandler::ck(int ret)
+{
+    AVException e(ret, 0);
+}
+
+void AVExceptionHandler::ck(int ret, int tag)
 {
     AVException e(ret, tag);
 }
 
-QString AVExceptionHandler::tag(int cmd_tag)
+const QString AVExceptionHandler::tag(int cmd_tag)
 {
     switch (cmd_tag) {
     case AO2:

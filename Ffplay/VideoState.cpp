@@ -2164,30 +2164,26 @@ int VideoState::read_thread()
     return 0;
 }
 
-VideoState* VideoState::stream_open(/*QMainWindow *mw, */const char* filename, AVInputFormat* iformat, CommandOptions* co, Display* disp)
+VideoState* VideoState::stream_open(QMainWindow *mw)
 {
     VideoState* is;
 
     is = (VideoState*)av_mallocz(sizeof(VideoState));
 
-    //is = new VideoState();
-
-    is->co = co;
-    is->disp = disp;
+    is->co = ((MainWindow*)mw)->co;
+    is->disp = &(((MainWindow*)mw)->display);
+    is->flush_pkt = &(((MainWindow*)mw)->flush_pkt);
+    is->filterChain = ((MainWindow*)mw)->filterChain;
+    is->mainWindow = mw;
 
     if (!is)
         return NULL;
 
-    //is->filename = av_strdup(((MainWindow*)mw)->filename.toLatin1().data());
-    is->filename = av_strdup(filename);
+    is->filename = av_strdup(is->co->input_filename);
     if (!is->filename)
         goto fail;
 
-    //mw->setWindowTitle(((MainWindow*)mw)->filename);
-    //cout << "VideoState::stream_open: mw->filename: " << ((MainWindow*)mw)->filename.toStdString() << endl;
-    //is->filename = ((MainWindow*)mw)->filename.toLatin1().data();
-
-    is->iformat = iformat;
+    //is->iformat = iformat;
     is->ytop = 0;
     is->xleft = 0;
 
@@ -2217,21 +2213,20 @@ VideoState* VideoState::stream_open(/*QMainWindow *mw, */const char* filename, A
     is->extclk.init_clock(&is->extclk.serial);
     is->audio_clock_serial = -1;
 
-    if (co->startup_volume < 0)
-        av_log(NULL, AV_LOG_WARNING, "-volume=%d < 0, setting to 0\n", co->startup_volume);
-    if (co->startup_volume > 100)
-        av_log(NULL, AV_LOG_WARNING, "-volume=%d > 100, setting to 100\n", co->startup_volume);
-    co->startup_volume = av_clip(co->startup_volume, 0, 100);
-    co->startup_volume = av_clip(SDL_MIX_MAXVOLUME * co->startup_volume / 100, 0, SDL_MIX_MAXVOLUME);
-    is->audio_volume = co->startup_volume;
+    if (is->co->startup_volume < 0)
+        av_log(NULL, AV_LOG_WARNING, "-volume=%d < 0, setting to 0\n", is->co->startup_volume);
+    if (is->co->startup_volume > 100)
+        av_log(NULL, AV_LOG_WARNING, "-volume=%d > 100, setting to 100\n", is->co->startup_volume);
+    is->co->startup_volume = av_clip(is->co->startup_volume, 0, 100);
+    is->co->startup_volume = av_clip(SDL_MIX_MAXVOLUME * is->co->startup_volume / 100, 0, SDL_MIX_MAXVOLUME);
+    is->audio_volume = is->co->startup_volume;
     is->muted = 0;
-    is->av_sync_type = co->av_sync_type;
+    is->av_sync_type = is->co->av_sync_type;
     is->read_tid = SDL_CreateThread(readThread, "read_thread", is);
 
     if (!is->read_tid) {
         av_log(NULL, AV_LOG_FATAL, "SDL_CreateThread(): %s\n", SDL_GetError());
     fail:
-        //stream_close(is);
         is->stream_close();
         return NULL;
     }
