@@ -100,6 +100,7 @@ void ModelConfigure::test()
 
 void ModelConfigure::clearModel()
 {
+    MW->model->detector->~Detector();
     delete MW->model;
     MW->model = nullptr;
 }

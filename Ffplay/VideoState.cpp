@@ -12,14 +12,14 @@ static int readThread(void* opaque)
     return static_cast<VideoState*>(opaque)->read_thread();
 }
 
-VideoState::VideoState()
-{
-    //memset(this, 0, sizeof(VideoState));
-}
-
 static int audioThread(void* opaque)
 {
     return static_cast<VideoState*>(opaque)->audio_thread();
+}
+
+VideoState::VideoState()
+{
+    //memset(this, 0, sizeof(VideoState));
 }
 
 void VideoState::video_image_display()
@@ -89,21 +89,7 @@ void VideoState::video_image_display()
     SDL_RenderCopyEx(disp->renderer, vid_texture, NULL, &rect, 0, NULL, (SDL_RendererFlip)(vp->flip_v ? SDL_FLIP_VERTICAL : 0));
     disp->set_sdl_yuv_conversion_mode(NULL);
     if (sp) {
-#if USE_ONEPASS_SUBTITLE_RENDER
         SDL_RenderCopy(disp->renderer, sub_texture, NULL, &rect);
-#else
-        int i;
-        double xratio = (double)rect.w / (double)sp->width;
-        double yratio = (double)rect.h / (double)sp->height;
-        for (i = 0; i < sp->sub.num_rects; i++) {
-            SDL_Rect* sub_rect = (SDL_Rect*)sp->sub.rects[i];
-            SDL_Rect target = { .x = rect.x + sub_rect->x * xratio,
-                               .y = rect.y + sub_rect->y * yratio,
-                               .w = sub_rect->w * xratio,
-                               .h = sub_rect->h * yratio };
-            SDL_RenderCopy(renderer, sub_texture, sub_rect, &target);
-        }
-#endif
     }
 }
 

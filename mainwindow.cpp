@@ -20,6 +20,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     setWindowTitle(filename);
     settings = new QSettings("PlayQt", "Program Settings");
+    status = new QStatusBar(this);
+    setStatusBar(status);
 
     viewerDialog = new ViewerDialog(this);
 

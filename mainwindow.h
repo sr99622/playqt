@@ -13,6 +13,7 @@
 #include <QThreadPool>
 #include <QTabWidget>
 #include <QStandardPaths>
+#include <QStatusBar>
 
 #include <iostream>
 #include <string>
@@ -83,6 +84,7 @@ public:
     MessageBox *messageBox;
     ParameterDialog *parameterDialog;
     ViewerDialog *viewerDialog;
+    QStatusBar *status;
 
     Model *model = nullptr;
     ModelConfigureDialog *modelConfigureDialog;

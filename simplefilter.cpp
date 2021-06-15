@@ -352,12 +352,18 @@ void SimpleFilter::infer(Frame *vp)
         MW->model->initialize(MW->cfg_file, MW->weights_file, MW->names_file, 0);
     }
 
+    int people_count = 0;
     vector<bbox_t> result = MW->model->infer(vp, 0.2);
     for (int i = 0; i < result.size(); i++) {
         QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
         YUVColor green(Qt::green);
         vp->drawBox(rect, 1, green);
+        if (result[i].obj_id == 0)
+            people_count++;
     }
+    QString str;
+    QTextStream(&str) << "Number of people detected: " << people_count;
+    MW->status->showMessage(str);
 }
 
 void SimpleFilter::initialize(AVFrame *f)
