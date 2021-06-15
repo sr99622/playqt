@@ -81,17 +81,20 @@ public:
     double compute_target_delay(double delay);
     double vp_duration(Frame* vp, Frame* nextvp);
     void update_video_pts(double pts, int64_t pos, int serial);
-    void stream_cycle_channel(int codec_type);
 
     int video_open();
     void video_display();
     void update_sample_display(short* samples, int samples_size);
     void video_refresh(double* time_remaining);
+    void subtitle_refresh();
+    void show_status();
 
     int audio_thread();
     int video_thread();
     int subtitle_thread();
     int read_thread();
+    void read_loop();
+    void assign_read_options();
     
     const QString formatTime(double time_in_seconds);
     double elapsed;
@@ -120,6 +123,9 @@ public:
 
     SDL_Thread* read_tid;
     AVInputFormat* iformat;
+    AVFormatContext* ic;
+    SDL_cond* continue_read_thread;
+
     int abort_request;
     int force_refresh;
     int paused;
@@ -130,7 +136,6 @@ public:
     int64_t seek_pos;
     int64_t seek_rel;
     int read_pause_return;
-    AVFormatContext* ic;
     int realtime;
 
     Clock audclk;
@@ -213,8 +218,7 @@ public:
     AVFilterContext* out_audio_filter;  // the last filter in the audio chain
     AVFilterGraph* agraph;              // audio filter graph
 
-    int last_video_stream, last_audio_stream, last_subtitle_stream;
+    //int last_video_stream, last_audio_stream, last_subtitle_stream;
 
-    SDL_cond* continue_read_thread;
 };
 

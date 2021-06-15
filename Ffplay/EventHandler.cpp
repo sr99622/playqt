@@ -71,18 +71,18 @@ void EventHandler::event_loop(VideoState* cur_stream)
                 cur_stream->step_to_next_frame();
                 break;
             case SDLK_a:
-                cur_stream->stream_cycle_channel(AVMEDIA_TYPE_AUDIO);
+                //cur_stream->stream_cycle_channel(AVMEDIA_TYPE_AUDIO);
                 break;
             case SDLK_v:
-                cur_stream->stream_cycle_channel(AVMEDIA_TYPE_VIDEO);
+                //cur_stream->stream_cycle_channel(AVMEDIA_TYPE_VIDEO);
                 break;
             case SDLK_c:
-                cur_stream->stream_cycle_channel(AVMEDIA_TYPE_VIDEO);
-                cur_stream->stream_cycle_channel(AVMEDIA_TYPE_AUDIO);
-                cur_stream->stream_cycle_channel(AVMEDIA_TYPE_SUBTITLE);
+                //cur_stream->stream_cycle_channel(AVMEDIA_TYPE_VIDEO);
+                //cur_stream->stream_cycle_channel(AVMEDIA_TYPE_AUDIO);
+                //cur_stream->stream_cycle_channel(AVMEDIA_TYPE_SUBTITLE);
                 break;
             case SDLK_t:
-                cur_stream->stream_cycle_channel(AVMEDIA_TYPE_SUBTITLE);
+                //cur_stream->stream_cycle_channel(AVMEDIA_TYPE_SUBTITLE);
                 break;
             case SDLK_w:
 #if CONFIG_AVFILTER

@@ -102,7 +102,7 @@ void ControlPanel::fastforward()
 
 void ControlPanel::pause()
 {
-    MW->is->stream_toggle_pause();
+    MW->is->toggle_pause();
     /*
     SDL_Event event;
     event.type = SDL_KEYDOWN;
