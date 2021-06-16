@@ -12,6 +12,11 @@ static int readThread(void* opaque)
     return static_cast<VideoState*>(opaque)->read_thread();
 }
 
+static int videoThread(void* opaque)
+{
+    return static_cast<VideoState*>(opaque)->video_thread();
+}
+
 static int audioThread(void* opaque)
 {
     return static_cast<VideoState*>(opaque)->audio_thread();
@@ -75,7 +80,7 @@ void VideoState::video_image_display()
         }
     }
 
-    filter->process(vp);  //  hook into playqt filtering system
+    filterChain->process(vp);  //  hook into playqt filtering system
     disp->calculate_display_rect(&rect, xleft, ytop, width, height, vp->width, vp->height, vp->sar);
 
     if (!vp->uploaded) {
@@ -1377,11 +1382,6 @@ the_end:
 #endif
     av_frame_free(&frame);
     return ret;
-}
-
-static int videoThread(void* opaque)
-{
-    return static_cast<VideoState*>(opaque)->video_thread();
 }
 
 int VideoState::video_thread()

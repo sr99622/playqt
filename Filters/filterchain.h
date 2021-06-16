@@ -36,14 +36,10 @@ public:
     FilterChain(QMainWindow *parent);
     ~FilterChain();
 
-    void start();
-    void stop();
-    bool isRunning();
-
     QMainWindow *mainWindow;
     FilterPanel *panel;
     int size = -1;
-
+    bool active = true;
 
 public slots:
     void process(Frame *vp);

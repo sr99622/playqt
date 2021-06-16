@@ -249,9 +249,13 @@ void FilterPanel::moveRight()
         leftModel->emit dataChanged(QModelIndex(), QModelIndex());
         if (leftModel->current_index == leftModel->filters.size()) {
             leftModel->current_index--;
-            leftView->selectionModel()->select(leftModel->setSelectedIndex(leftModel->current_index), QItemSelectionModel::SelectCurrent);
-            if (leftModel->current_index > -1)
+            if (leftModel->current_index > -1) {
+                leftView->selectionModel()->select(leftModel->setSelectedIndex(leftModel->current_index), QItemSelectionModel::SelectCurrent);
                 leftModel->filters[leftModel->current_index]->panel->show();
+            }
+            else {
+                leftModel->current_index = 0;
+            }
         }
         else {
             if (leftModel->filters.size() == 1) {

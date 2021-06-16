@@ -5,14 +5,68 @@ Frame::Frame() : QObject()
 
 }
 
+Frame::Frame(int width, int height, const AVPixelFormat &pix_fmt)
+{
+    allocateFrame(width, height, pix_fmt);
+}
+
 Frame::~Frame()
 {
+    av_frame_free(&frame);
     if (pBGR != nullptr) {
         cudaFree(pBGR);
         cudaFree(pYUV[0]);
         cudaFree(pYUV[1]);
         cudaFree(pYUV[2]);
     }
+}
+
+void Frame::allocateFrame(int width, int height, const AVPixelFormat& pix_fmt)
+{
+    if (frame != nullptr)
+        av_frame_free(&frame);
+    frame = av_frame_alloc();
+    frame->width = width;
+    frame->height = height;
+    frame->format = pix_fmt;
+    av_frame_get_buffer(frame, 32);
+    av_frame_make_writable(frame);
+    this->width = width;
+    this->height = height;
+    this->format = pix_fmt;
+}
+
+void Frame::pip(int ulc_x, int ulc_y, Frame *sub_vp)
+{
+    int pip_height = sub_vp->frame->height;
+    int ulc = ulc_y * frame->linesize[0] + ulc_x;
+    for (int y = 0; y < pip_height; y++)
+        memcpy(frame->data[0] + ulc + y * frame->linesize[0], sub_vp->frame->data[0] + y * sub_vp->frame->linesize[0], sub_vp->frame->linesize[0]);
+
+    int pip_u_height = sub_vp->frame->height >> 1;
+    int u_ulc = (ulc_y >> 1) * frame->linesize[1] + (ulc_x >> 1);
+    for (int y = 0; y < pip_u_height; y++) {
+        memcpy(frame->data[1] + u_ulc + y * frame->linesize[1], sub_vp->frame->data[1] + y * sub_vp->frame->linesize[1], sub_vp->frame->linesize[1]);
+        memcpy(frame->data[2] + u_ulc + y * frame->linesize[2], sub_vp->frame->data[2] + y * sub_vp->frame->linesize[2], sub_vp->frame->linesize[2]);
+    }
+}
+
+void Frame::slice(int x, int y, Frame *sub_vp)
+{
+    int slice_height = sub_vp->frame->height;
+    int offset = y * width + x;
+    for (int i = 0; i < slice_height; i++)
+        memcpy(sub_vp->frame->data[0] + (i * sub_vp->frame->linesize[0]), frame->data[0] + i * frame->linesize[0] + offset, sub_vp->frame->linesize[0]);
+
+    int slice_u_height = slice_height >> 1;
+    int u_offset = (y >> 1) * frame->linesize[1] + (x >> 1);
+    for (int i = 0; i < slice_u_height; i++) {
+        memcpy(sub_vp->frame->data[1] + (i * sub_vp->frame->linesize[1]), frame->data[1] + (i * frame->linesize[1]) + u_offset, sub_vp->frame->linesize[1]);
+        memcpy(sub_vp->frame->data[2] + (i * sub_vp->frame->linesize[2]), frame->data[2] + (i * frame->linesize[2]) + u_offset, sub_vp->frame->linesize[2]);
+    }
+
+    sub_vp->frame->pts = pts;
+    sub_vp->frame->pict_type = frame->pict_type;
 }
 
 bool Frame::writable()
@@ -92,7 +146,6 @@ void Frame::drawBox(const QRect &rect, int line_width, const YUVColor &color)
 
 Mat Frame::hwToMat()
 {
-    //Npp8u *pYUV[3], *pBGR;
     int ff = width * height;
     int hs = ff / 4;
     int ch = 3;
@@ -111,17 +164,11 @@ Mat Frame::hwToMat()
         eh.ck(cudaMemcpy(pYUV[1], frame->data[1], sizeof(Npp8u) * hs, cudaMemcpyHostToDevice));
         eh.ck(cudaMemcpy(pYUV[2], frame->data[2], sizeof(Npp8u) * hs, cudaMemcpyHostToDevice));
 
+        // RGB vs BGR such a waste of time
         //eh.ck(nppiYUV420ToBGR_8u_P3C4R(pYUV, frame->linesize, pBGR, ch * frame->linesize[0], {width, height}), "convert forwards");
         eh.ck(nppiYUV420ToRGB_8u_P3C3R(pYUV, frame->linesize, pBGR, ch * frame->linesize[0], {width, height}), "convert forwards");
 
         eh.ck(cudaMemcpy(bgr.data, pBGR, sizeof(Npp8u) * ch * ff, cudaMemcpyDeviceToHost));
-
-        /*
-        eh.ck(cudaFree(pYUV[0]));
-        eh.ck(cudaFree(pYUV[1]));
-        eh.ck(cudaFree(pYUV[2]));
-        eh.ck(cudaFree(pBGR));
-        */
     }
     catch (const exception &e) {
         cout << e.what() << endl;
@@ -132,7 +179,6 @@ Mat Frame::hwToMat()
 
 void Frame::hwReadMat(const Mat& mat)
 {
-    //Npp8u *pYUV[3], *pBGR;
     int ff = width * height;
     int hs = ff / 4;
     int ch = 3;
@@ -147,19 +193,13 @@ void Frame::hwReadMat(const Mat& mat)
 
         eh.ck(cudaMemcpy(pBGR, mat.data, sizeof(Npp8u) * ch * ff, cudaMemcpyHostToDevice));
 
+        // RGB vs BGR such a waste of time
         //eh.ck(nppiBGRToYUV420_8u_AC4P3R(pBGR, ch * frame->linesize[0], pYUV, frame->linesize, {width, height}), "convert backwards");
         eh.ck(nppiRGBToYUV420_8u_C3P3R(pBGR, ch * frame->linesize[0], pYUV, frame->linesize, {width, height}), "convert backwards");
 
         eh.ck(cudaMemcpy(frame->data[0], pYUV[0], ff, cudaMemcpyDeviceToHost), "cudaMemcpy");
         eh.ck(cudaMemcpy(frame->data[1], pYUV[1], hs, cudaMemcpyDeviceToHost), "cudaMemcpy");
         eh.ck(cudaMemcpy(frame->data[2], pYUV[2], hs, cudaMemcpyDeviceToHost), "cudaMemcpy");
-
-        /*
-        eh.ck(cudaFree(pYUV[0]));
-        eh.ck(cudaFree(pYUV[1]));
-        eh.ck(cudaFree(pYUV[2]));
-        eh.ck(cudaFree(pBGR));
-        */
     }
     catch (const exception &e) {
         cout << e.what() << endl;
@@ -188,7 +228,7 @@ Mat Frame::toMat()
   int cvLinesizes[1];
   cvLinesizes[0] = image.step1();
   SwsContext *conversion = sws_getContext(width, height, (AVPixelFormat)frame->format, width, height,
-                                          AV_PIX_FMT_RGB24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+                                          AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
   sws_scale(conversion, frame->data, frame->linesize, 0, height, &image.data, cvLinesizes);
   sws_freeContext(conversion);
   return image;

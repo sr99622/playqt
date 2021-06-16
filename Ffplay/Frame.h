@@ -26,12 +26,17 @@ class Frame : public QObject
 
 public:
     Frame();
+    Frame(int width, int height, const AVPixelFormat& pix_fmt);
     ~Frame();
     void paintItBlack();
     void grayscale();
     bool writable();
     void fillPixel(int x, int y, const YUVColor &color);
     void drawBox(const QRect &rect, int line_width, const YUVColor &color);
+    void slice(int x, int y, Frame *sub_vp);
+    void pip(int ulc_x, int ulc_y, Frame *sub_vp);
+    void allocateFrame(int width, int height, const AVPixelFormat& pix_fmt);
+
     Mat toMat();
     void readMat(const Mat& mat);
     Mat hwToMat();
@@ -40,7 +45,7 @@ public:
     Npp8u *pYUV[3] = {nullptr, nullptr, nullptr};
     Npp8u *pBGR = nullptr;
 
-	AVFrame* frame;
+    AVFrame* frame = nullptr;
 	AVSubtitle sub;
 	int serial;
 	double pts;

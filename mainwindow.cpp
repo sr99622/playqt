@@ -88,6 +88,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     move(ax, ay);
 
     sdlCustomEventType = SDL_RegisterEvents(1);
+    av_init_packet(&flush_pkt);
+    flush_pkt.data = (uint8_t*)&flush_pkt;
 
     //test();
 }
@@ -99,8 +101,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::runLoop()
 {
-    av_init_packet(&flush_pkt);
-    flush_pkt.data = (uint8_t*)&flush_pkt;
+    //av_init_packet(&flush_pkt);
+    //flush_pkt.data = (uint8_t*)&flush_pkt;
 
     is = VideoState::stream_open(this);
     is->filter = new SimpleFilter(this);

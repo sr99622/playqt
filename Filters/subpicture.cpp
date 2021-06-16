@@ -121,34 +121,26 @@ SubPicture::SubPicture(QMainWindow *parent)
 
 void SubPicture::filter(Frame *vp)
 {
-    /*
     ptz();
-
-    sub_picture.allocate(w, h);
-    pic->slice(x, y, &sub_picture);
-    //sub_picture.scale(1280, 720);
-    pic->copy(&sub_picture);
-    //pic->pip(0, 0, sub_picture);
-    */
+    Frame dummy(w, h, (AVPixelFormat)vp->format);
+    dummy.paintItBlack();
+    vp->slice(x, y, &dummy);
+    vp->allocateFrame(dummy.width, dummy.height, (AVPixelFormat)dummy.format);
+    av_frame_copy(vp->frame, dummy.frame);
 }
 
 void SubPicture::apply()
 {
-    /*
     update(textX->text().toInt(), textY->text().toInt(), textW->text().toInt(), textH->text().toInt());
     denominator = ZOOM_FACTOR * codec_width / (float) w;
-    */
 }
 
 void SubPicture::initialize()
 {
-    /*
-    codec_width = MW->resolution.width();
-    codec_height = MW->resolution.height();
-
+    codec_width = MW->is->video_st->codecpar->width;
+    codec_height = MW->is->video_st->codecpar->height;
     update(0, 0, codec_width, codec_height);
     denominator = ZOOM_FACTOR;
-    */
 }
 
 void SubPicture::update(int x_arg, int y_arg, int w_arg, int h_arg)
@@ -179,13 +171,10 @@ void SubPicture::update(int x_arg, int y_arg, int w_arg, int h_arg)
 
 void SubPicture::reset()
 {
-    /*
-    codec_width = MW->getActiveCodecContext()->width;
-    codec_height = MW->getActiveCodecContext()->height;
-
+    codec_width = MW->is->video_st->codecpar->width;
+    codec_height = MW->is->video_st->codecpar->height;
     update(0, 0, codec_width, codec_height);
     denominator = ZOOM_FACTOR;
-    */
 }
 
 void SubPicture::move(int p, int t, int z)
