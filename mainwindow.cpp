@@ -52,14 +52,9 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     weights_file = settings->value("MainWindow/weights_file", "").toString();
     initializeModelOnStartup = settings->value("MainWindow/initializeModelOnStartup", false).toBool();
 
-    if (initializeModelOnStartup) {
-        model = new Model(this);
-        model->initialize(cfg_file, weights_file, names_file, 0);
-    }
-
     messageBox = new MessageBox(this);
-    modelConfigureDialog = new ModelConfigureDialog(this);
     filterDialog = new FilterDialog(this);
+    filterDialog->panel->restoreSettings(settings);
     optionDialog = new OptionDialog(this);
     parameterDialog = new ParameterDialog(this);
     filterChain = new FilterChain(this);
@@ -101,17 +96,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::runLoop()
 {
-    //av_init_packet(&flush_pkt);
-    //flush_pkt.data = (uint8_t*)&flush_pkt;
-
     is = VideoState::stream_open(this);
     is->filter = new SimpleFilter(this);
-    //is->flush_pkt = &flush_pkt;
 
     e.event_loop(is);
     if (is) {
         is->stream_close();
     }
+
+    is = nullptr;
 }
 
 void MainWindow::initializeSDL()
@@ -143,6 +136,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings->setValue("MainWindow/weights_file", weights_file);
     settings->setValue("MainWindow/initializeModelOnStartup", initializeModelOnStartup);
 
+    filterDialog->panel->saveSettings(settings);
+
     SDL_Event sdl_event;
     sdl_event.type = SDL_KEYDOWN;
     sdl_event.key.keysym.sym = SDLK_ESCAPE;
@@ -167,7 +162,7 @@ void MainWindow::toolsMenuAction(QAction *action)
 {
     cout << action->text().toStdString() << endl;
     if (action->text() == "&Model Options")
-        modelConfigureDialog->show();
+        cout << "&ModelOptions" << endl;
     else if (action->text() == "&Filters")
         filterDialog->show();
     else if (action->text() == "&Set Parameters")

@@ -347,6 +347,7 @@ void SimpleFilter::processCPU(Frame *vp)
 
 void SimpleFilter::infer(Frame *vp)
 {
+    /*
     if (MW->model == nullptr) {
         MW->model = new Model(MW);
         MW->model->initialize(MW->cfg_file, MW->weights_file, MW->names_file, 0);
@@ -364,6 +365,7 @@ void SimpleFilter::infer(Frame *vp)
     QString str;
     QTextStream(&str) << "Number of people detected: " << people_count;
     MW->status->showMessage(str);
+    */
 }
 
 void SimpleFilter::initialize(AVFrame *f)

@@ -14,6 +14,7 @@
 #include <QTabWidget>
 #include <QStandardPaths>
 #include <QStatusBar>
+#include <QGroupBox>
 
 #include <iostream>
 #include <string>
@@ -33,8 +34,6 @@
 #include "Utilities/cudaexception.h"
 #include "Utilities/filepanel.h"
 #include "Utilities/messagebox.h"
-#include "model.h"
-#include "modelconfigure.h"
 #include "Filters/filterpanel.h"
 #include "Filters/filterchain.h"
 #include "mainpanel.h"
@@ -72,7 +71,7 @@ public:
     Display display;
     AVPacket flush_pkt;
     EventHandler e;
-    VideoState *is;
+    VideoState *is = nullptr;
     AVExceptionHandler av;
     QSettings *settings;
     QSplitter *splitter;
@@ -87,8 +86,6 @@ public:
     ViewerDialog *viewerDialog;
     QStatusBar *status;
 
-    Model *model = nullptr;
-    ModelConfigureDialog *modelConfigureDialog;
     QString cfg_file;
     QString weights_file;
     QString names_file;

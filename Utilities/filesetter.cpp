@@ -30,6 +30,11 @@ void FileSetter::setPath(const QString& path)
     text->setText(path);
 }
 
+void FileSetter::setPath()
+{
+    text->setText(filename);
+}
+
 void FileSetter::selectFile()
 {
     QString default_path = text->text();

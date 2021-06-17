@@ -16,6 +16,7 @@ SOURCES += \
     Ffplay/PacketQueue.cpp \
     Ffplay/VideoState.cpp \
     Ffplay/cmdutils.c \
+    Filters/darknet.cpp \
     Filters/filter.cpp \
     Filters/filterchain.cpp \
     Filters/filterlistmodel.cpp \
@@ -39,8 +40,6 @@ SOURCES += \
     main.cpp \
     mainpanel.cpp \
     mainwindow.cpp \
-    model.cpp \
-    modelconfigure.cpp \
     optionpanel.cpp \
     parameterpanel.cpp \
     simplefilter.cpp \
@@ -60,6 +59,7 @@ HEADERS += \
     Ffplay/VideoState.h \
     Ffplay/cmdutils.h \
     Ffplay/config.h \
+    Filters/darknet.h \
     Filters/filter.h \
     Filters/filterchain.h \
     Filters/filterlistmodel.h \
@@ -82,8 +82,6 @@ HEADERS += \
     controlpanel.h \
     mainpanel.h \
     mainwindow.h \
-    model.h \
-    modelconfigure.h \
     optionpanel.h \
     parameterpanel.h \
     simplefilter.h \

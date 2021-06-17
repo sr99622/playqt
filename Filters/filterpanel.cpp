@@ -29,7 +29,7 @@
 //#include "Filters/gifwriter.h"
 //#include "Filters/convolution.h"
 //#include "Filters/motiontrack.h"
-//#include "Filters/darknet.h"
+#include "Filters/darknet.h"
 
 FilterDialog::FilterDialog(QMainWindow *parent) : PanelDialog(parent)
 {
@@ -152,7 +152,7 @@ void FilterPanel::addFilters()
     //filters.push_back(new GIFWriter(mainWindow));
     //filters.push_back(new Convolution(mainWindow));
     //filters.push_back(new MotionTrack(mainWindow));
-    //filters.push_back(new Darknet(mainWindow));
+    filters.push_back(new Darknet(mainWindow));
 }
 
 void FilterPanel::saveSettings(QSettings *settings)
@@ -171,6 +171,7 @@ void FilterPanel::saveSettings(QSettings *settings)
         QString arg = "FilterPanel_activeFilter_" + QString::number(i);
         settings->setValue(arg, leftModel->filters[i]->name);
     }
+
     for (int i = 0; i < filters.size(); i++)
         filters[i]->saveSettings(settings);
 }
@@ -217,7 +218,6 @@ void FilterPanel::idle()
 
 void FilterPanel::moveLeft()
 {
-    cout << "FilterPanel::moveLeft()" << endl;
     if (rightModel->filters.size() > 0 && rightModel->current_index > -1) {
         Filter *result = rightModel->filters[rightModel->current_index];
         for (int i = 0; i < leftModel->filters.size(); i++) {
