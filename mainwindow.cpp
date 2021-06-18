@@ -23,7 +23,26 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     status = new QStatusBar(this);
     setStatusBar(status);
 
-    viewerDialog = new ViewerDialog(this);
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(guiPoll()));
+    timer->start(1000 / 30);
+
+    QFile f("C:/Users/sr996/Projects/playqt/qdarkstyle/darkstyle.qss");
+    QString style;
+
+    if (!f.exists()) {
+        cout << "Error: MainWindow::getThemes() Style sheet not found" << endl;
+    }
+    else {
+        f.open(QFile::ReadOnly | QFile::Text);
+        style = QString(f.readAll());
+        style.replace("background_dark", "#283445");
+        style.replace("background_medium", "#3E4754");
+        style.replace("background_light", "#566170");
+        style.replace("foreground_light", "#C6D9F2");
+        style.replace("selection_light", "#FFFFFF");
+        setStyleSheet(style);
+    }
 
     splitter = new QSplitter(Qt::Orientation::Horizontal, this);
     tabWidget = new QTabWidget(this);
@@ -46,11 +65,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     splitter->addWidget(mainPanel);
     splitter->addWidget(tabWidget);
     setCentralWidget(splitter);
-
-    names_file = settings->value("MainWindow/names_file", "").toString();
-    cfg_file = settings->value("MainWindow/cfg_file", "").toString();
-    weights_file = settings->value("MainWindow/weights_file", "").toString();
-    initializeModelOnStartup = settings->value("MainWindow/initializeModelOnStartup", false).toBool();
 
     messageBox = new MessageBox(this);
     filterDialog = new FilterDialog(this);
@@ -85,7 +99,9 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     sdlCustomEventType = SDL_RegisterEvents(1);
     av_init_packet(&flush_pkt);
     flush_pkt.data = (uint8_t*)&flush_pkt;
+    e = new EventHandler(this);
 
+    viewerDialog = new ViewerDialog(this);
     //test();
 }
 
@@ -99,12 +115,21 @@ void MainWindow::runLoop()
     is = VideoState::stream_open(this);
     is->filter = new SimpleFilter(this);
 
-    e.event_loop(is);
-    if (is) {
-        is->stream_close();
-    }
+    timer->start();
+    e->event_loop();
+}
 
-    is = nullptr;
+void MainWindow::feed()
+{
+}
+
+void MainWindow::guiPoll()
+{
+    if (is != nullptr) {
+        double remaining_time = REFRESH_RATE;
+        if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh))
+            is->video_refresh(&remaining_time);
+    }
 }
 
 void MainWindow::initializeSDL()
@@ -120,7 +145,7 @@ void MainWindow::initializeSDL()
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-
+    //cout << QTime::currentTime().toString("hh:mm:ss.zzz").toStdString() << endl;
 }
 
 void MainWindow::moveEvent(QMoveEvent *event)
@@ -131,10 +156,6 @@ void MainWindow::moveEvent(QMoveEvent *event)
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     settings->setValue("MainWindow/geometry", saveGeometry());
-    settings->setValue("MainWindow/names_file",names_file);
-    settings->setValue("MainWindow/cfg_file", cfg_file);
-    settings->setValue("MainWindow/weights_file", weights_file);
-    settings->setValue("MainWindow/initializeModelOnStartup", initializeModelOnStartup);
 
     filterDialog->panel->saveSettings(settings);
 
@@ -179,6 +200,7 @@ void MainWindow::helpMenuAction(QAction *action)
 
 void MainWindow::getNames(QString names_file)
 {
+    /*
     this->names_file = names_file;
     ifstream file(names_file.toLatin1().data());
     if (!file.is_open())
@@ -186,6 +208,7 @@ void MainWindow::getNames(QString names_file)
 
     for (string line; getline(file, line);)
         obj_names.push_back(line);
+    */
 }
 
 void MainWindow::showHelp(const QString &str)

@@ -29,10 +29,10 @@ void SimpleFilter::process(Frame *vp)
     //nppi_convert(vp);
     //box_filter(vp);
     //cuda_example(vp);
-    infer(vp);
+    //infer(vp);
     //processGPU(vp);
     //processCPU(vp);
-    //tricky(vp);
+    tricky(vp);
 }
 
 void SimpleFilter::tricky(Frame *vp)
@@ -310,7 +310,7 @@ NppStreamContext SimpleFilter::initializeNppStreamContext()
         eh.ck(cudaStreamGetFlags(pStream, &flags), "get cuda stream flags");
 
         npp_ctx.hStream = pStream;
-        npp_ctx.nStreamFlags = flags;
+        //npp_ctx.nStreamFlags = flags;
 
 
     }

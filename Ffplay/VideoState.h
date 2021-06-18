@@ -202,7 +202,7 @@ public:
     double frame_timer;
     double frame_last_returned_time;
     double frame_last_filter_delay;
-    int video_stream;
+    int video_stream = -1;
     AVStream* video_st;
     PacketQueue videoq;
     double max_frame_duration;      // maximum duration of a frame - above this, we consider the jump a timestamp discontinuity
@@ -222,6 +222,9 @@ public:
     AVFilterGraph* agraph;              // audio filter graph
 
     //int last_video_stream, last_audio_stream, last_subtitle_stream;
+
+public slots:
+    void twinky();
 
 };
 

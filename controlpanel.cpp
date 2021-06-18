@@ -23,18 +23,18 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     engageFilter = new QCheckBox("Engage Filter");
 
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(play,         1,  0, 1, 1, Qt::AlignCenter);
-    layout->addWidget(rewind,       1,  1, 1, 1, Qt::AlignCenter);
-    layout->addWidget(fastforward,  1,  2, 1, 1, Qt::AlignCenter);
-    layout->addWidget(pause,        1,  3, 1, 1, Qt::AlignCenter);
-    layout->addWidget(singlestep,   1,  4, 1, 1, Qt::AlignCenter);
-    layout->addWidget(mute,         1,  5, 1, 1, Qt::AlignCenter);
-    layout->addWidget(volup,        1,  6, 1, 1, Qt::AlignCenter);
-    layout->addWidget(voldn,        1,  7, 1, 1, Qt::AlignCenter);
-    layout->addWidget(quit,         1,  8, 1, 1, Qt::AlignCenter);
-    layout->addWidget(test,         1,  9, 1, 1, Qt::AlignCenter);
-    layout->addWidget(infer,        1, 10, 1, 1, Qt::AlignCenter);
-    layout->addWidget(engageFilter, 1, 11, 1, 1, Qt::AlignCenter);
+    layout->addWidget(play,         1,  0, 1, 1);
+    layout->addWidget(rewind,       1,  1, 1, 1);
+    layout->addWidget(fastforward,  1,  2, 1, 1);
+    layout->addWidget(pause,        1,  3, 1, 1);
+    layout->addWidget(singlestep,   1,  4, 1, 1);
+    layout->addWidget(mute,         1,  5, 1, 1);
+    layout->addWidget(volup,        1,  6, 1, 1);
+    layout->addWidget(voldn,        1,  7, 1, 1);
+    layout->addWidget(quit,         1,  8, 1, 1);
+    layout->addWidget(test,         1,  9, 1, 1);
+    layout->addWidget(infer,        1, 10, 1, 1);
+    layout->addWidget(engageFilter, 1, 11, 1, 1);
     setLayout(layout);
 
     connect(play, SIGNAL(clicked()), mainWindow, SLOT(runLoop()));
@@ -82,62 +82,41 @@ void ControlPanel::voldn()
 
 void ControlPanel::rewind()
 {
-    SDL_Event event;
-    event.type = SDL_KEYDOWN;
-    event.key.keysym.sym = SDLK_LEFT;
-    int result = SDL_PushEvent(&event);
-    if (result < 0)
-        cout << "SDL Push Event Failure" << endl;
+    double incr = MW->co->seek_interval ? -MW->co->seek_interval : -10.0;
+    double pos = MW->is->get_master_clock();
+    if (isnan(pos))
+        pos = (double)MW->is->seek_pos / AV_TIME_BASE;
+    pos += incr;
+    if (MW->is->ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
+        pos = MW->is->ic->start_time / (double)AV_TIME_BASE;
+    MW->is->stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
 }
 
 void ControlPanel::fastforward()
 {
-    SDL_Event event;
-    event.type = SDL_KEYDOWN;
-    event.key.keysym.sym = SDLK_RIGHT;
-    int result = SDL_PushEvent(&event);
-    if (result < 0)
-        cout << "SDL Push Event Failure" << endl;
+    double incr = MW->co->seek_interval ? MW->co->seek_interval : 10.0;
+    double pos = MW->is->get_master_clock();
+    if (isnan(pos))
+        pos = (double)MW->is->seek_pos / AV_TIME_BASE;
+    pos += incr;
+    if (MW->is->ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
+        pos = MW->is->ic->start_time / (double)AV_TIME_BASE;
+    MW->is->stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
 }
 
 void ControlPanel::pause()
 {
     MW->is->toggle_pause();
-    /*
-    SDL_Event event;
-    event.type = SDL_KEYDOWN;
-    event.key.keysym.sym = SDLK_SPACE;
-    int result = SDL_PushEvent(&event);
-    if (result < 0)
-        cout << "SDL Push Event Failure" << endl;
-    */
 }
 
 void ControlPanel::mute()
 {
     MW->is->toggle_mute();
-    /*
-    SDL_Event event;
-    event.type = SDL_KEYDOWN;
-    event.key.keysym.sym = SDLK_m;
-    int result = SDL_PushEvent(&event);
-    if (result < 0)
-        cout << "SDL Push Event Failure" << endl;
-    */
 }
 
 void ControlPanel::quit()
 {
-    //cout << "quit motherfucker" << endl;
-    //MW->e.running = false;
-    //MW->is->stream_close();
-    /**/
-    SDL_Event event;
-    event.type = SDL_KEYDOWN;
-    event.key.keysym.sym = SDLK_ESCAPE;
-    int result = SDL_PushEvent(&event);
-    if (result < 0)
-        cout << "SLD Push Event Failure" << endl;
-    /**/
+    MW->e->running = false;
+    MW->timer->stop();
 }
 

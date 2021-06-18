@@ -1,4 +1,5 @@
 #include "Display.h"
+#include "mainwindow.h"
 
 void Display::fill_rectangle(int x, int y, int w, int h)
 {
@@ -39,6 +40,7 @@ void Display::calculate_display_rect(SDL_Rect* rect,
     int scr_xleft, int scr_ytop, int scr_width, int scr_height,
     int pic_width, int pic_height, AVRational pic_sar)
 {
+
     AVRational aspect_ratio = pic_sar;
     int64_t width, height, x, y;
 

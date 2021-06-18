@@ -30,7 +30,7 @@ void DisplaySlider::mouseReleaseEvent(QMouseEvent *e)
 {
     //QSlider::mouseReleaseEvent(e);
 
-    if (!MW->e.running)
+    if (!MW->e->running)
         return;
 
     tick = 1000 * e->position().x() / width();

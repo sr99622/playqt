@@ -6,7 +6,7 @@ MainPanel::MainPanel(QMainWindow *parent) : QWidget(parent)
     mainWindow = parent;
 
     displayContainer = new DisplayContainer(mainWindow);
-    displayContainer->display->setStyleSheet("QLabel { background-color : lightGray; }");
+    displayContainer->display->setStyleSheet("QFrame { background-color: #32414B; padding: 0px; } ");
     controlPanel = new ControlPanel(mainWindow);
 
     QGridLayout *layout = new QGridLayout();

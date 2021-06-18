@@ -60,12 +60,9 @@ Darknet::Darknet(QMainWindow *parent)
 
 void Darknet::filter(Frame *vp)
 {
-    cout << "darknet::filter: " << vp->frame->pts << endl;
-
-
     if (model == nullptr) {
         model = new DarknetModel(mainWindow);
-        model->initialize(cfgFilename, weightsFilename, namesFilename, 0);
+        model->initialize(cfg->filename, weights->filename, names->filename, 0);
     }
 
     int people_count = 0;
@@ -97,7 +94,7 @@ void Darknet::loadModel()
 {
     clearModel();
     model = new DarknetModel(mainWindow);
-    model->initialize(cfgFilename, weightsFilename, namesFilename, 0);
+    model->initialize(cfg->filename, weights->filename, names->filename, 0);
 }
 
 void Darknet::setModelDimensions()
@@ -112,7 +109,7 @@ void Darknet::setModelDimensions()
 
     modelDimensions = QSize(width, height);
 
-    QFile file(cfgFilename);
+    QFile file(cfg->filename);
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
         return;
 
@@ -143,7 +140,7 @@ void Darknet::setModelDimensions()
 
 QSize Darknet::getModelDimensions()
 {
-    QFile file(cfgFilename);
+    QFile file(cfg->filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return QSize(0, 0);
 
@@ -181,7 +178,7 @@ void Darknet::initialize()
 
 void Darknet::setNames(const QString &path)
 {
-    namesFilename = path;
+    //namesFilename = path;
 }
 
 void Darknet::cfgEdited(const QString &text)
@@ -191,7 +188,7 @@ void Darknet::cfgEdited(const QString &text)
 
 void Darknet::setCfg(const QString &path)
 {
-    cfgFilename = path;
+    //cfgFilename = path;
     QSize dims = getModelDimensions();
     if (dims == QSize(0, 0)) {
         modelWidth->setText("");
@@ -206,37 +203,28 @@ void Darknet::setCfg(const QString &path)
 
 void Darknet::setWeights(const QString &path)
 {
-    weightsFilename = path;
+    //weightsFilename = path;
 }
 
 void Darknet::setInitOnStartup(int arg)
 {
-    initFlag = arg;
+    //initFlag = arg;
 }
 
 void Darknet::saveSettings(QSettings *settings)
 {
-    cout << "Darknet::saveSettings" << endl;
-
-    settings->setValue("DarknetModel/cfg", cfgFilename);
-    settings->setValue("DarknetModel/weights", weightsFilename);
-    settings->setValue("DarknetModel/names", namesFilename);
-    settings->setValue("DarknetModel/initOnStartup", initFlag);
+    settings->setValue("DarknetModel/cfg", cfg->filename);
+    settings->setValue("DarknetModel/weights", weights->filename);
+    settings->setValue("DarknetModel/names", names->filename);
+    settings->setValue("DarknetModel/initOnStartup", initOnStartup->isChecked());
 }
 
 void Darknet::restoreSettings(QSettings *settings)
 {
-    cout << "Darknet::restoreSettings" << endl;
-
-    cfgFilename = settings->value("DarknetModel/cfg", "").toString();
-    weightsFilename = settings->value("DarknetModel/weights", "").toString();
-    namesFilename = settings->value("DarknetModel/names", "").toString();
-    initFlag = settings->value("DarknetModel/initOnStartup", false).toBool();
-
-    cfg->setPath(cfgFilename);
-    weights->setPath(weightsFilename);
-    names->setPath(namesFilename);
-    initOnStartup->setChecked(initFlag);
+    cfg->setPath(settings->value("DarknetModel/cfg", "").toString());
+    weights->setPath(settings->value("DarknetModel/weights", "").toString());
+    names->setPath(settings->value("DarknetModel/names", "").toString());
+    initOnStartup->setChecked(settings->value("DarknetModel/initOnStartup", false).toBool());
 
     QSize dims = getModelDimensions();
     if (dims != QSize(0, 0)) {
@@ -334,14 +322,15 @@ image_t DarknetModel::hw_get_image(Frame *vp)
     return img;
 }
 
+const QString DarknetModel::getName(int obj_id)
+{
+    return obj_names[obj_id].c_str();
+}
+
 void DarknetModel::initialize(QString cfg_file, QString weights_file, QString names_file, int gpu_id)
 {
     if (detector != nullptr)
         detector->~Detector();
-
-    MW->cfg_file = cfg_file;
-    MW->weights_file = weights_file;
-    MW->names_file = names_file;
 
     if (!QFile::exists(cfg_file)) {
         QString str;
@@ -357,7 +346,6 @@ void DarknetModel::initialize(QString cfg_file, QString weights_file, QString na
         return;
     }
 
-
     ifstream file(names_file.toLatin1().data());
     if (!file.is_open()) {
         QString str;
@@ -366,21 +354,15 @@ void DarknetModel::initialize(QString cfg_file, QString weights_file, QString na
         return;
     }
 
+    obj_names.clear();
     for (string line; getline(file, line);)
-        MW->obj_names.push_back(line);
+        obj_names.push_back(line);
 
-
-    if (show_wait_box) {
-        loader->cfg_file = cfg_file.toStdString();
-        loader->weights_file = weights_file.toStdString();
-        loader->gpu_id = gpu_id;
-        QThreadPool::globalInstance()->tryStart(loader);
-        waitBox->exec();
-    }
-    else {
-        detector = new Detector(cfg_file.toStdString(), weights_file.toStdString(), gpu_id);
-    }
-
+    loader->cfg_file = cfg_file.toStdString();
+    loader->weights_file = weights_file.toStdString();
+    loader->gpu_id = gpu_id;
+    QThreadPool::globalInstance()->tryStart(loader);
+    waitBox->exec();
 }
 
 void DarknetModel::show_console_result(vector<bbox_t> const result_vec, vector<string> const obj_names, int frame_id)

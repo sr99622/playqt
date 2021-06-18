@@ -15,6 +15,8 @@
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QGroupBox>
+#include <QTimer>
+#include <QMutex>
 
 #include <iostream>
 #include <string>
@@ -44,7 +46,8 @@
 
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
-    SLIDER_POSITION_UPDATE
+    SLIDER_POSITION_UPDATE,
+    GUI_EVENT_UPDATE
 };
 
 using namespace std;
@@ -70,7 +73,7 @@ public:
     MainPanel *mainPanel;
     Display display;
     AVPacket flush_pkt;
-    EventHandler e;
+    EventHandler *e;
     VideoState *is = nullptr;
     AVExceptionHandler av;
     QSettings *settings;
@@ -83,28 +86,32 @@ public:
     QTabWidget *tabWidget;
     MessageBox *messageBox;
     ParameterDialog *parameterDialog;
-    ViewerDialog *viewerDialog;
     QStatusBar *status;
-
-    QString cfg_file;
-    QString weights_file;
-    QString names_file;
-    vector<string> obj_names;
-    bool initializeModelOnStartup = false;
 
     FilterDialog *filterDialog;
     FilterChain *filterChain;
     OptionDialog *optionDialog;
 
+    ViewerDialog *viewerDialog;
+
     Uint32 sdlCustomEventType;
+    QTimer *timer;
+    bool polling = false;
+    QMutex mutex;
+
+signals:
+    void poll();
 
 public slots:
     void runLoop();
+    void guiPoll();
     void fileMenuAction(QAction*);
     void toolsMenuAction(QAction*);
     void helpMenuAction(QAction*);
     void showHelp(const QString&);
     void msg(const QString&);
     void test();
+    void feed();
+
 };
 #endif // MAINWINDOW_H

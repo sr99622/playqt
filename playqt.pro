@@ -127,6 +127,7 @@ LIBS += -L$$(CONTRIB_PATH)/lib \
     -lopencv_world451
 
 
-RESOURCES += images/images.qrc
+RESOURCES += images/images.qrc \
+             qdarkstyle/style.qrc
 
 DISTFILES +=

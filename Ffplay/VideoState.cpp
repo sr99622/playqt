@@ -81,6 +81,18 @@ void VideoState::video_image_display()
     }
 
     filterChain->process(vp);  //  hook into playqt filtering system
+    //filter->process(vp);
+
+    //cout << "xleft: " << xleft << " ytop: " << ytop << " width: " << width << " height: " << height;
+    //cout << " vp->width: " << vp->width << " vp->height: " << vp->height << endl;
+
+    QSize displaySize = MW->mainPanel->displayContainer->display->size();
+    //cout << "displaySize width: " << displaySize.width() << " displaySize height: " << displaySize.height() << endl;
+
+    width = displaySize.width();
+    height = displaySize.height();
+
+    //disp->calculate_display_rect(&rect, xleft, ytop, width, height, vp->width, vp->height, vp->sar);
     disp->calculate_display_rect(&rect, xleft, ytop, width, height, vp->width, vp->height, vp->sar);
 
     if (!vp->uploaded) {
@@ -468,9 +480,13 @@ void VideoState::step_to_next_frame()
 
 void VideoState::set_default_window_size(int width, int height, AVRational sar)
 {
+    int display_width = MW->mainPanel->displayContainer->display->size().width();
+    int display_height = MW->mainPanel->displayContainer->display->size().height();
+
     SDL_Rect rect;
-    int max_width = co->screen_width ? co->screen_width : INT_MAX;
-    int max_height = co->screen_height ? co->screen_height : INT_MAX;
+    int max_width = display_width ? display_width : INT_MAX;
+    int max_height = display_height ? display_height : INT_MAX;
+
     if (max_width == INT_MAX && max_height == INT_MAX)
         max_height = height;
     disp->calculate_display_rect(&rect, 0, 0, max_width, max_height, width, height, sar);
@@ -1434,10 +1450,13 @@ int VideoState::video_thread()
             }
             graph->nb_threads = co->filter_nbthreads;
             if ((ret = configure_video_filters(graph, co->vfilters_list ? co->vfilters_list[vfilter_idx] : NULL, frame)) < 0) {
+                /*
                 SDL_Event event;
                 event.type = FF_QUIT_EVENT;
                 event.user.data1 = this;
                 SDL_PushEvent(&event);
+                */
+                MW->e->running = false;
                 goto the_end;
             }
             filt_in = in_video_filter;
@@ -2234,6 +2253,11 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     return is;
 }
 
+void VideoState::twinky()
+{
+    cout << "this is a test" << endl;
+}
+
 void VideoState::refresh_loop_wait_event(SDL_Event* event) {
     double remaining_time = 0.0;
     SDL_PumpEvents();
@@ -2245,8 +2269,9 @@ void VideoState::refresh_loop_wait_event(SDL_Event* event) {
         if (remaining_time > 0.0)
             av_usleep((int64_t)(remaining_time * 1000000.0));
         remaining_time = REFRESH_RATE;
-        if (show_mode != SHOW_MODE_NONE && (!paused || force_refresh))
+        if (show_mode != SHOW_MODE_NONE && (!paused || force_refresh)) {
             video_refresh(&remaining_time);
+        }
         SDL_PumpEvents();
     }
 }
