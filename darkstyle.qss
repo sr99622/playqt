@@ -1,0 +1,70 @@
+QWidget {
+    background-color : background_dark;
+    color : foreground_light;
+}
+
+QTabBar:tab {
+    background-color : background_light;
+}
+
+QTabBar:tab:hover {
+    color : selection_light;
+}
+
+QMenuBar:item:selected {
+    background-color : background_dark;
+    color : selection_light;
+}
+
+QMenu:item:selected {
+    color : selection_light;
+}
+
+QMainWindow { 
+    background-color : background_dark; 
+}
+
+QTreeView { 
+    background-color : background_light; 
+    color : foreground_light;
+}
+
+QTreeView::item:hover {
+    color : selection_light;
+}
+
+QHeaderView::section {
+    background-color : background_medium;
+}
+
+QPushButton { 
+    background-color : background_light; 
+    color : foreground_light;
+}
+
+QPushButton:pressed {
+    background-color : background_medium;
+}
+
+QCheckBox::indicator {
+    background-color : background_dark; 
+    border : 1px solid foreground_light;
+}
+
+QCheckBox:hover {
+    color : selection_light;
+}
+
+QCheckBox::indicator:checked {
+    background-color : foreground_light;
+    /*border : 1px solid background_dark;*/
+}
+
+QSlider::handle:horizontal {
+  background: background_light;
+  border: 1px solid background_medium;
+  width: 8px;
+  height: 4px;
+  margin: -8px 0px;
+  border-radius: 4px;
+}

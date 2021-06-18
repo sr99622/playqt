@@ -27,7 +27,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     connect(timer, SIGNAL(timeout()), this, SLOT(guiPoll()));
     timer->start(1000 / 30);
 
-    QFile f("C:/Users/sr996/Projects/playqt/qdarkstyle/darkstyle.qss");
+    QFile f("C:/Users/sr996/Projects/playqt/darkstyle.qss");
     QString style;
 
     if (!f.exists()) {
