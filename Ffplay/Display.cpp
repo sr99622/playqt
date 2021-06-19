@@ -58,6 +58,7 @@ void Display::calculate_display_rect(SDL_Rect* rect,
     }
     x = (scr_width - width) / 2;
     y = (scr_height - height) / 2;
+
     rect->x = scr_xleft + x;
     rect->y = scr_ytop + y;
     rect->w = FFMAX((int)width, 1);

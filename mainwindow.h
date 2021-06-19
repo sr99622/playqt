@@ -96,8 +96,7 @@ public:
 
     Uint32 sdlCustomEventType;
     QTimer *timer;
-    bool polling = false;
-    QMutex mutex;
+    QScreen *screen;
 
 signals:
     void poll();

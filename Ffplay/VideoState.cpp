@@ -83,16 +83,13 @@ void VideoState::video_image_display()
     filterChain->process(vp);  //  hook into playqt filtering system
     //filter->process(vp);
 
-    //cout << "xleft: " << xleft << " ytop: " << ytop << " width: " << width << " height: " << height;
-    //cout << " vp->width: " << vp->width << " vp->height: " << vp->height << endl;
-
     QSize displaySize = MW->mainPanel->displayContainer->display->size();
-    //cout << "displaySize width: " << displaySize.width() << " displaySize height: " << displaySize.height() << endl;
 
-    width = displaySize.width();
-    height = displaySize.height();
+    width = displaySize.width() * MW->screen->devicePixelRatio();
+    height = displaySize.height() * MW->screen->devicePixelRatio();
+    xleft = 0;
+    ytop = 0;
 
-    //disp->calculate_display_rect(&rect, xleft, ytop, width, height, vp->width, vp->height, vp->sar);
     disp->calculate_display_rect(&rect, xleft, ytop, width, height, vp->width, vp->height, vp->sar);
 
     if (!vp->uploaded) {
@@ -690,17 +687,25 @@ the_end:
 
 int VideoState::video_open()
 {
-    int w, h;
+    int w, h, x, y;
 
-    w = co->screen_width ? co->screen_width : co->default_width;
-    h = co->screen_height ? co->screen_height : co->default_height;
+    QSize displaySize = MW->mainPanel->displayContainer->display->size();
+    w = displaySize.width();
+    h = displaySize.height();
+    x = 0;
+    y = 0;
+
+    //w = co->screen_width ? co->screen_width : co->default_width;
+    //h = co->screen_height ? co->screen_height : co->default_height;
+    //x = co->screen_left;
+    //y = co->screen_top;
 
     if (!co->window_title)
         co->window_title = co->input_filename;
     SDL_SetWindowTitle(disp->window, co->window_title);
 
     SDL_SetWindowSize(disp->window, w, h);
-    SDL_SetWindowPosition(disp->window, co->screen_left, co->screen_top);
+    SDL_SetWindowPosition(disp->window, x, y);
     if (co->is_full_screen)
         SDL_SetWindowFullscreen(disp->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_ShowWindow(disp->window);
@@ -722,6 +727,7 @@ void VideoState::video_display()
         video_audio_display();
     else if (video_st)
         video_image_display();
+
     SDL_RenderPresent(disp->renderer);
 
     /*

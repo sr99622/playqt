@@ -61,8 +61,10 @@ Darknet::Darknet(QMainWindow *parent)
 void Darknet::filter(Frame *vp)
 {
     if (model == nullptr) {
+        MW->timer->stop();
         model = new DarknetModel(mainWindow);
         model->initialize(cfg->filename, weights->filename, names->filename, 0);
+        MW->timer->start();
     }
 
     int people_count = 0;
@@ -358,11 +360,15 @@ void DarknetModel::initialize(QString cfg_file, QString weights_file, QString na
     for (string line; getline(file, line);)
         obj_names.push_back(line);
 
+    cout << "test 1" << endl;
     loader->cfg_file = cfg_file.toStdString();
     loader->weights_file = weights_file.toStdString();
     loader->gpu_id = gpu_id;
+    cout << "test 2" << endl;
     QThreadPool::globalInstance()->tryStart(loader);
+    cout << "test 3" << endl;
     waitBox->exec();
+    cout << "test 4" << endl;
 }
 
 void DarknetModel::show_console_result(vector<bbox_t> const result_vec, vector<string> const obj_names, int frame_id)

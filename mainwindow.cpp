@@ -9,7 +9,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     filename = QString(co->input_filename);
     av_log_set_level(AV_LOG_PANIC);
 
-    QScreen *screen = QApplication::primaryScreen();
+    screen = QApplication::primaryScreen();
     QRect screenSize = screen->geometry();
     int aw = 1300;
     int ah = 800;
