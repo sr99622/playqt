@@ -98,19 +98,15 @@ public:
     QTimer *timer;
     QScreen *screen;
 
-signals:
-    void poll();
-
 public slots:
     void runLoop();
-    void guiPoll();
+    void poll();
     void fileMenuAction(QAction*);
     void toolsMenuAction(QAction*);
     void helpMenuAction(QAction*);
     void showHelp(const QString&);
     void msg(const QString&);
     void test();
-    void feed();
 
 };
 #endif // MAINWINDOW_H

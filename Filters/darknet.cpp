@@ -61,24 +61,26 @@ Darknet::Darknet(QMainWindow *parent)
 void Darknet::filter(Frame *vp)
 {
     if (model == nullptr) {
-        MW->timer->stop();
+        loading = true;
         model = new DarknetModel(mainWindow);
         model->initialize(cfg->filename, weights->filename, names->filename, 0);
-        MW->timer->start();
+        loading = false;
     }
 
-    int people_count = 0;
-    vector<bbox_t> result = model->infer(vp, 0.2);
-    for (size_t i = 0; i < result.size(); i++) {
-        QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
-        YUVColor green(Qt::green);
-        vp->drawBox(rect, 1, green);
-        if (result[i].obj_id == 0)
-            people_count++;
+    if (!loading) {
+        int people_count = 0;
+        vector<bbox_t> result = model->infer(vp, 0.2);
+        for (size_t i = 0; i < result.size(); i++) {
+            QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
+            YUVColor green(Qt::green);
+            vp->drawBox(rect, 1, green);
+            if (result[i].obj_id == 0)
+                people_count++;
+        }
+        QString str;
+        QTextStream(&str) << "Number of people detected: " << people_count;
+        MW->status->showMessage(str);
     }
-    QString str;
-    QTextStream(&str) << "Number of people detected: " << people_count;
-    MW->status->showMessage(str);
 }
 
 void Darknet::clearModel()
@@ -262,6 +264,7 @@ vector<bbox_t> DarknetModel::infer(Frame *vp, float detection_threshold)
 
     try {
         image_t img = hw_get_image(vp);
+        //image_t img = get_image(vp);
         result = detector->detect(img, detection_threshold);
         detector->free_image(img);
     }
@@ -279,9 +282,10 @@ image_t DarknetModel::get_image(Frame *vp)
     image_t img;
 
     img.h = vp->frame->height;
-    img.w = vp->frame->width;
+    img.w = vp->frame->linesize[0];
     img.c = 3;
     img.data = (float*)malloc(sizeof(float) * img.w * img.h * 3);
+    memset(img.data, 0, sizeof(float) * img.w * img.h * 3);
 
     for (int y = 0; y < img.h; y++) {
         for (int x = 0; x < img.w; x++) {
@@ -295,17 +299,14 @@ image_t DarknetModel::get_image(Frame *vp)
 
 image_t DarknetModel::hw_get_image(Frame *vp)
 {
-    int width = vp->width;
-    int height = vp->height;
-    int frame_size = width * height;
-
     Npp8u *pSrc;
     Npp32f *pNorm;
     image_t img;
     img.h = vp->frame->height;
-    img.w = vp->frame->width;
+    img.w = vp->frame->linesize[0];
     img.c = 3;
     img.data = (float*)malloc(sizeof(float) * img.w * img.h * 3);
+    int frame_size = img.w * img.h;
 
     try {
         eh.ck(cudaMalloc((void**)(& pSrc), sizeof(Npp8u) * frame_size), "Allocate device source buffer");

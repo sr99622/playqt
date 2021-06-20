@@ -181,13 +181,6 @@ void SubPicture::reset()
 
     update(0, 0, codec_width, codec_height);
     denominator = ZOOM_FACTOR;
-
-    /*
-    codec_width = MW->is->video_st->codecpar->width;
-    codec_height = MW->is->video_st->codecpar->height;
-    update(0, 0, codec_width, codec_height);
-    denominator = ZOOM_FACTOR;
-    */
 }
 
 void SubPicture::move(int p, int t, int z)

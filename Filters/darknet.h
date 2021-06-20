@@ -67,6 +67,7 @@ public:
 
     QSize getModelDimensions();
     DarknetModel *model = nullptr;
+    bool loading = false;
 
     QMainWindow *mainWindow;
     FileSetter *names;

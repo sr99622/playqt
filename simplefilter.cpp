@@ -62,7 +62,6 @@ void SimpleFilter::mat_example(Frame *vp)
 void SimpleFilter::nppi_convert(Frame *vp)
 {
     if (!vp->writable()) {
-        cout << "fuck my ass" << endl;
         return;
     }
 

@@ -29,6 +29,9 @@ VideoState::VideoState()
 
 void VideoState::video_image_display()
 {
+    if (paused)
+        cout << "video_image_display" << endl;
+
     Frame* vp;
     Frame* sp = NULL;
     SDL_Rect rect;

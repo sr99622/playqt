@@ -24,7 +24,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     setStatusBar(status);
 
     timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(guiPoll()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(poll()));
     timer->start(1000 / 30);
 
     QFile f("C:/Users/sr996/Projects/playqt/darkstyle.qss");
@@ -119,11 +119,7 @@ void MainWindow::runLoop()
     e->event_loop();
 }
 
-void MainWindow::feed()
-{
-}
-
-void MainWindow::guiPoll()
+void MainWindow::poll()
 {
     if (is != nullptr) {
         double remaining_time = REFRESH_RATE;
