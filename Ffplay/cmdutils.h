@@ -164,7 +164,7 @@ typedef struct OptionDef {
 #define OPT_STRING   0x0008
 #define OPT_VIDEO    0x0010
 #define OPT_AUDIO    0x0020
-#define OPT_FUNC     0x0040
+#define OPT_NO_GUI   0x0040
 #define OPT_INT      0x0080
 #define OPT_FLOAT    0x0100
 #define OPT_SUBTITLE 0x0200

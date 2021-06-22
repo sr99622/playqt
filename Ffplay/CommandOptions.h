@@ -50,6 +50,8 @@ public:
 
     void showHelpCallback(void *ptr, int level, const char *fmt, va_list vl);
     void show_log_level(int log_level);
+    int findOptionIndexByHelp(QString help);
+    int findOptionIndexByName(QString name);
     bool av_log_on = false;
 
     static void show_usage(void);
@@ -113,6 +115,9 @@ public:
     inline static int autorotate = 1;
     inline static int find_stream_info = 1;
     inline static int filter_nbthreads = 0;
+
+    inline static const char* clock_sync;
+    inline static const char* forced_format;
 
     /* current context */
     inline static int is_full_screen;

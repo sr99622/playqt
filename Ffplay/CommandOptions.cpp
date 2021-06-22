@@ -4,181 +4,181 @@
 CommandOptions::CommandOptions()
 {
     options[0].name = "L";
-    options[0].flags = OPT_EXIT | OPT_FUNC;
+    options[0].flags = OPT_EXIT;
     options[0].u.func_arg = show_license;
     options[0].help = "show_license";
 
     options[1].name = "h";
-    options[1].flags = OPT_EXIT | OPT_FUNC;
+    options[1].flags = OPT_EXIT;
     options[1].u.func_arg = show_help;
     options[1].help = "show_help";
     options[1].argname = "topic";
 
     options[2].name = "?";
-    options[2].flags = OPT_EXIT | OPT_FUNC;
+    options[2].flags = OPT_EXIT;
     options[2].u.func_arg = show_help;
     options[2].help = "show_help";
     options[2].argname = "topic";
 
     options[3].name = "help";
-    options[3].flags = OPT_EXIT | OPT_FUNC;
+    options[3].flags = OPT_EXIT;
     options[3].u.func_arg = show_help;
     options[3].help = "show_help";
     options[3].argname = "topic";
 
     options[4].name = "-help";
-    options[4].flags = OPT_EXIT | OPT_FUNC;
+    options[4].flags = OPT_EXIT;
     options[4].u.func_arg = show_help;
     options[4].help = "show_help";
     options[4].argname = "topic";
 
     options[5].name = "version";
-    options[5].flags = OPT_EXIT | OPT_FUNC;
+    options[5].flags = OPT_EXIT;
     options[5].u.func_arg = show_version;
     options[5].help = "show version";
 
     options[6].name = "buildconf";
-    options[6].flags = OPT_EXIT | OPT_FUNC;
+    options[6].flags = OPT_EXIT;
     options[6].u.func_arg = show_buildconf;
     options[6].help = "show build configuration";
 
     options[7].name = "formats";
-    options[7].flags = OPT_EXIT | OPT_FUNC;
+    options[7].flags = OPT_EXIT;
     options[7].u.func_arg = show_formats;
     options[7].help = "show available formats";
 
     options[8].name = "muxers";
-    options[8].flags = OPT_EXIT | OPT_FUNC;
+    options[8].flags = OPT_EXIT;
     options[8].u.func_arg = show_muxers;
     options[8].help = "show available muxers";
 
     options[9].name = "demuxers";
-    options[9].flags = OPT_EXIT | OPT_FUNC;
+    options[9].flags = OPT_EXIT;
     options[9].u.func_arg = show_demuxers;
     options[9].help = "show available demuxers";
 
     options[10].name = "devices";
-    options[10].flags = OPT_EXIT | OPT_FUNC;
+    options[10].flags = OPT_EXIT;
     options[10].u.func_arg = show_devices;
     options[10].help = "show available devices";
 
     options[11].name = "codecs";
-    options[11].flags = OPT_EXIT | OPT_FUNC;
+    options[11].flags = OPT_EXIT;
     options[11].u.func_arg = show_codecs;
     options[11].help = "show available codecs";
 
     options[12].name = "decoders";
-    options[12].flags = OPT_EXIT | OPT_FUNC;
+    options[12].flags = OPT_EXIT;
     options[12].u.func_arg = show_decoders;
     options[12].help = "show available decoders";
 
     options[13].name = "encoders";
-    options[13].flags = OPT_EXIT | OPT_FUNC;
+    options[13].flags = OPT_EXIT;
     options[13].u.func_arg = show_encoders;
     options[13].help = "show available encoders";
 
     options[14].name = "bsfs";
-    options[14].flags = OPT_EXIT | OPT_FUNC;
+    options[14].flags = OPT_EXIT;
     options[14].u.func_arg = show_bsfs;
     options[14].help = "show available bit stream filters";
 
     options[15].name = "protocols";
-    options[15].flags = OPT_EXIT | OPT_FUNC;
+    options[15].flags = OPT_EXIT;
     options[15].u.func_arg = show_protocols;
     options[15].help = "show available protocols";
 
     options[16].name = "filters";
-    options[16].flags = OPT_EXIT | OPT_FUNC;
+    options[16].flags = OPT_EXIT;
     options[16].u.func_arg = show_filters;
     options[16].help = "show available filters";
 
     options[17].name = "pix_fmts";
-    options[17].flags = OPT_EXIT | OPT_FUNC;
+    options[17].flags = OPT_EXIT;
     options[17].u.func_arg = show_pix_fmts;
     options[17].help = "show available pixel formats";
 
     options[18].name = "layouts";
-    options[18].flags = OPT_EXIT | OPT_FUNC;
+    options[18].flags = OPT_EXIT;
     options[18].u.func_arg = show_layouts;
     options[18].help = "show standard channel layouts";
 
     options[19].name = "sample_fmts";
-    options[19].flags = OPT_EXIT | OPT_FUNC;
+    options[19].flags = OPT_EXIT;
     options[19].u.func_arg = show_sample_fmts;
     options[19].help = "show available audio sample formats";
 
     options[20].name = "colors";
-    options[20].flags = OPT_EXIT | OPT_FUNC;
+    options[20].flags = OPT_EXIT;
     options[20].u.func_arg = show_colors;
     options[20].help = "show available color names";
 
     options[21].name = "loglevel";
-    options[21].flags = HAS_ARG | OPT_FUNC;
+    options[21].flags = HAS_ARG | OPT_NO_GUI;
     options[21].u.func_arg = opt_loglevel;
     options[21].help = "set logging level";
     options[21].argname = "loglevel";
 
     options[22].name = "v";
-    options[22].flags = HAS_ARG | OPT_FUNC;
+    options[22].flags = HAS_ARG | OPT_NO_GUI;
     options[22].u.func_arg = opt_loglevel;
     options[22].help = "set logging level";
     options[22].argname = "loglevel";
 
     options[23].name = "report";
-    options[23].flags = 0;
+    options[23].flags = 0 | OPT_NO_GUI;
     options[23].u.dst_ptr = (void*)opt_report;
     options[23].help = "generate a report";
 
     options[24].name = "max_alloc";
-    options[24].flags = HAS_ARG | OPT_FUNC;
+    options[24].flags = HAS_ARG | OPT_NO_GUI;
     options[24].u.func_arg = opt_max_alloc;
     options[24].help = "set maximum size of a single allocated block";
     options[24].argname = "bytes";
 
     options[25].name = "cpuflags";
-    options[25].flags = HAS_ARG | OPT_EXPERT | OPT_FUNC;
+    options[25].flags = HAS_ARG | OPT_EXPERT | OPT_NO_GUI;
     options[25].u.func_arg = opt_cpuflags;
     options[25].help = "force specific cpu flags";
     options[25].argname = "flags";
 
     options[26].name = "hide_banner";
-    options[26].flags = OPT_BOOL | OPT_EXPERT;
+    options[26].flags = OPT_BOOL | OPT_EXPERT | OPT_NO_GUI;
     options[26].u.dst_ptr = {&hide_banner};
     options[26].help = "do not show program banner";
     options[26].argname = "hide_banner";
 
     options[27].name = "sources";
-    options[27].flags = OPT_EXIT | HAS_ARG | OPT_FUNC;
+    options[27].flags = OPT_EXIT | HAS_ARG;
     options[27].u.func_arg = show_sources;
     options[27].help = "list sources of the input device";
     options[27].argname = "device";
 
     options[28].name = "sinks";
-    options[28].flags = OPT_EXIT | HAS_ARG | OPT_FUNC;
+    options[28].flags = OPT_EXIT | HAS_ARG;
     options[28].u.func_arg = show_sinks;
     options[28].help = "list sinks of the output device";
     options[28].argname = "device";
 
     options[29].name = "x";
-    options[29].flags = HAS_ARG | OPT_FUNC;
+    options[29].flags = HAS_ARG | OPT_NO_GUI;
     options[29].u.func_arg = opt_width;
     options[29].help = "force displayed width";
     options[29].argname = "width";
 
     options[30].name = "y";
-    options[30].flags = HAS_ARG | OPT_FUNC;
+    options[30].flags = HAS_ARG | OPT_NO_GUI;
     options[30].u.func_arg = opt_height;
     options[30].help = "force displayed height";
     options[30].argname = "height";
 
     options[31].name = "s";
-    options[31].flags = HAS_ARG | OPT_VIDEO | OPT_FUNC;
+    options[31].flags = HAS_ARG | OPT_VIDEO | OPT_NO_GUI;
     options[31].u.func_arg = opt_frame_size;
     options[31].help = "set frame size (WxH or abbreviation)";
     options[31].argname = "size";
 
     options[32].name = "fs";
-    options[32].flags = OPT_BOOL;
+    options[32].flags = OPT_BOOL | OPT_NO_GUI;
     options[32].u.dst_ptr = &is_full_screen;
     options[32].help = "force full screen";
 
@@ -216,13 +216,13 @@ CommandOptions::CommandOptions()
     options[38].argname = "stream_specifier";
 
     options[39].name = "ss";
-    options[39].flags = HAS_ARG | OPT_FUNC;
+    options[39].flags = HAS_ARG;
     options[39].u.func_arg = opt_seek;
     options[39].help = "seek to a given position in seconds";
     options[39].argname = "pos";
 
     options[40].name = "t";
-    options[40].flags = HAS_ARG | OPT_FUNC;
+    options[40].flags = HAS_ARG;
     options[40].u.func_arg = opt_duration;
     options[40].help = "play  \"duration\" seconds of audio/video";
     options[40].argname = "duration";
@@ -240,12 +240,12 @@ CommandOptions::CommandOptions()
     options[42].argname = "seconds";
 
     options[43].name = "nodisp";
-    options[43].flags = OPT_BOOL;
+    options[43].flags = OPT_BOOL | OPT_NO_GUI;
     options[43].u.dst_ptr = &display_disable;
     options[43].help = "disable graphical display";
 
     options[44].name = "noborder";
-    options[44].flags = OPT_BOOL;
+    options[44].flags = OPT_BOOL | OPT_NO_GUI;
     options[44].u.dst_ptr = &borderless;
     options[44].help = "borderless window";
 
@@ -256,19 +256,19 @@ CommandOptions::CommandOptions()
     options[45].argname = "volume";
 
     options[46].name = "f";
-    options[46].flags = HAS_ARG | OPT_FUNC;
+    options[46].flags = HAS_ARG;
     options[46].u.func_arg = opt_format;
     options[46].help = "force format";
     options[46].argname = "fmt";
 
     options[47].name = "pix_fmt";
-    options[47].flags = HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_FUNC;
+    options[47].flags = HAS_ARG | OPT_EXPERT | OPT_VIDEO | OPT_NO_GUI;
     options[47].u.func_arg = opt_frame_pix_fmt;
     options[47].help = "set pixel format";
     options[47].argname = "format";
 
     options[48].name = "stats";
-    options[48].flags = OPT_BOOL | OPT_EXPERT;
+    options[48].flags = OPT_BOOL | OPT_EXPERT | OPT_NO_GUI;
     options[48].u.dst_ptr = &show_status;
     options[48].help = "show status";
     options[48].argname = "";
@@ -298,31 +298,31 @@ CommandOptions::CommandOptions()
     options[52].argname = "";
 
     options[53].name = "sync";
-    options[53].flags = HAS_ARG | OPT_EXPERT | OPT_FUNC;
+    options[53].flags = HAS_ARG | OPT_EXPERT;
     options[53].u.func_arg = opt_sync;
     options[53].help = "set audio-video sync. type (type=audio/video/ext)";
     options[53].argname = "type";
 
     options[54].name = "autoexit";
-    options[54].flags = OPT_BOOL | OPT_EXPERT;
+    options[54].flags = OPT_BOOL | OPT_EXPERT | OPT_NO_GUI;
     options[54].u.dst_ptr = &autoexit;
     options[54].help = "exit at the end";
     options[54].argname = "";
 
     options[55].name = "exitonkeydown";
-    options[55].flags = OPT_BOOL | OPT_EXPERT;
+    options[55].flags = OPT_BOOL | OPT_EXPERT | OPT_NO_GUI;
     options[55].u.dst_ptr = &exit_on_keydown;
     options[55].help = "exit on key down";
     options[55].argname = "";
 
     options[56].name = "exitonmousedown";
-    options[56].flags = OPT_BOOL | OPT_EXPERT;
+    options[56].flags = OPT_BOOL | OPT_EXPERT | OPT_NO_GUI;
     options[56].u.dst_ptr = &exit_on_mousedown;
     options[56].help = "exit on mouse down";
     options[56].argname = "";
 
     options[57].name = "loop";
-    options[57].flags = OPT_INT | HAS_ARG | OPT_EXPERT;
+    options[57].flags = OPT_INT | HAS_ARG | OPT_EXPERT | OPT_NO_GUI;
     options[57].u.dst_ptr = &loop;
     options[57].help = "set number of times the playback shall be looped";
     options[57].argname = "loop count";
@@ -340,25 +340,25 @@ CommandOptions::CommandOptions()
     options[59].argname = "";
 
     options[60].name = "window_title";
-    options[60].flags = OPT_STRING | HAS_ARG;
+    options[60].flags = OPT_STRING | HAS_ARG | OPT_NO_GUI;
     options[60].u.dst_ptr = &window_title;
     options[60].help = "set window title";
     options[60].argname = "window title";
 
     options[61].name = "left";
-    options[61].flags = OPT_INT | HAS_ARG | OPT_EXPERT;
+    options[61].flags = OPT_INT | HAS_ARG | OPT_EXPERT | OPT_NO_GUI;
     options[61].u.dst_ptr = &screen_left;
     options[61].help = "set the x position for the left of the window";
     options[61].argname = "x pos";
 
     options[62].name = "top";
-    options[62].flags = OPT_INT | HAS_ARG | OPT_EXPERT;
+    options[62].flags = OPT_INT | HAS_ARG | OPT_EXPERT | OPT_NO_GUI;
     options[62].u.dst_ptr = &screen_top;
     options[62].help = "set the y position for the top of the window";
     options[62].argname = "y pos";
 
     options[63].name = "vf";
-    options[63].flags = OPT_EXPERT | HAS_ARG | OPT_FUNC;
+    options[63].flags = OPT_EXPERT | HAS_ARG;
     options[63].u.func_arg = opt_add_vfilter;
     options[63].help = "set video filters";
     options[63].argname = "filter_graph";
@@ -372,13 +372,13 @@ CommandOptions::CommandOptions()
     //{ "rdftspeed", OPT_INT | HAS_ARG | OPT_AUDIO | OPT_EXPERT, { &rdftspeed }, "rdft speed", "msecs" },
 
     options[65].name = "showmode";
-    options[65].flags = HAS_ARG | OPT_FUNC;
+    options[65].flags = HAS_ARG | OPT_NO_GUI;
     options[65].u.func_arg = opt_show_mode;
     options[65].help = "select show mode (0 = video, 1 = waves, 2 = RDFT)";
     options[65].argname = "mode";
 
     options[66].name = "default";
-    options[66].flags = HAS_ARG | OPT_AUDIO | OPT_VIDEO | OPT_EXPERT | OPT_FUNC;
+    options[66].flags = HAS_ARG | OPT_AUDIO | OPT_VIDEO | OPT_EXPERT | OPT_NO_GUI;
     options[66].u.func_arg = opt_default;
     options[66].help = "generic catch all option";
     options[66].argname = "";
@@ -390,7 +390,7 @@ CommandOptions::CommandOptions()
     options[67].argname = "input_file";
 
     options[68].name = "codec";
-    options[68].flags = HAS_ARG | OPT_FUNC;
+    options[68].flags = HAS_ARG | OPT_NO_GUI;
     options[68].u.func_arg = opt_codec;
     options[68].help = "force decoder";
     options[68].argname = "decoder_name";
@@ -414,13 +414,13 @@ CommandOptions::CommandOptions()
     options[71].argname = "decoder_name";
 
     options[72].name = "autorotate";
-    options[72].flags = OPT_BOOL;
+    options[72].flags = OPT_BOOL | OPT_NO_GUI;
     options[72].u.dst_ptr = &autorotate;
     options[72].help = "automatically rotate video";
     options[72].argname = "";
 
     options[73].name = "find_stream_info";
-    options[73].flags = OPT_BOOL | OPT_INPUT | OPT_EXPERT;
+    options[73].flags = OPT_BOOL | OPT_INPUT | OPT_EXPERT | OPT_NO_GUI;
     options[73].u.dst_ptr = &find_stream_info;
     options[73].help = "read and decode the streams to fill missing information with heuristics";
 
@@ -433,6 +433,30 @@ CommandOptions::CommandOptions()
 
     cout << "address: " << &video_codec_name << endl;
     cout << "storage: " << options[71].u.dst_ptr << endl;
+}
+
+int CommandOptions::findOptionIndexByHelp(QString help)
+{
+    int result = -1;
+    for (int i = 0; i < NUM_OPTIONS; i++) {
+        if (help == options[i].help) {
+            result = i;
+            break;
+        }
+    }
+    return result;
+}
+
+int CommandOptions::findOptionIndexByName(QString name)
+{
+    int result = -1;
+    for (int i = 0; i < NUM_OPTIONS; i++) {
+        if (name == options[i].name) {
+            result = i;
+            break;
+        }
+    }
+    return result;
 }
 
 void CommandOptions::show_log_level(int log_level)
@@ -500,6 +524,8 @@ int CommandOptions::opt_height(void* optctx, const char* opt, const char* arg)
 
 int CommandOptions::opt_format(void* optctx, const char* opt, const char* arg)
 {
+    forced_format = arg;
+
     file_iformat = av_find_input_format(arg);
     if (!file_iformat) {
         av_log(NULL, AV_LOG_FATAL, "Unknown input format: %s\n", arg);
@@ -516,6 +542,8 @@ int CommandOptions::opt_frame_pix_fmt(void* optctx, const char* opt, const char*
 
 int CommandOptions::opt_sync(void* optctx, const char* opt, const char* arg)
 {
+    clock_sync = arg;
+
     if (!strcmp(arg, "audio"))
         av_sync_type = AV_SYNC_AUDIO_MASTER;
     else if (!strcmp(arg, "video"))

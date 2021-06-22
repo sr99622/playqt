@@ -489,6 +489,7 @@ void VideoState::set_default_window_size(int width, int height, AVRational sar)
 
     if (max_width == INT_MAX && max_height == INT_MAX)
         max_height = height;
+
     disp->calculate_display_rect(&rect, 0, 0, max_width, max_height, width, height, sar);
     co->default_width = rect.w;
     co->default_height = rect.h;
@@ -2272,8 +2273,8 @@ void VideoState::refresh_loop_wait_event(SDL_Event* event) {
     SDL_PumpEvents();
     while (!SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
         if (!co->cursor_hidden && av_gettime_relative() - co->cursor_last_shown > CURSOR_HIDE_DELAY) {
-            SDL_ShowCursor(0);
-            co->cursor_hidden = 1;
+            SDL_ShowCursor(1);
+            co->cursor_hidden = 0;
         }
         if (remaining_time > 0.0)
             av_usleep((int64_t)(remaining_time * 1000000.0));
