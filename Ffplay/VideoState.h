@@ -22,6 +22,7 @@ extern "C" {
 #include "simplefilter.h"
 #include "config.h"
 #include "Filters/filterchain.h"
+#include "Utilities/avexception.h"
 
 #define AV_SYNC_THRESHOLD_MIN 0.04
 #define AV_SYNC_THRESHOLD_MAX 0.1
@@ -61,7 +62,6 @@ public:
     int stream_has_enough_packets(AVStream* st, int stream_id, PacketQueue* queue);
     int64_t get_valid_channel_layout(int64_t channel_layout, int channels);
     int cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1, enum AVSampleFormat fmt2, int64_t channel_count2);
-    void video_audio_display();
     void stream_component_close(int stream_index);
     void stream_close();
     int get_master_sync_type();
@@ -113,12 +113,12 @@ public:
     int synchronize_audio(int nb_samples);
     int audio_decode_frame();
     void refresh_loop_wait_event(SDL_Event* event);
-    //static void event_loop();
     void do_exit();
 
     QMainWindow* mainWindow;
     FilterChain* filterChain;
     SimpleFilter* filter;
+    AVExceptionHandler av;
 
     CommandOptions* co;
     Display* disp;

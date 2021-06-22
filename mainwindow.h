@@ -53,6 +53,7 @@ enum CustomEventCode {
 using namespace std;
 
 #define MW dynamic_cast<MainWindow*>(mainWindow)
+#define TS QTime::currentTime().toString("hh:mm:ss.zzz").toStdString()
 
 class MainWindow : public QMainWindow
 {
@@ -107,6 +108,7 @@ public slots:
     void showHelp(const QString&);
     void msg(const QString&);
     void test();
+    void ping(const vector<bbox_t>*);
 
 };
 #endif // MAINWINDOW_H

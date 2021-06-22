@@ -46,6 +46,31 @@ StoredOption::StoredOption(const QString& text) : QListWidgetItem(text)
 
 }
 
+SavedCmdLines::SavedCmdLines(QMainWindow *parent) : QListWidget(parent)
+{
+    mainWindow = parent;
+}
+
+void SavedCmdLines::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Delete) {
+        int row = currentRow();
+        QListWidgetItem *item = takeItem(row);
+        delete item;
+
+        QString tag = "ParameterPanel/savedCmdLine_" + QString::number(row);
+        if (MW->settings->contains(tag)) {
+            cout << tag.toStdString() << endl;
+            MW->settings->remove(tag);
+        }
+    }
+    else if (event->key() == Qt::Key_Return) {
+        QListWidgetItem *item = currentItem();
+        MW->parameterDialog->panel->itemDoubleClicked(item);
+    }
+    QListWidget::keyPressEvent(event);
+}
+
 ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 {
     mainWindow = parent;
@@ -84,7 +109,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     QPushButton *saveCmdLine = new QPushButton("Save");
     QFontMetrics fm = saveCmdLine->fontMetrics();
     saveCmdLine->setMaximumWidth(fm.boundingRect("Save").width() * 1.6);
-    savedCmdLines = new QListWidget(this);
+    savedCmdLines = new SavedCmdLines(mainWindow);
     QPushButton *clearSavedCmdLines = new QPushButton("Clear");
 
     QWidget *storagePanel = new QWidget(this);
@@ -179,12 +204,6 @@ void ParameterPanel::restoreSettings(QSettings *settings)
     }
 }
 
-void ParameterPanel::applyCmd(const QString& name, const QString& arg)
-{
-    OptionDef def = MW->co->options[MW->co->findOptionIndexByName(name)];
-
-}
-
 void ParameterPanel::itemDoubleClicked(QListWidgetItem *item)
 {
     QString arg = ((StoredOption*)item)->arg;
@@ -243,6 +262,9 @@ const QString ParameterPanel::getOptionStorageString()
         }
         else if (option.flags & OPT_BOOL) {
             QTextStream(&arg) << ",1;";
+        }
+        else if (option.flags & OPT_INT) {
+            QTextStream(&arg) << "," << *(int *) option.u.dst_ptr << ";";
         }
         else if (!strcmp(option.name, "ss")) {
             QTextStream(&arg) << "," << MW->co->start_time << ";";
@@ -466,6 +488,7 @@ void ParameterPanel::clear()
     MW->co->opt_add_vfilter(NULL, NULL, "");
     MW->co->video_codec_name = 0;
     MW->co->audio_disable = 0;
+    MW->co->startup_volume = 100;
 
     saved_options.clear();
 

@@ -56,6 +56,7 @@ Darknet::Darknet(QMainWindow *parent)
     connect(loadModel, SIGNAL(clicked()), this, SLOT(loadModel()));
     connect(clearModel, SIGNAL(clicked()), this, SLOT(clearModel()));
     connect(clearSettings, SIGNAL(clicked()), this, SLOT(clearSettings()));
+    connect(this, SIGNAL(ping(const vector<bbox_t>*)), mainWindow, SLOT(ping(const vector<bbox_t>*)));
 }
 
 void Darknet::filter(Frame *vp)
@@ -69,7 +70,8 @@ void Darknet::filter(Frame *vp)
 
     if (!loading) {
         int people_count = 0;
-        vector<bbox_t> result = model->infer(vp, 0.2);
+        result = model->infer(vp, 0.2);
+        emit ping(&result);
         for (size_t i = 0; i < result.size(); i++) {
             QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
             YUVColor green(Qt::green);

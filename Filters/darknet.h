@@ -79,6 +79,11 @@ public:
     NumberTextBox *modelHeight;
     QPushButton *setDims;
 
+    vector<bbox_t> result;
+
+signals:
+    void ping(const vector<bbox_t>*);
+
 public slots:
     void setNames(const QString&);
     void setCfg(const QString&);

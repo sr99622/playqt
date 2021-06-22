@@ -33,6 +33,16 @@ public:
     QString arg;
 };
 
+class SavedCmdLines : public QListWidget
+{
+
+public:
+    SavedCmdLines(QMainWindow *parent);
+    QMainWindow *mainWindow;
+    void keyPressEvent(QKeyEvent *event) override;
+
+};
+
 class ParameterPanel : public QWidget
 {
     Q_OBJECT
@@ -44,7 +54,6 @@ public:
     const QString getOptionStorageString();
     void saveSettings(QSettings *settings);
     void restoreSettings(QSettings *settings);
-    void applyCmd(const QString& name, const QString& arg);
     void set(int option_index, char * arg);
 
     QMainWindow *mainWindow;
@@ -52,7 +61,7 @@ public:
     QLineEdit *parameter;
     QLabel *cmdLineEquiv;
     QLineEdit *cmdLineName;
-    QListWidget *savedCmdLines;
+    SavedCmdLines *savedCmdLines;
     vector<OptionDef> saved_options;
 
 public slots:

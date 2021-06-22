@@ -29,8 +29,9 @@ VideoState::VideoState()
 
 void VideoState::video_image_display()
 {
-    if (paused)
-        cout << "video_image_display" << endl;
+    if (paused) {
+        cout << "PAUSED video_image_display" << endl;
+    }
 
     Frame* vp;
     Frame* sp = NULL;
@@ -130,102 +131,6 @@ int VideoState::cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
         return av_get_packed_sample_fmt(fmt1) != av_get_packed_sample_fmt(fmt2);
     else
         return channel_count1 != channel_count2 || fmt1 != fmt2;
-}
-void VideoState::video_audio_display()
-{
-    int i, i_start, x, y1, y, ys, delay, n, nb_display_channels;
-    int ch, channels, h, h2;
-    int64_t time_diff;
-    int rdft_bits, nb_freq;
-
-    for (rdft_bits = 1; (1 << rdft_bits) < 2 * height; rdft_bits++)
-        ;
-    nb_freq = 1 << (rdft_bits - 1);
-
-    // compute display index : center on currently output samples 
-    channels = audio_tgt.channels;
-    nb_display_channels = channels;
-    if (!paused) {
-        int data_used = show_mode == (2 * nb_freq);
-        n = 2 * channels;
-        delay = audio_write_buf_size;
-        delay /= n;
-
-        // to be more precise, we take into account the time spent since
-        //   the last buffer computation 
-        if (co->audio_callback_time) {
-            time_diff = av_gettime_relative() - co->audio_callback_time;
-            delay -= (time_diff * audio_tgt.freq) / 1000000;
-        }
-
-        delay += 2 * data_used;
-        if (delay < data_used)
-            delay = data_used;
-
-        i_start = x = compute_mod(sample_array_index - delay * channels, SAMPLE_ARRAY_SIZE);
-        last_i_start = i_start;
-    }
-    else {
-        i_start = last_i_start;
-    }
-
-    if (disp->realloc_texture(&vis_texture, SDL_PIXELFORMAT_ARGB8888, width, height, SDL_BLENDMODE_NONE, 1) < 0)
-        return;
-
-    nb_display_channels = FFMIN(nb_display_channels, 2);
-    if (rdft_bits != rdft_bits) {
-        av_rdft_end(rdft);
-        av_free(rdft_data);
-        rdft = av_rdft_init(rdft_bits, DFT_R2C);
-        rdft_bits = rdft_bits;
-        rdft_data = (FFTSample*)av_malloc_array(nb_freq, 4 * sizeof(*rdft_data));
-    }
-    if (!rdft || !rdft_data) {
-        av_log(NULL, AV_LOG_ERROR, "Failed to allocate buffers for RDFT");
-        std::cout << "Old SHOW_WAVES stuff" << std::endl;
-        return;
-    }
-    else {
-        FFTSample* data[2];
-        //SDL_Rect rect = { .x = s->xpos, .y = 0, .w = 1, .h = s->height };
-        SDL_Rect rect = { xpos, 0, 1, height };
-        uint32_t* pixels;
-        int pitch;
-        for (ch = 0; ch < nb_display_channels; ch++) {
-            data[ch] = rdft_data + 2 * nb_freq * ch;
-            i = i_start + ch;
-            for (x = 0; x < 2 * nb_freq; x++) {
-                double w = (x - nb_freq) * (1.0 / nb_freq);
-                data[ch][x] = sample_array[i] * (1.0 - w * w);
-                i += channels;
-                if (i >= SAMPLE_ARRAY_SIZE)
-                    i -= SAMPLE_ARRAY_SIZE;
-            }
-            av_rdft_calc(rdft, data[ch]);
-        }
-        // Least efficient way to do this, we should of course
-        // directly access it but it is more than fast enough. 
-        if (!SDL_LockTexture(vis_texture, &rect, (void**)&pixels, &pitch)) {
-            pitch >>= 2;
-            pixels += pitch * height;
-            for (y = 0; y < height; y++) {
-                double w = 1 / sqrt(nb_freq);
-                int a = sqrt(w * sqrt(data[0][2 * y + 0] * data[0][2 * y + 0] + data[0][2 * y + 1] * data[0][2 * y + 1]));
-                int b = (nb_display_channels == 2) ? sqrt(w * hypot(data[1][2 * y + 0], data[1][2 * y + 1]))
-                    : a;
-                a = FFMIN(a, 255);
-                b = FFMIN(b, 255);
-                pixels -= pitch;
-                *pixels = (a << 16) + (b << 8) + ((a + b) >> 1);
-            }
-            SDL_UnlockTexture(vis_texture);
-        }
-        SDL_RenderCopy(disp->renderer, vis_texture, NULL, NULL);
-    }
-    if (!paused)
-        xpos++;
-    if (xpos >= width)
-        xpos = xleft;
 }
 
 void VideoState::stream_component_close(int stream_index)
@@ -499,11 +404,6 @@ int VideoState::queue_picture(AVFrame* src_frame, double pts, double duration, i
 {
     Frame* vp;
 
-#if defined(DEBUG_SYNC)
-    printf("frame_type=%c pts=%0.3f\n",
-        av_get_picture_type_char(src_frame->pict_type), pts);
-#endif
-
     if (!(vp = pictq.peek_writable()))
         return -1;
 
@@ -538,6 +438,8 @@ int VideoState::get_video_frame(AVFrame* frame)
 
         if (frame->pts != AV_NOPTS_VALUE)
             dpts = av_q2d(video_st->time_base) * frame->pts;
+
+        //cout << "VideoState::get_video_frame: " << TS << endl;
 
         frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(ic, video_st, frame);
 
@@ -607,88 +509,6 @@ void VideoState::update_video_pts(double pts, int64_t pos, int serial) {
     extclk.sync_clock_to_slave(&vidclk);
 }
 
-/*
-void VideoState::stream_cycle_channel(int codec_type)
-{
-    //AVFormatContext* ic = is->ic;
-    int start_index, stream_index;
-    int old_index;
-    AVStream* st;
-    AVProgram* p = NULL;
-    int nb_streams = ic->nb_streams;
-
-    if (codec_type == AVMEDIA_TYPE_VIDEO) {
-        start_index = last_video_stream;
-        old_index = video_stream;
-    }
-    else if (codec_type == AVMEDIA_TYPE_AUDIO) {
-        start_index = last_audio_stream;
-        old_index = audio_stream;
-    }
-    else {
-        start_index = last_subtitle_stream;
-        old_index = subtitle_stream;
-    }
-    stream_index = start_index;
-
-    if (codec_type != AVMEDIA_TYPE_VIDEO && video_stream != -1) {
-        p = av_find_program_from_stream(ic, NULL, video_stream);
-        if (p) {
-            nb_streams = p->nb_stream_indexes;
-            for (start_index = 0; start_index < nb_streams; start_index++)
-                if (p->stream_index[start_index] == stream_index)
-                    break;
-            if (start_index == nb_streams)
-                start_index = -1;
-            stream_index = start_index;
-        }
-    }
-
-    for (;;) {
-        if (++stream_index >= nb_streams)
-        {
-            if (codec_type == AVMEDIA_TYPE_SUBTITLE)
-            {
-                stream_index = -1;
-                last_subtitle_stream = -1;
-                goto the_end;
-            }
-            if (start_index == -1)
-                return;
-            stream_index = 0;
-        }
-        if (stream_index == start_index)
-            return;
-        st = ic->streams[p ? p->stream_index[stream_index] : stream_index];
-        if (st->codecpar->codec_type == codec_type) {
-            // check that parameters are OK
-            switch (codec_type) {
-            case AVMEDIA_TYPE_AUDIO:
-                if (st->codecpar->sample_rate != 0 &&
-                    st->codecpar->channels != 0)
-                    goto the_end;
-                break;
-            case AVMEDIA_TYPE_VIDEO:
-            case AVMEDIA_TYPE_SUBTITLE:
-                goto the_end;
-            default:
-                break;
-            }
-        }
-    }
-the_end:
-    if (p && stream_index != -1)
-        stream_index = p->stream_index[stream_index];
-    av_log(NULL, AV_LOG_INFO, "Switch %s stream from #%d to #%d\n",
-        av_get_media_type_string((AVMediaType)codec_type),
-        old_index,
-        stream_index);
-
-    stream_component_close(old_index);
-    stream_component_open(stream_index);
-}
-*/
-
 int VideoState::video_open()
 {
     int w, h, x, y;
@@ -727,9 +547,10 @@ void VideoState::video_display()
 
     SDL_SetRenderDrawColor(disp->renderer, 0, 0, 0, 255);
     SDL_RenderClear(disp->renderer);
-    if (audio_st && show_mode != SHOW_MODE_VIDEO)
-        video_audio_display();
-    else if (video_st)
+    //if (audio_st && show_mode != SHOW_MODE_VIDEO)
+    //    video_audio_display();
+    //else if (video_st)
+    if (video_st)
         video_image_display();
 
     SDL_RenderPresent(disp->renderer);
@@ -1122,15 +943,6 @@ int VideoState::audio_decode_frame()
     else
         audio_clock = NAN;
     audio_clock_serial = af->serial;
-#ifdef DEBUG
-    {
-        static double last_clock;
-        printf("audio: delay=%0.3f clock=%0.3f clock0=%0.3f\n",
-            audio_clock - last_clock,
-            audio_clock, audio_clock0);
-        last_clock = audio_clock;
-    }
-#endif
     return resampled_data_size;
 }
 
@@ -1234,6 +1046,7 @@ void VideoState::subtitle_refresh()
 
 void VideoState::video_refresh(double* remaining_time)
 {
+    //cout << "\tVideoState::video_refresh " << TS << endl;
     if (!paused && get_master_sync_type() == AV_SYNC_EXTERNAL_CLOCK && realtime)
         check_external_clock_speed();
 
@@ -1249,6 +1062,10 @@ void VideoState::video_refresh(double* remaining_time)
     if (video_st) {
         bool trying = true;
         while (trying) {
+
+            //cout << "\t\t-----" << endl;
+            QThread::msleep(1);
+
             if (pictq.nb_remaining() == 0) {
                 force_refresh = 0;
                 break;
@@ -1261,16 +1078,28 @@ void VideoState::video_refresh(double* remaining_time)
             vp = pictq.peek();
 
             if (vp->serial != videoq.serial) {
+                cout << "vp->serial != videoq.serial" << endl;
                 pictq.next();
                 continue;
             }
 
-            if (lastvp->serial != vp->serial)
+            if (lastvp->serial != vp->serial) {
+                cout << "lastvp->serial != vp->serial" << endl;
                 frame_timer = av_gettime_relative() / 1000000.0;
+            }
 
             if (paused) {
                 cout << "is this tag ever used" << endl;
                 //break;
+
+                /**/
+                /// empty the picture queue and display if paused
+                while (pictq.nb_remaining() > 0)
+                    pictq.next();
+                video_display();
+
+                break;
+                /**/
             }
 
             last_duration = vp_duration(lastvp, vp);
@@ -1719,9 +1548,9 @@ int VideoState::stream_component_open(int stream_index)
     if (forced_codec_name)
         codec = avcodec_find_decoder_by_name(forced_codec_name);
     if (!codec) {
-        if (forced_codec_name) 
+        if (forced_codec_name)
             av_log(NULL, AV_LOG_WARNING, "No codec could be found with name '%s'\n", forced_codec_name);
-        else                   
+        else
             av_log(NULL, AV_LOG_WARNING, "No decoder could be found for codec %s\n", avcodec_get_name(avctx->codec_id));
         ret = AVERROR(EINVAL);
         goto fail;
