@@ -1,4 +1,5 @@
 #include "Clock.h"
+#include "mainwindow.h"
 
 Clock::Clock()
 {

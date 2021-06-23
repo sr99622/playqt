@@ -192,11 +192,13 @@ void VideoState::stream_component_close(int stream_index)
 
 void VideoState::stream_close()
 {
+    cout << "stream_close 1" << endl;
     // XXX: use a special url_shutdown call to abort parse cleanly 
     abort_request = 1;
     SDL_WaitThread(read_tid, NULL);
 
-    // close each stream 
+    cout << "stream_close 2" << endl;
+    // close each stream
     if (audio_stream >= 0)
         stream_component_close(audio_stream);
     if (video_stream >= 0)
@@ -204,20 +206,25 @@ void VideoState::stream_close()
     if (subtitle_stream >= 0)
         stream_component_close(subtitle_stream);
 
+    cout << "stream_close 3" << endl;
     avformat_close_input(&ic);
 
+    cout << "stream_close 4" << endl;
     videoq.destroy();
     audioq.destroy();
     subtitleq.destroy();
 
-    // free all pictures 
+    cout << "stream_close 5" << endl;
+    // free all pictures
     pictq.destroy();
     sampq.destroy();
     subpq.destroy();
+    cout << "stream_close 6" << endl;
     SDL_DestroyCond(continue_read_thread);
     sws_freeContext(img_convert_ctx);
     sws_freeContext(sub_convert_ctx);
     av_free(filename);
+    cout << "stream_close 7" << endl;
     if (vis_texture)
         SDL_DestroyTexture(vis_texture);
     if (vid_texture)
@@ -225,6 +232,7 @@ void VideoState::stream_close()
     if (sub_texture)
         SDL_DestroyTexture(sub_texture);
 
+    cout << "stream_close 8" << endl;
     av_free(this);
 }
 
@@ -330,6 +338,10 @@ void VideoState::seek_chapter(int incr)
 void VideoState::stream_toggle_pause()
 {
     if (paused) {
+
+        cout << "stream_toggle_pause: " << vidclk.last_updated << endl;
+        cout << "frame_timer - vidclk.last_updated: " << frame_timer - vidclk.last_updated << endl;
+
         frame_timer += av_gettime_relative() / 1000000.0 - vidclk.last_updated;
         if (read_pause_return != AVERROR(ENOSYS)) {
             vidclk.paused = 0;
@@ -505,6 +517,7 @@ double VideoState::vp_duration(Frame* vp, Frame* nextvp) {
 }
 
 void VideoState::update_video_pts(double pts, int64_t pos, int serial) {
+    cout << "update_video_pts" << endl;
     vidclk.set_clock(pts, serial);
     extclk.sync_clock_to_slave(&vidclk);
 }
@@ -1106,6 +1119,11 @@ void VideoState::video_refresh(double* remaining_time)
             delay = compute_target_delay(last_duration);
 
             double time = av_gettime_relative() / 1000000.0;
+
+            if (time - frame_timer < 0) {
+                frame_timer = time - delay;
+            }
+
             if (time < frame_timer + delay) {
                 *remaining_time = FFMIN(frame_timer + delay - time, *remaining_time);
                 break;
@@ -1124,6 +1142,7 @@ void VideoState::video_refresh(double* remaining_time)
                 Frame* nextvp = pictq.peek_next();
                 duration = vp_duration(vp, nextvp);
                 if (!step && (co->framedrop > 0 || (co->framedrop && get_master_sync_type() != AV_SYNC_VIDEO_MASTER)) && time > frame_timer + duration) {
+                    cout << "frame drop" << endl;
                     frame_drops_late++;
                     pictq.next();
                     continue;
@@ -1827,6 +1846,7 @@ void VideoState::read_loop()
 
                 force_refresh = 1;
                 double dummy = 0;
+
                 video_refresh(&dummy);
 
                 stream_toggle_pause();

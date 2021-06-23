@@ -183,17 +183,17 @@ CommandOptions::CommandOptions()
     options[32].help = "force full screen";
 
     options[33].name = "an";
-    options[33].flags = OPT_BOOL;
+    options[33].flags = OPT_BOOL | OPT_NO_GUI;
     options[33].u.dst_ptr = &audio_disable;
     options[33].help = "disable audio";
 
     options[34].name = "vn";
-    options[34].flags = OPT_BOOL;
+    options[34].flags = OPT_BOOL | OPT_NO_GUI;
     options[34].u.dst_ptr = &video_disable;
     options[34].help = "disable video";
 
     options[35].name = "sn";
-    options[35].flags = OPT_BOOL;
+    options[35].flags = OPT_BOOL | OPT_NO_GUI;
     options[35].u.dst_ptr = &subtitle_disable;
     options[35].help = "disable subtitling";
 

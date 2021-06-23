@@ -247,6 +247,7 @@ void ParameterPanel::saveCmdLine()
     StoredOption *storedOption = new StoredOption(cmdLineName->text());
     storedOption->arg = getOptionStorageString();
     savedCmdLines->addItem(storedOption);
+    cmdLineName->setText("");
 }
 
 const QString ParameterPanel::getOptionStorageString()
