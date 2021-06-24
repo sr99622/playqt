@@ -47,9 +47,7 @@ void EventHandler::feed()
             break;
         }
     }
-    else if (event.type == SDL_KEYDOWN) {
-        if (event.key.keysym.sym == SDLK_ESCAPE) {
-            running = false;
-        }
+    else if (event.type == FF_QUIT_EVENT) {
+        running = false;
     }
 }

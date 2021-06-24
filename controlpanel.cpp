@@ -116,7 +116,11 @@ void ControlPanel::mute()
 
 void ControlPanel::quit()
 {
-    MW->e->running = false;
+    SDL_Event event;
+    event.type = FF_QUIT_EVENT;
+    event.user.data1 = this;
+    SDL_PushEvent(&event);
+    //MW->e->running = false;
     MW->timer->stop();
 }
 

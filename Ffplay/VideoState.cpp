@@ -517,7 +517,7 @@ double VideoState::vp_duration(Frame* vp, Frame* nextvp) {
 }
 
 void VideoState::update_video_pts(double pts, int64_t pos, int serial) {
-    cout << "update_video_pts" << endl;
+    //cout << "update_video_pts" << endl;
     vidclk.set_clock(pts, serial);
     extclk.sync_clock_to_slave(&vidclk);
 }
@@ -1308,13 +1308,13 @@ int VideoState::video_thread()
             }
             graph->nb_threads = co->filter_nbthreads;
             if ((ret = configure_video_filters(graph, co->vfilters_list ? co->vfilters_list[vfilter_idx] : NULL, frame)) < 0) {
-                /*
+                /**/
                 SDL_Event event;
                 event.type = FF_QUIT_EVENT;
                 event.user.data1 = this;
                 SDL_PushEvent(&event);
-                */
-                MW->e->running = false;
+                /**/
+                //MW->e->running = false;
                 goto the_end;
             }
             filt_in = in_video_filter;
