@@ -31,7 +31,7 @@ https://developer.nvidia.com/cuda-toolkit
 
 The program will respond to the same commands as ffplay from the prompt.
 Click the play button to start playback.  The Engage Filter check box will 
-not work for you unless you configure Tools->Model Options with a valid 
+not work for you unless you configure Tools->Filters darknet with a valid 
 model weights file etc.
 
 Darknet model code was compiled from a fork of AlexeyAB/darknet
