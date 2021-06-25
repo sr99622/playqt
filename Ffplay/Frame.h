@@ -36,6 +36,7 @@ public:
     void slice(int x, int y, Frame *sub_vp);
     void pip(int ulc_x, int ulc_y, Frame *sub_vp);
     void allocateFrame(int width, int height, const AVPixelFormat& pix_fmt);
+    void copy(Frame *vp);
 
     Mat toMat();
     void readMat(const Mat& mat);

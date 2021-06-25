@@ -47,7 +47,16 @@
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
     SLIDER_POSITION_UPDATE,
-    GUI_EVENT_UPDATE
+    REWIND,
+    FASTFORWARD,
+    PAUSE,
+    GUI_UPDATE
+};
+
+struct streamSeekParams {
+    int pos;
+    int rel;
+    int seek_by_bytes;
 };
 
 using namespace std;
@@ -98,6 +107,9 @@ public:
     Uint32 sdlCustomEventType;
     QTimer *timer;
     QScreen *screen;
+
+signals:
+    void guiUpdate(int);
 
 public slots:
     void runLoop();

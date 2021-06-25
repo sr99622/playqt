@@ -27,62 +27,56 @@ VideoState::VideoState()
     //memset(this, 0, sizeof(VideoState));
 }
 
+void VideoState::video_display()
+{
+    if (!width)
+        video_open();
+
+    SDL_SetRenderDrawColor(disp->renderer, 0, 0, 0, 255);
+    SDL_RenderClear(disp->renderer);
+    //if (audio_st && show_mode != SHOW_MODE_VIDEO)
+    //    video_audio_display();
+    //else if (video_st)
+    if (video_st)
+        video_image_display();
+
+    SDL_RenderPresent(disp->renderer);
+
+    /*
+    // QImage version
+    Frame *vp = pictq.peek_last();
+    Mat mat = vp->hwToMat();
+    QImage image((uchar*)mat.data, mat.cols, mat.rows, QImage::Format_RGB888);
+    QPixmap pixmap;
+    pixmap.convertFromImage(image);
+    MW->viewerDialog->viewer->displayContainer->display->setPixmap(pixmap);
+    ///////////////////////////////////////////////////////////////////////
+    */
+}
+
 void VideoState::video_image_display()
 {
-    if (paused) {
+    if (paused)
         cout << "PAUSED video_image_display" << endl;
-    }
 
     Frame* vp;
     Frame* sp = NULL;
     SDL_Rect rect;
 
     vp = pictq.peek_last();
-    if (subtitle_st) {
-        if (subpq.nb_remaining() > 0) {
-            sp = subpq.peek();
 
-            if (vp->pts >= sp->pts + ((float)sp->sub.start_display_time / 1000)) {
-                if (!sp->uploaded) {
-                    uint8_t* pixels[4];
-                    int pitch[4];
-                    int i;
-                    if (!sp->width || !sp->height) {
-                        sp->width = vp->width;
-                        sp->height = vp->height;
-                    }
-                    if (disp->realloc_texture(&sub_texture, SDL_PIXELFORMAT_ARGB8888, sp->width, sp->height, SDL_BLENDMODE_BLEND, 1) < 0)
-                        return;
-
-                    for (i = 0; i < sp->sub.num_rects; i++) {
-                        AVSubtitleRect* sub_rect = sp->sub.rects[i];
-
-                        sub_rect->x = av_clip(sub_rect->x, 0, sp->width);
-                        sub_rect->y = av_clip(sub_rect->y, 0, sp->height);
-                        sub_rect->w = av_clip(sub_rect->w, 0, sp->width - sub_rect->x);
-                        sub_rect->h = av_clip(sub_rect->h, 0, sp->height - sub_rect->y);
-
-                        sub_convert_ctx = sws_getCachedContext(sub_convert_ctx,
-                            sub_rect->w, sub_rect->h, AV_PIX_FMT_PAL8,
-                            sub_rect->w, sub_rect->h, AV_PIX_FMT_BGRA,
-                            0, NULL, NULL, NULL);
-                        if (!sub_convert_ctx) {
-                            av_log(NULL, AV_LOG_FATAL, "Cannot initialize the conversion context\n");
-                            return;
-                        }
-                        if (!SDL_LockTexture(sub_texture, (SDL_Rect*)sub_rect, (void**)pixels, pitch)) {
-                            sws_scale(sub_convert_ctx, (const uint8_t* const*)sub_rect->data, sub_rect->linesize,
-                                0, sub_rect->h, pixels, pitch);
-                            SDL_UnlockTexture(sub_texture);
-                        }
-                    }
-                    sp->uploaded = 1;
-                }
-            }
-            else
-                sp = NULL;
-        }
+    /*
+    if (paused) {
+        vp = &MW->filterChain->pf;
     }
+    else {
+        vp = pictq.peek_last();
+    }
+    */
+
+
+    if (subtitle_st)
+        subtitle_image_display(vp, sp);
 
     filterChain->process(vp);  //  hook into playqt filtering system
     //filter->process(vp);
@@ -108,6 +102,146 @@ void VideoState::video_image_display()
     disp->set_sdl_yuv_conversion_mode(NULL);
     if (sp) {
         SDL_RenderCopy(disp->renderer, sub_texture, NULL, &rect);
+    }
+}
+
+int VideoState::video_thread()
+{
+    AVFrame* frame = av_frame_alloc();
+    double pts;
+    double duration;
+    int ret;
+    AVRational tb = video_st->time_base;
+    AVRational frame_rate = av_guess_frame_rate(ic, video_st, NULL);
+
+    if (!frame)
+        return AVERROR(ENOMEM);
+
+    for (;;) {
+        ret = get_video_frame(frame);
+
+        if (ret < 0)
+            break;
+
+        if (!ret)
+            continue;
+
+        if (paused)
+            cout << "video_thread paused: " << TS << endl;
+
+        duration = (frame_rate.num && frame_rate.den ? av_q2d(av_make_q(frame_rate.den, frame_rate.num)) : 0);
+        pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
+        ret = queue_picture(frame, pts, duration, frame->pkt_pos, viddec.pkt_serial);
+        av_frame_unref(frame);
+
+        if (ret < 0)
+            break;
+    }
+
+    av_frame_free(&frame);
+    return 0;
+}
+
+void VideoState::twinky()
+{
+    cout << "this is a test" << endl;
+}
+
+void VideoState::refresh_loop_wait_event(SDL_Event* event) {
+    double remaining_time = 0.0;
+    SDL_PumpEvents();
+    while (!SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+        if (!co->cursor_hidden && av_gettime_relative() - co->cursor_last_shown > CURSOR_HIDE_DELAY) {
+            SDL_ShowCursor(1);
+            co->cursor_hidden = 0;
+        }
+        if (remaining_time > 0.0)
+            av_usleep((int64_t)(remaining_time * 1000000.0));
+        remaining_time = REFRESH_RATE;
+        if (show_mode != SHOW_MODE_NONE && (!paused || force_refresh)) {
+            video_refresh(&remaining_time);
+        }
+        SDL_PumpEvents();
+    }
+}
+
+int VideoState::video_open()
+{
+    int w, h, x, y;
+
+    QSize displaySize = MW->mainPanel->displayContainer->display->size();
+    w = displaySize.width() * MW->screen->devicePixelRatio();
+    h = displaySize.height() * MW->screen->devicePixelRatio();
+    //w = displaySize.width();
+    //h = displaySize.height();
+    x = 0;
+    y = 0;
+
+    //w = co->screen_width ? co->screen_width : co->default_width;
+    //h = co->screen_height ? co->screen_height : co->default_height;
+    //x = co->screen_left;
+    //y = co->screen_top;
+
+    if (!co->window_title)
+        co->window_title = co->input_filename;
+    SDL_SetWindowTitle(disp->window, co->window_title);
+
+    SDL_SetWindowSize(disp->window, w, h);
+    SDL_SetWindowPosition(disp->window, x, y);
+    if (co->is_full_screen)
+        SDL_SetWindowFullscreen(disp->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    SDL_ShowWindow(disp->window);
+
+    width = w;
+    height = h;
+
+    return 0;
+}
+
+void VideoState::subtitle_image_display(Frame *vp, Frame *sp)
+{
+    if (subpq.nb_remaining() > 0) {
+        sp = subpq.peek();
+
+        if (vp->pts >= sp->pts + ((float)sp->sub.start_display_time / 1000)) {
+            if (!sp->uploaded) {
+                uint8_t* pixels[4];
+                int pitch[4];
+                int i;
+                if (!sp->width || !sp->height) {
+                    sp->width = vp->width;
+                    sp->height = vp->height;
+                }
+                if (disp->realloc_texture(&sub_texture, SDL_PIXELFORMAT_ARGB8888, sp->width, sp->height, SDL_BLENDMODE_BLEND, 1) < 0)
+                    return;
+
+                for (i = 0; i < sp->sub.num_rects; i++) {
+                    AVSubtitleRect* sub_rect = sp->sub.rects[i];
+
+                    sub_rect->x = av_clip(sub_rect->x, 0, sp->width);
+                    sub_rect->y = av_clip(sub_rect->y, 0, sp->height);
+                    sub_rect->w = av_clip(sub_rect->w, 0, sp->width - sub_rect->x);
+                    sub_rect->h = av_clip(sub_rect->h, 0, sp->height - sub_rect->y);
+
+                    sub_convert_ctx = sws_getCachedContext(sub_convert_ctx,
+                        sub_rect->w, sub_rect->h, AV_PIX_FMT_PAL8,
+                        sub_rect->w, sub_rect->h, AV_PIX_FMT_BGRA,
+                        0, NULL, NULL, NULL);
+                    if (!sub_convert_ctx) {
+                        av_log(NULL, AV_LOG_FATAL, "Cannot initialize the conversion context\n");
+                        return;
+                    }
+                    if (!SDL_LockTexture(sub_texture, (SDL_Rect*)sub_rect, (void**)pixels, pitch)) {
+                        sws_scale(sub_convert_ctx, (const uint8_t* const*)sub_rect->data, sub_rect->linesize,
+                            0, sub_rect->h, pixels, pitch);
+                        SDL_UnlockTexture(sub_texture);
+                    }
+                }
+                sp->uploaded = 1;
+            }
+        }
+        else
+            sp = NULL;
     }
 }
 
@@ -286,6 +420,30 @@ void VideoState::check_external_clock_speed() {
         if (speed != 1.0)
             extclk.set_clock_speed(speed + EXTERNAL_CLOCK_SPEED_STEP * (1.0 - speed) / fabs(1.0 - speed));
     }
+}
+
+void VideoState::rewind()
+{
+    double incr = MW->co->seek_interval ? -MW->co->seek_interval : -10.0;
+    double pos = MW->is->get_master_clock();
+    if (isnan(pos))
+        pos = (double)MW->is->seek_pos / AV_TIME_BASE;
+    pos += incr;
+    if (MW->is->ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
+        pos = MW->is->ic->start_time / (double)AV_TIME_BASE;
+    MW->is->stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+}
+
+void VideoState::fastforward()
+{
+    double incr = MW->co->seek_interval ? MW->co->seek_interval : 10.0;
+    double pos = MW->is->get_master_clock();
+    if (isnan(pos))
+        pos = (double)MW->is->seek_pos / AV_TIME_BASE;
+    pos += incr;
+    if (MW->is->ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
+        pos = MW->is->ic->start_time / (double)AV_TIME_BASE;
+    MW->is->stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
 }
 
 void VideoState::stream_seek(int64_t pos, int64_t rel, int seek_by_bytes)
@@ -520,64 +678,6 @@ void VideoState::update_video_pts(double pts, int64_t pos, int serial) {
     //cout << "update_video_pts" << endl;
     vidclk.set_clock(pts, serial);
     extclk.sync_clock_to_slave(&vidclk);
-}
-
-int VideoState::video_open()
-{
-    int w, h, x, y;
-
-    QSize displaySize = MW->mainPanel->displayContainer->display->size();
-    w = displaySize.width();
-    h = displaySize.height();
-    x = 0;
-    y = 0;
-
-    //w = co->screen_width ? co->screen_width : co->default_width;
-    //h = co->screen_height ? co->screen_height : co->default_height;
-    //x = co->screen_left;
-    //y = co->screen_top;
-
-    if (!co->window_title)
-        co->window_title = co->input_filename;
-    SDL_SetWindowTitle(disp->window, co->window_title);
-
-    SDL_SetWindowSize(disp->window, w, h);
-    SDL_SetWindowPosition(disp->window, x, y);
-    if (co->is_full_screen)
-        SDL_SetWindowFullscreen(disp->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    SDL_ShowWindow(disp->window);
-
-    width = w;
-    height = h;
-
-    return 0;
-}
-
-void VideoState::video_display()
-{
-    if (!width)
-        video_open();
-
-    SDL_SetRenderDrawColor(disp->renderer, 0, 0, 0, 255);
-    SDL_RenderClear(disp->renderer);
-    //if (audio_st && show_mode != SHOW_MODE_VIDEO)
-    //    video_audio_display();
-    //else if (video_st)
-    if (video_st)
-        video_image_display();
-
-    SDL_RenderPresent(disp->renderer);
-
-    /*
-    // QImage version
-    Frame *vp = pictq.peek_last();
-    Mat mat = vp->hwToMat();
-    QImage image((uchar*)mat.data, mat.cols, mat.rows, QImage::Format_RGB888);
-    QPixmap pixmap;
-    pixmap.convertFromImage(image);
-    MW->viewerDialog->viewer->displayContainer->display->setPixmap(pixmap);
-    ///////////////////////////////////////////////////////////////////////
-    */
 }
 
 #if CONFIG_AVFILTER
@@ -1256,116 +1356,6 @@ the_end:
 #endif
     av_frame_free(&frame);
     return ret;
-}
-
-int VideoState::video_thread()
-{
-    //VideoState* is = (VideoState*)arg;
-    AVFrame* frame = av_frame_alloc();
-    double pts;
-    double duration;
-    int ret;
-    AVRational tb = video_st->time_base;
-    AVRational frame_rate = av_guess_frame_rate(ic, video_st, NULL);
-
-#if CONFIG_AVFILTER
-    AVFilterGraph* graph = NULL;
-    AVFilterContext* filt_out = NULL, * filt_in = NULL;
-    int last_w = 0;
-    int last_h = 0;
-    enum AVPixelFormat last_format = (AVPixelFormat)-2;
-    int last_serial = -1;
-    int last_vfilter_idx = 0;
-#endif
-
-    if (!frame)
-        return AVERROR(ENOMEM);
-
-    for (;;) {
-        ret = get_video_frame(frame);
-        if (ret < 0)
-            goto the_end;
-        if (!ret)
-            continue;
-
-#if CONFIG_AVFILTER
-        if (last_w != frame->width
-            || last_h != frame->height
-            || last_format != frame->format
-            || last_serial != viddec.pkt_serial
-            || last_vfilter_idx != vfilter_idx) {
-            av_log(NULL, AV_LOG_DEBUG,
-                "Video frame changed from size:%dx%d format:%s serial:%d to size:%dx%d format:%s serial:%d\n",
-                last_w, last_h,
-                (const char*)av_x_if_null(av_get_pix_fmt_name(last_format), "none"), last_serial,
-                frame->width, frame->height,
-                (const char*)av_x_if_null(av_get_pix_fmt_name((AVPixelFormat)frame->format), "none"), viddec.pkt_serial);
-            avfilter_graph_free(&graph);
-            graph = avfilter_graph_alloc();
-            if (!graph) {
-                ret = AVERROR(ENOMEM);
-                goto the_end;
-            }
-            graph->nb_threads = co->filter_nbthreads;
-            if ((ret = configure_video_filters(graph, co->vfilters_list ? co->vfilters_list[vfilter_idx] : NULL, frame)) < 0) {
-                /**/
-                SDL_Event event;
-                event.type = FF_QUIT_EVENT;
-                event.user.data1 = this;
-                SDL_PushEvent(&event);
-                /**/
-                //MW->e->running = false;
-                goto the_end;
-            }
-            filt_in = in_video_filter;
-            filt_out = out_video_filter;
-            last_w = frame->width;
-            last_h = frame->height;
-            last_format = (AVPixelFormat)frame->format;
-            last_serial = viddec.pkt_serial;
-            last_vfilter_idx = vfilter_idx;
-            frame_rate = av_buffersink_get_frame_rate(filt_out);
-        }
-
-        ret = av_buffersrc_add_frame(filt_in, frame);
-        if (ret < 0)
-            goto the_end;
-
-        while (ret >= 0) {
-            frame_last_returned_time = av_gettime_relative() / 1000000.0;
-
-            ret = av_buffersink_get_frame_flags(filt_out, frame, 0);
-            if (ret < 0) {
-                if (ret == AVERROR_EOF)
-                    viddec.finished = viddec.pkt_serial;
-                ret = 0;
-                break;
-            }
-
-            frame_last_filter_delay = av_gettime_relative() / 1000000.0 - frame_last_returned_time;
-            if (fabs(frame_last_filter_delay) > AV_NOSYNC_THRESHOLD / 10.0)
-                frame_last_filter_delay = 0;
-            tb = av_buffersink_get_time_base(filt_out);
-#endif
-            duration = (frame_rate.num && frame_rate.den ? av_q2d(av_make_q(frame_rate.den, frame_rate.num)) : 0);
-            pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
-            ret = queue_picture(frame, pts, duration, frame->pkt_pos, viddec.pkt_serial);
-            av_frame_unref(frame);
-#if CONFIG_AVFILTER
-            if (videoq.serial != viddec.pkt_serial)
-                break;
-        }
-#endif
-
-        if (ret < 0)
-            goto the_end;
-    }
-the_end:
-#if CONFIG_AVFILTER
-    avfilter_graph_free(&graph);
-#endif
-    av_frame_free(&frame);
-    return 0;
 }
 
 static int subtitleThread(void* opaque)
@@ -2110,29 +2100,6 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     }
 
     return is;
-}
-
-void VideoState::twinky()
-{
-    cout << "this is a test" << endl;
-}
-
-void VideoState::refresh_loop_wait_event(SDL_Event* event) {
-    double remaining_time = 0.0;
-    SDL_PumpEvents();
-    while (!SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
-        if (!co->cursor_hidden && av_gettime_relative() - co->cursor_last_shown > CURSOR_HIDE_DELAY) {
-            SDL_ShowCursor(1);
-            co->cursor_hidden = 0;
-        }
-        if (remaining_time > 0.0)
-            av_usleep((int64_t)(remaining_time * 1000000.0));
-        remaining_time = REFRESH_RATE;
-        if (show_mode != SHOW_MODE_NONE && (!paused || force_refresh)) {
-            video_refresh(&remaining_time);
-        }
-        SDL_PumpEvents();
-    }
 }
 
 /*

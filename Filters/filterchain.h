@@ -36,6 +36,8 @@ public:
     FilterChain(QMainWindow *parent);
     ~FilterChain();
 
+    Frame pf;
+
     QMainWindow *mainWindow;
     FilterPanel *panel;
     int size = -1;

@@ -82,30 +82,39 @@ void ControlPanel::voldn()
 
 void ControlPanel::rewind()
 {
-    double incr = MW->co->seek_interval ? -MW->co->seek_interval : -10.0;
-    double pos = MW->is->get_master_clock();
-    if (isnan(pos))
-        pos = (double)MW->is->seek_pos / AV_TIME_BASE;
-    pos += incr;
-    if (MW->is->ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
-        pos = MW->is->ic->start_time / (double)AV_TIME_BASE;
-    MW->is->stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+    /*
+    SDL_Event event;
+    event.type = MW->sdlCustomEventType;
+    event.user.code = REWIND;
+    //event.user.data1 = this;
+    SDL_PushEvent(&event);
+    */
+
+    MW->is->rewind();
 }
 
 void ControlPanel::fastforward()
 {
-    double incr = MW->co->seek_interval ? MW->co->seek_interval : 10.0;
-    double pos = MW->is->get_master_clock();
-    if (isnan(pos))
-        pos = (double)MW->is->seek_pos / AV_TIME_BASE;
-    pos += incr;
-    if (MW->is->ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
-        pos = MW->is->ic->start_time / (double)AV_TIME_BASE;
-    MW->is->stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+    /*
+    SDL_Event event;
+    event.type = MW->sdlCustomEventType;
+    event.user.code = FASTFORWARD;
+    //event.user.data1 = this;
+    SDL_PushEvent(&event);
+    */
+
+    MW->is->fastforward();
 }
 
 void ControlPanel::pause()
 {
+    /*
+    SDL_Event event;
+    event.type = MW->sdlCustomEventType;
+    event.user.code = PAUSE;
+    SDL_PushEvent(&event);
+    */
+
     MW->is->toggle_pause();
 }
 
@@ -120,7 +129,7 @@ void ControlPanel::quit()
     event.type = FF_QUIT_EVENT;
     event.user.data1 = this;
     SDL_PushEvent(&event);
-    //MW->e->running = false;
+
     MW->timer->stop();
 }
 

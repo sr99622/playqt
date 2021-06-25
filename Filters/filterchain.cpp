@@ -39,6 +39,8 @@ void FilterChain::process(Frame *vp)
 {
     //auto start = high_resolution_clock::now();
 
+    pf.copy(vp);
+
     if (MW->mainPanel->controlPanel->engageFilter->isChecked()) {
         size = panel->leftModel->filters.size();
         for (int i = 0; i < size; i++) {

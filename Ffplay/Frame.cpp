@@ -21,8 +21,30 @@ Frame::~Frame()
     }
 }
 
+void Frame::copy(Frame *vp)
+{
+    allocateFrame(vp->width, vp->height, (AVPixelFormat)vp->format);
+    av_frame_copy(frame, vp->frame);
+    serial = vp->serial;
+    pts = vp->pts;
+    duration = vp->duration;
+    pos = vp->pos;
+    width = vp->width;
+    height = vp->height;
+    format = vp->format;
+    sar = vp->sar;
+    uploaded = vp->uploaded;
+    flip_v = vp->flip_v;
+}
+
 void Frame::allocateFrame(int width, int height, const AVPixelFormat& pix_fmt)
 {
+    if (frame != nullptr) {
+        if (frame->width == width && frame->height == height && frame->format == pix_fmt) {
+            return;
+        }
+    }
+
     if (frame != nullptr)
         av_frame_free(&frame);
     frame = av_frame_alloc();
