@@ -143,8 +143,7 @@ void MainWindow::guiUpdate(int arg)
         cout << "MainWindow::guiUpdate: " << arg << endl;
 
     if (is != nullptr) {
-        if (!is->display_in_progress)
-            is->video_display();
+        is->video_display();
     }
 }
 

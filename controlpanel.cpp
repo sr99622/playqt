@@ -67,51 +67,44 @@ void ControlPanel::test()
 
 void ControlPanel::singlestep()
 {
-    MW->is->step_to_next_frame();
+    if (MW->is)
+        MW->is->step_to_next_frame();
 }
 
 void ControlPanel::volup()
 {
-    MW->is->update_volume(1, SDL_VOLUME_STEP);
+    if (MW->is)
+        MW->is->update_volume(1, SDL_VOLUME_STEP);
 }
 
 void ControlPanel::voldn()
 {
-    MW->is->update_volume(-1, SDL_VOLUME_STEP);
+    if (MW->is)
+        MW->is->update_volume(-1, SDL_VOLUME_STEP);
 }
 
 void ControlPanel::rewind()
 {
-    double incr = MW->co->seek_interval ? -MW->co->seek_interval : -10.0;
-    double pos = MW->is->get_master_clock();
-    if (isnan(pos))
-        pos = (double)MW->is->seek_pos / AV_TIME_BASE;
-    pos += incr;
-    if (MW->is->ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
-        pos = MW->is->ic->start_time / (double)AV_TIME_BASE;
-    MW->is->stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+    if (MW->is)
+        MW->is->rewind();
 }
 
 void ControlPanel::fastforward()
 {
-    double incr = MW->co->seek_interval ? MW->co->seek_interval : 10.0;
-    double pos = MW->is->get_master_clock();
-    if (isnan(pos))
-        pos = (double)MW->is->seek_pos / AV_TIME_BASE;
-    pos += incr;
-    if (MW->is->ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
-        pos = MW->is->ic->start_time / (double)AV_TIME_BASE;
-    MW->is->stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+    if (MW->is)
+        MW->is->fastforward();
 }
 
 void ControlPanel::pause()
 {
-    MW->is->toggle_pause();
+    if (MW->is)
+        MW->is->toggle_pause();
 }
 
 void ControlPanel::mute()
 {
-    MW->is->toggle_mute();
+    if (MW->is)
+        MW->is->toggle_mute();
 }
 
 void ControlPanel::quit()

@@ -110,6 +110,7 @@ void VideoState::video_image_display()
     disp->set_sdl_yuv_conversion_mode(vp->frame);
     SDL_RenderCopyEx(disp->renderer, vid_texture, NULL, &rect, 0, NULL, (SDL_RendererFlip)(vp->flip_v ? SDL_FLIP_VERTICAL : 0));
     disp->set_sdl_yuv_conversion_mode(NULL);
+
     if (sp) {
         SDL_RenderCopy(disp->renderer, sub_texture, NULL, &rect);
     }
@@ -342,10 +343,6 @@ void VideoState::seek_chapter(int incr)
 void VideoState::stream_toggle_pause()
 {
     if (paused) {
-
-        cout << "stream_toggle_pause: " << vidclk.last_updated << endl;
-        cout << "frame_timer - vidclk.last_updated: " << frame_timer - vidclk.last_updated << endl;
-
         frame_timer += av_gettime_relative() / 1000000.0 - vidclk.last_updated;
         if (read_pause_return != AVERROR(ENOSYS)) {
             vidclk.paused = 0;
@@ -1712,6 +1709,30 @@ out:
     return ret;
 }
 
+void VideoState::rewind()
+{
+    double incr = MW->co->seek_interval ? -MW->co->seek_interval : -10.0;
+    double pos = get_master_clock();
+    if (isnan(pos))
+        pos = (double)seek_pos / AV_TIME_BASE;
+    pos += incr;
+    if (ic->start_time != AV_NOPTS_VALUE && pos < ic->start_time / (double)AV_TIME_BASE)
+        pos = ic->start_time / (double)AV_TIME_BASE;
+    stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+}
+
+void VideoState::fastforward()
+{
+    double incr = MW->co->seek_interval ? MW->co->seek_interval : 10.0;
+    double pos = get_master_clock();
+    if (isnan(pos))
+        pos = (double)seek_pos / AV_TIME_BASE;
+    pos += incr;
+    if (ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
+        pos = ic->start_time / (double)AV_TIME_BASE;
+    stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+}
+
 const QString VideoState::formatTime(double time_in_seconds)
 {
     int hours = time_in_seconds / 3600;
@@ -1798,6 +1819,7 @@ void VideoState::read_loop()
     for (;;) {
         if (abort_request)
             break;
+
         if (paused != last_paused) {
             last_paused = paused;
             if (paused) {
@@ -1896,6 +1918,8 @@ void VideoState::read_loop()
             SDL_UnlockMutex(wait_mutex);
             continue;
         }
+
+        /*
         if (!paused &&
             (!audio_st || (auddec.finished == audioq.serial && sampq.nb_remaining() == 0)) &&
             (!video_st || (viddec.finished == videoq.serial && pictq.nb_remaining() == 0))) {
@@ -1907,6 +1931,8 @@ void VideoState::read_loop()
                 break;
             }
         }
+        */
+
         ret = av_read_frame(ic, pkt);
         if (ret < 0) {
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !eof) {

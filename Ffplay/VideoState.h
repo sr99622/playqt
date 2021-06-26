@@ -98,13 +98,6 @@ public:
     void read_loop();
     void assign_read_options();
     
-    const QString formatTime(double time_in_seconds);
-    double elapsed;
-    double total;
-
-    bool display_in_progress;
-    QMutex mutex;
-
     int stream_component_open(int stream_index);
 
     void sdl_audio_callback(Uint8* stream, int len);
@@ -119,10 +112,17 @@ public:
     void refresh_loop_wait_event(SDL_Event* event);
     void do_exit();
 
+    void rewind();
+    void fastforward();
+    const QString formatTime(double time_in_seconds);
+    double elapsed;
+    double total;
+
     QMainWindow* mainWindow;
     FilterChain* filterChain;
     SimpleFilter* filter;
     AVExceptionHandler av;
+    QMutex mutex;
 
     CommandOptions* co;
     Display* disp;

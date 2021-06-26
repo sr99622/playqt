@@ -39,6 +39,9 @@ void Frame::copy(Frame *vp)
 
 void Frame::allocateFrame(int width, int height, const AVPixelFormat& pix_fmt)
 {
+    if (this->width == width && this->height == height && this->format == pix_fmt)
+        return;
+
     if (frame != nullptr)
         av_frame_free(&frame);
     frame = av_frame_alloc();
