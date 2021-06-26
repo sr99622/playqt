@@ -528,8 +528,8 @@ int VideoState::video_open()
     int w, h, x, y;
 
     QSize displaySize = MW->mainPanel->displayContainer->display->size();
-    w = displaySize.width();
-    h = displaySize.height();
+    w = displaySize.width() * MW->screen->devicePixelRatio();
+    h = displaySize.height() * MW->screen->devicePixelRatio();
     x = 0;
     y = 0;
 
