@@ -13,6 +13,7 @@ extern "C" {
 }
 
 #include <QMainWindow>
+#include <QMutex>
 
 #include "Clock.h"
 #include "FrameQueue.h"
@@ -56,9 +57,7 @@ public:
 
     static VideoState* stream_open(QMainWindow *mw);
 
-    void video_display();
     void video_image_display();
-    void subtitle_image_display(Frame *vp, Frame *sp);
     int compute_mod(int a, int b);
     int is_realtime(AVFormatContext* s);
     int stream_has_enough_packets(AVStream* st, int stream_id, PacketQueue* queue);
@@ -86,6 +85,7 @@ public:
     void update_video_pts(double pts, int64_t pos, int serial);
 
     int video_open();
+    void video_display();
     void update_sample_display(short* samples, int samples_size);
     void video_refresh(double* time_remaining);
     void subtitle_refresh();
@@ -102,8 +102,8 @@ public:
     double elapsed;
     double total;
 
-    void rewind();
-    void fastforward();
+    bool display_in_progress;
+    QMutex mutex;
 
     int stream_component_open(int stream_index);
 

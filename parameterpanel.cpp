@@ -486,7 +486,7 @@ void ParameterPanel::clear()
     parameter->setText("");
     MW->co->duration = AV_NOPTS_VALUE;
     MW->co->start_time = AV_NOPTS_VALUE;
-    //MW->co->opt_add_vfilter(NULL, NULL, "");
+    MW->co->opt_add_vfilter(NULL, NULL, "");
     MW->co->video_codec_name = 0;
     MW->co->audio_disable = 0;
     MW->co->startup_volume = 100;

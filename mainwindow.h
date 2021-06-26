@@ -47,16 +47,7 @@
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
     SLIDER_POSITION_UPDATE,
-    REWIND,
-    FASTFORWARD,
-    PAUSE,
-    GUI_UPDATE
-};
-
-struct streamSeekParams {
-    int pos;
-    int rel;
-    int seek_by_bytes;
+    GUI_EVENT_UPDATE
 };
 
 using namespace std;
@@ -74,6 +65,7 @@ public:
     void closeEvent(QCloseEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
     void initializeSDL();
     void getNames(QString names_file);
 
@@ -108,9 +100,6 @@ public:
     QTimer *timer;
     QScreen *screen;
 
-signals:
-    void guiUpdate(int);
-
 public slots:
     void runLoop();
     void poll();
@@ -121,6 +110,7 @@ public slots:
     void msg(const QString&);
     void test();
     void ping(const vector<bbox_t>*);
+    void guiUpdate(int);
 
 };
 #endif // MAINWINDOW_H

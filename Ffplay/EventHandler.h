@@ -19,13 +19,11 @@ public:
     SDL_Event event;
     double elapsed = 0;
     double total = 0;
-    double remaining_time;
     int percentage = 0;
     int64_t ts;
 
 public slots:
     void feed();
-    void guiUpdate(int);
 
 };
 

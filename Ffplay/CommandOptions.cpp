@@ -358,8 +358,8 @@ CommandOptions::CommandOptions()
     options[62].argname = "y pos";
 
     options[63].name = "vf";
-    options[63].flags = OPT_EXPERT | HAS_ARG | OPT_NO_GUI;
-    //options[63].u.func_arg = opt_add_vfilter;
+    options[63].flags = OPT_EXPERT | HAS_ARG;
+    options[63].u.func_arg = opt_add_vfilter;
     options[63].help = "set video filters";
     options[63].argname = "filter_graph";
 

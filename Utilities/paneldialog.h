@@ -34,6 +34,7 @@ public:
     PanelDialog(QMainWindow *parent);
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
+    void moveEvent(QMoveEvent *event) override;
     virtual int getDefaultWidth();
     virtual int getDefaultHeight();
 
@@ -44,6 +45,9 @@ public:
 
     const int defaultWidth = 320;
     const int defaultHeight = 240;
+
+signals:
+    void guiUpdate(int);
 
 public slots:
     void close();

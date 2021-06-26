@@ -33,18 +33,12 @@ void Frame::copy(Frame *vp)
     height = vp->height;
     format = vp->format;
     sar = vp->sar;
-    uploaded = vp->uploaded;
+    uploaded = 0;
     flip_v = vp->flip_v;
 }
 
 void Frame::allocateFrame(int width, int height, const AVPixelFormat& pix_fmt)
 {
-    if (frame != nullptr) {
-        if (frame->width == width && frame->height == height && frame->format == pix_fmt) {
-            return;
-        }
-    }
-
     if (frame != nullptr)
         av_frame_free(&frame);
     frame = av_frame_alloc();

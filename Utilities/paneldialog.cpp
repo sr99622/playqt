@@ -45,6 +45,11 @@ void PanelDialog::showEvent(QShowEvent *event)
     QDialog::showEvent(event);
 }
 
+void PanelDialog::moveEvent(QMoveEvent *event)
+{
+    QDialog::moveEvent(event);
+}
+
 void PanelDialog::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event);
