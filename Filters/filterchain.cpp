@@ -39,12 +39,10 @@ void FilterChain::process(Frame *vp)
 {
     //auto start = high_resolution_clock::now();
 
-    //cout << "copy vp" << endl;
     if (!MW->is->paused) {
         fp.copy(vp);
     }
     else {
-        //cout << "FilterChain::process: " << TS << endl;
         fp.copy(MW->is->pictq.peek_last());
     }
 

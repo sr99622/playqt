@@ -121,14 +121,22 @@ SubPicture::SubPicture(QMainWindow *parent)
 
 void SubPicture::filter(Frame *vp)
 {
-    if (!codec_width || !codec_height)
+    if (codec_width != MW->is->video_st->codecpar->width || codec_height != MW->is->video_st->codecpar->height)
         reset();
 
     ptz();
+
     Frame dummy(w, h, (AVPixelFormat)vp->format);
-    vp->slice(x, y, &dummy);
-    vp->allocateFrame(dummy.width, dummy.height, (AVPixelFormat)dummy.format);
-    av_frame_copy(vp->frame, dummy.frame);
+
+    if (vp->width == codec_width && vp->height == codec_height) {
+        vp->slice(x, y, &dummy);
+        vp->allocateFrame(dummy.width, dummy.height, (AVPixelFormat)dummy.format);
+        av_frame_copy(vp->frame, dummy.frame);
+    }
+    else {
+        MW->is->step_to_next_frame();
+    }
+
 }
 
 void SubPicture::apply()

@@ -121,23 +121,21 @@ Frame* FrameQueue::peek_last()
 Frame* FrameQueue::peek_writable()
 {
 	SDL_LockMutex(mutex);
-	while (size >= max_size &&
-		!pktq->abort_request) {
-		SDL_CondWait(cond, mutex);
-	}
-	SDL_UnlockMutex(mutex);
+    while (size >= max_size && !pktq->abort_request) {
+        SDL_CondWait(cond, mutex);
+    }
+    SDL_UnlockMutex(mutex);
 
 	if (pktq->abort_request)
 		return NULL;
 
-	return &queue[windex];
+    return &queue[windex];
 }
 
 Frame* FrameQueue::peek_readable()
 {
 	SDL_LockMutex(mutex);
-	while (size - rindex_shown <= 0 &&
-		!pktq->abort_request) {
+    while (size - rindex_shown <= 0 && !pktq->abort_request) {
 		SDL_CondWait(cond, mutex);
 	}
 	SDL_UnlockMutex(mutex);

@@ -3,16 +3,16 @@
 #include "VideoState.h"
 #include <QMainWindow>
 
-#include <SDL.h>
+//#include <SDL.h>
 
-class EventHandler : public QObject
+class EventHandler
 {
-    Q_OBJECT
 
 public:
     EventHandler(QMainWindow *parent);
     void event_loop();
     bool running = false;
+    void feed();
 
     QMainWindow *mainWindow;
 
@@ -21,9 +21,6 @@ public:
     double total = 0;
     int percentage = 0;
     int64_t ts;
-
-public slots:
-    void feed();
 
 };
 

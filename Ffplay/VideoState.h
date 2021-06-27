@@ -47,13 +47,11 @@ typedef struct AudioParams {
     int bytes_per_sec;
 } AudioParams;
 
-class VideoState : public QObject
+class VideoState
 {
-    Q_OBJECT
 
 public:
-
-    VideoState();
+    //VideoState();
 
     static VideoState* stream_open(QMainWindow *mw);
 
@@ -115,6 +113,7 @@ public:
     void rewind();
     void fastforward();
     const QString formatTime(double time_in_seconds);
+
     double elapsed;
     double total;
 
@@ -122,7 +121,8 @@ public:
     FilterChain* filterChain;
     SimpleFilter* filter;
     AVExceptionHandler av;
-    QMutex mutex;
+    //QMutex mutex;
+    SDL_mutex *display_mutex;
 
     CommandOptions* co;
     Display* disp;
@@ -226,9 +226,6 @@ public:
     AVFilterGraph* agraph;              // audio filter graph
 
     //int last_video_stream, last_audio_stream, last_subtitle_stream;
-
-public slots:
-    void twinky();
 
 };
 

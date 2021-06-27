@@ -22,10 +22,12 @@ static int audioThread(void* opaque)
     return static_cast<VideoState*>(opaque)->audio_thread();
 }
 
+/*
 VideoState::VideoState()
 {
     //memset(this, 0, sizeof(VideoState));
 }
+*/
 
 void VideoState::video_image_display()
 {
@@ -167,6 +169,7 @@ void VideoState::stream_component_close(int stream_index)
     case AVMEDIA_TYPE_VIDEO:
         viddec.abort(&pictq);
         viddec.destroy();
+        SDL_DestroyMutex(display_mutex);
         break;
     case AVMEDIA_TYPE_SUBTITLE:
         subdec.abort(&subpq);
@@ -398,8 +401,8 @@ void VideoState::step_to_next_frame()
 
 void VideoState::set_default_window_size(int width, int height, AVRational sar)
 {
-    int display_width = MW->mainPanel->displayContainer->display->size().width();
-    int display_height = MW->mainPanel->displayContainer->display->size().height();
+    int display_width = MW->mainPanel->displayContainer->display->size().width() * MW->screen->devicePixelRatio();
+    int display_height = MW->mainPanel->displayContainer->display->size().height() * MW->screen->devicePixelRatio();
 
     SDL_Rect rect;
     int max_width = display_width ? display_width : INT_MAX;
@@ -417,8 +420,9 @@ int VideoState::queue_picture(AVFrame* src_frame, double pts, double duration, i
 {
     Frame* vp;
 
-    if (!(vp = pictq.peek_writable()))
+    if (!(vp = pictq.peek_writable())) {
         return -1;
+    }
 
     vp->sar = src_frame->sample_aspect_ratio;
     vp->uploaded = 0;
@@ -436,6 +440,7 @@ int VideoState::queue_picture(AVFrame* src_frame, double pts, double duration, i
 
     av_frame_move_ref(vp->frame, src_frame);
     pictq.push();
+
     return 0;
 }
 
@@ -551,6 +556,12 @@ int VideoState::video_open()
     width = w;
     height = h;
 
+    display_mutex = SDL_CreateMutex();
+    if (!display_mutex) {
+        cout << "ERROR SDL_CreateMutex: " << SDL_GetError() << endl;
+        return -1;
+    }
+
     return 0;
 }
 
@@ -558,7 +569,8 @@ void VideoState::video_display()
 {
     //display_in_progress = true;
 
-    mutex.lock();
+    //mutex.lock();
+    SDL_LockMutex(display_mutex);
 
     if (!width)
         video_open();
@@ -573,7 +585,8 @@ void VideoState::video_display()
 
     SDL_RenderPresent(disp->renderer);
 
-    mutex.unlock();
+    //mutex.unlock();
+    SDL_UnlockMutex(display_mutex);
 
     //display_in_progress = false;
 
@@ -1293,6 +1306,7 @@ int VideoState::video_thread()
 
     for (;;) {
         ret = get_video_frame(frame);
+
         if (ret < 0)
             goto the_end;
         if (!ret)
@@ -1374,6 +1388,9 @@ int VideoState::video_thread()
 
         if (ret < 0)
             goto the_end;
+
+
+
     }
 the_end:
 #if CONFIG_AVFILTER
@@ -1991,6 +2008,7 @@ void VideoState::read_loop()
         else {
             av_packet_unref(pkt);
         }
+
     }
     SDL_DestroyMutex(wait_mutex);
 }
@@ -2158,11 +2176,6 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     }
 
     return is;
-}
-
-void VideoState::twinky()
-{
-    cout << "this is a test" << endl;
 }
 
 void VideoState::refresh_loop_wait_event(SDL_Event* event) {
