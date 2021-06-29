@@ -2,32 +2,32 @@
 
 extern "C" {
 #include "Ffplay/cmdutils.h"
-#include "libavformat/avformat.h"
+//#include "libavformat/avformat.h"
 #include "libavdevice/avdevice.h"
 #include "libavutil/opt.h"
 #include "libavutil/ffversion.h"
 }
 
 #include <SDL.h>
-#include <SDL_thread.h>
+//#include <SDL_thread.h>
 
-#include <assert.h>
-#include <functional>
+//#include <assert.h>
+//#include <functional>
 #include "Ffplay/CommandOptions.h"
 
-#include "Ffplay/PacketQueue.h"
-#include "Ffplay/FrameQueue.h"
-#include "Ffplay/Decoder.h"
-#include "Ffplay/Clock.h"
+//#include "Ffplay/PacketQueue.h"
+//#include "Ffplay/FrameQueue.h"
+//#include "Ffplay/Decoder.h"
+//#include "Ffplay/Clock.h"
 //#include "VideoState.h"
-#include "Ffplay/Display.h"
+//#include "Ffplay/Display.h"
 //#include "EventHandler.h"
 //#include "model.h"
 
 #include <QApplication>
 
-#include <cuda.h>
-#include <cuda_runtime.h>
+//#include <cuda.h>
+//#include <cuda_runtime.h>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Advapi32.lib")
@@ -39,9 +39,9 @@ extern "C" {
 #undef main
 #endif
 
-#define INDENT        1
-#define SHOW_VERSION  2
-#define SHOW_CONFIG   4
+#define INDENT         1
+#define SHOW_VERSION   2
+#define SHOW_CONFIG    4
 #define SHOW_COPYRIGHT 8
 
 const char program_name[] = "ffplay";

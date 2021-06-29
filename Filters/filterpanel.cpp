@@ -23,12 +23,7 @@
 #include "mainwindow.h"
 #include <QGridLayout>
 
-//#include "Filters/diff.h"
-//#include "Filters/diffxy.h"
 #include "Filters/subpicture.h"
-//#include "Filters/gifwriter.h"
-//#include "Filters/convolution.h"
-//#include "Filters/motiontrack.h"
 #include "Filters/darknet.h"
 
 FilterDialog::FilterDialog(QMainWindow *parent) : PanelDialog(parent)
@@ -41,7 +36,6 @@ FilterDialog::FilterDialog(QMainWindow *parent) : PanelDialog(parent)
     setLayout(layout);
 }
 
-
 int FilterDialog::getDefaultWidth()
 {
     return defaultWidth;
@@ -50,6 +44,11 @@ int FilterDialog::getDefaultWidth()
 int FilterDialog::getDefaultHeight()
 {
     return defaultHeight;
+}
+
+const QString FilterDialog::getSettingsKey()
+{
+    return settingsKey;
 }
 
 FilterPanel::FilterPanel(QMainWindow *parent)
@@ -121,6 +120,7 @@ FilterPanel::FilterPanel(QMainWindow *parent)
     viewPanel->setLayout(viewLayout);
 
     tabWidget = new QTabWidget;
+    tabWidget->setMinimumHeight(240);
     bottomPanel = new QWidget;
     QVBoxLayout *bottomLayout = new QVBoxLayout;
     for (int i = 0; i < rightModel->filters.size(); i++) {
@@ -131,9 +131,10 @@ FilterPanel::FilterPanel(QMainWindow *parent)
 
     tabWidget->addTab(bottomPanel, "");
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(viewPanel);
-    layout->addWidget(tabWidget);
+    QGridLayout *layout = new QGridLayout;
+    layout->addWidget(viewPanel, 0, 0, 1, 1);
+    layout->addWidget(tabWidget, 1, 0, 1, 1);
+    layout->setRowStretch(0, 10);
     setLayout(layout);
 }
 
@@ -146,12 +147,7 @@ FilterPanel::~FilterPanel()
 
 void FilterPanel::addFilters()
 {
-    //filters.push_back(new Diff(mainWindow));
-    //filters.push_back(new DiffXY(mainWindow));
     filters.push_back(new SubPicture(mainWindow));
-    //filters.push_back(new GIFWriter(mainWindow));
-    //filters.push_back(new Convolution(mainWindow));
-    //filters.push_back(new MotionTrack(mainWindow));
     filters.push_back(new Darknet(mainWindow));
 }
 

@@ -13,7 +13,7 @@ FileSetter::FileSetter(QMainWindow *parent, const QString& labelText, const QStr
     label = new QLabel(labelText);
     text = new QLineEdit();
     button = new QPushButton("...");
-    button->setMaximumWidth(60);
+    button->setMaximumWidth(40);
     connect(button, SIGNAL(clicked()), this, SLOT(selectFile()));
 
     QGridLayout *layout = new QGridLayout;

@@ -32,8 +32,15 @@ class MessageBox : public PanelDialog
 
 public:
     MessageBox(QMainWindow *parent);
+    int getDefaultWidth() override;
+    int getDefaultHeight() override;
+    const QString getSettingsKey() override;
 
     QTextEdit *message;
+
+    const int defaultWidth = 400;
+    const int defaultHeight = 400;
+    const QString settingsKey = "MessageBox/size";
 
 public slots:
     void clear();

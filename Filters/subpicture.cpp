@@ -33,6 +33,8 @@ SubPicture::SubPicture(QMainWindow *parent)
     mainWindow = parent;
     connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
 
+    int buttonWidth = 50;
+
     buttonUp = new QPushButton("^");
     buttonDown = new QPushButton("v");
     buttonLeft = new QPushButton("<");
@@ -49,30 +51,71 @@ SubPicture::SubPicture(QMainWindow *parent)
     buttonReset = new QPushButton("Reset");
     buttonApply = new QPushButton("...");
 
+    buttonUp->setMaximumWidth(buttonWidth);
+    buttonDown->setMaximumWidth(buttonWidth);
+    buttonLeft->setMaximumWidth(buttonWidth);
+    buttonRight->setMaximumWidth(buttonWidth);
+    button1->setMaximumWidth(buttonWidth);
+    button2->setMaximumWidth(buttonWidth);
+    button3->setMaximumWidth(buttonWidth);
+    button4->setMaximumWidth(buttonWidth);
+    button5->setMaximumWidth(buttonWidth);
+    //buttonReset = new QPushButton("Reset");
+    buttonApply->setMaximumWidth(buttonWidth);
+
+    int zoomWidth = buttonZoomOut->fontMetrics().boundingRect("Zoom Out").width() * 1.5;
+    buttonZoomIn->setMaximumWidth(zoomWidth);
+    buttonZoomOut->setMaximumWidth(zoomWidth);
+
     textX = new NumberTextBox;
     textY = new NumberTextBox;
     textW = new NumberTextBox;
     textH = new NumberTextBox;
 
+    int textWidth = textX->fontMetrics().boundingRect("00000").width() * 1.5;
+    textX->setMaximumWidth(textWidth);
+    textY->setMaximumWidth(textWidth);
+    textW->setMaximumWidth(textWidth);
+    textH->setMaximumWidth(textWidth);
+
     checkPreset = new QCheckBox("Set PTZ Position");
 
     QWidget *coordinatePanel = new QWidget;
-    QHBoxLayout *coordinateLayout = new QHBoxLayout;
-    coordinateLayout->addWidget(new QLabel("x"));
-    coordinateLayout->addWidget(textX);
-    coordinateLayout->addWidget(new QLabel("y"));
-    coordinateLayout->addWidget(textY);
-    coordinateLayout->addWidget(new QLabel("w"));
-    coordinateLayout->addWidget(textW);
-    coordinateLayout->addWidget(new QLabel("h"));
-    coordinateLayout->addWidget(textH);
-    coordinateLayout->addWidget(buttonApply);
+    QGridLayout *coordinateLayout = new QGridLayout;
+    coordinateLayout->addWidget(new QLabel("x"),   0, 0, 1, 1, Qt::AlignRight);
+    coordinateLayout->addWidget(textX,             0, 1, 1, 1);
+    coordinateLayout->addWidget(new QLabel("y"),   0, 2, 1, 1, Qt::AlignRight);
+    coordinateLayout->addWidget(textY,             0, 3, 1, 1);
+    coordinateLayout->addWidget(new QLabel("w"),   0, 4, 1, 1, Qt::AlignRight);
+    coordinateLayout->addWidget(textW,             0, 5, 1, 1);
+    coordinateLayout->addWidget(new QLabel("h"),   0, 6, 1, 1, Qt::AlignRight);
+    coordinateLayout->addWidget(textH,             0, 7, 1, 1);
+    coordinateLayout->addWidget(buttonApply,       0, 8, 1, 1);
     coordinatePanel->setLayout(coordinateLayout);
+
+
+    QWidget *directionPanel = new QWidget;
+    QGridLayout *directionLayout = new QGridLayout;
+    directionLayout->addWidget(buttonUp,        0, 1, 1, 1);
+    directionLayout->addWidget(buttonLeft,      1, 0, 1, 1);
+    directionLayout->addWidget(buttonRight,     1, 2, 1, 1);
+    directionLayout->addWidget(buttonDown,      2, 1, 1, 1);
+    directionPanel->setLayout(directionLayout);
+
+    QWidget *zoomPanel = new QWidget;
+    QGridLayout *zoomLayout = new QGridLayout;
+    zoomLayout->addWidget(buttonZoomIn,    0, 0, 1, 1);
+    zoomLayout->addWidget(buttonZoomOut,   1, 0, 1, 1);
+    zoomPanel->setLayout(zoomLayout);
+
 
     QGridLayout *layout = new QGridLayout;
 
     layout->addWidget(coordinatePanel, 1, 0, 1, 10);
 
+    layout->addWidget(directionPanel,  2, 0, 1, 6);
+    layout->addWidget(zoomPanel,       2, 6, 1, 4);
+    /*
     layout->addWidget(buttonLeft,  3, 1, 1, 2, Qt::AlignCenter);
     layout->addWidget(buttonUp,    2, 4, 1, 2, Qt::AlignCenter);
     layout->addWidget(buttonRight, 3, 7, 1, 2, Qt::AlignCenter);
@@ -80,6 +123,7 @@ SubPicture::SubPicture(QMainWindow *parent)
 
     layout->addWidget(buttonZoomOut, 3, 3, 1, 2, Qt::AlignCenter);
     layout->addWidget(buttonZoomIn,  3, 5, 1, 2, Qt::AlignCenter);
+    */
 
     layout->addWidget(button1, 6, 0, 1, 2, Qt::AlignCenter);
     layout->addWidget(button2, 6, 2, 1, 2, Qt::AlignCenter);

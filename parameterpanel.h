@@ -80,11 +80,17 @@ class ParameterDialog : public PanelDialog
 
 public:
     ParameterDialog(QMainWindow *parent);
-    int getDefaultHeight();
+    int getDefaultHeight() override;
+    int getDefaultWidth() override;
+    const QString getSettingsKey() override;
     void show();
 
     QMainWindow *mainWindow;
     ParameterPanel *panel;
+
+    const int defaultWidth = 400;
+    const int defaultHeight = 320;
+    const QString settingsKey = "ParameterDialog/size";
 
 };
 

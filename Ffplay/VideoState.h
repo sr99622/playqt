@@ -116,6 +116,7 @@ public:
 
     double elapsed;
     double total;
+    double current_time;
 
     QMainWindow* mainWindow;
     FilterChain* filterChain;

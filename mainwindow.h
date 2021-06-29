@@ -10,6 +10,7 @@
 #include <QSettings>
 #include <QApplication>
 #include <QSplitter>
+#include <QHeaderView>
 #include <QThreadPool>
 #include <QTabWidget>
 #include <QStandardPaths>
@@ -17,6 +18,8 @@
 #include <QGroupBox>
 #include <QTimer>
 #include <QMutex>
+#include <QRunnable>
+#include <QShortcut>
 
 #include <iostream>
 #include <string>
@@ -46,14 +49,31 @@
 
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
-    SLIDER_POSITION_UPDATE,
-    GUI_EVENT_UPDATE
+    SLIDER_POSITION_UPDATE
 };
+
+#define APP_DEFAULT_WIDTH 1200
+#define APP_DEFAULT_HEIGHT 600
 
 using namespace std;
 
 #define MW dynamic_cast<MainWindow*>(mainWindow)
 #define TS QTime::currentTime().toString("hh:mm:ss.zzz").toStdString()
+
+class Quitter : public QObject, public QRunnable
+{
+    Q_OBJECT
+
+public:
+    Quitter(QMainWindow *parent);
+    void run() override;
+
+    QMainWindow *mainWindow;
+
+signals:
+    void done();
+
+};
 
 class MainWindow : public QMainWindow
 {
@@ -67,7 +87,6 @@ public:
     void moveEvent(QMoveEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     void initializeSDL();
-    void getNames(QString names_file);
 
     QString filename;
 
@@ -95,10 +114,20 @@ public:
     OptionDialog *optionDialog;
 
     ViewerDialog *viewerDialog;
+    Quitter *quitter;
 
     Uint32 sdlCustomEventType;
     QTimer *timer;
     QScreen *screen;
+
+    const QString geometryKey = "MainWindow/geometry";
+    const QString splitterKey = "MainWindow/splitter";
+    const QString videoPanelHeaderKey = "MainWindow/VideoPanel/header";
+    const QString videoPanelDirKey = "MainWindow/VideoPanel/dir";
+    const QString picturePanelHeaderKey = "MainWindow/PicturePanel/header";
+    const QString picturePanelDirKey = "MainWindow/PicturePanel/dir";
+    const QString audioPanelHeaderKey = "MainWindow/AudioPanel/header";
+    const QString audioPanelDirKey = "MainWindow/AudioPanel/dir";
 
 public slots:
     void runLoop();
@@ -111,6 +140,7 @@ public slots:
     void test();
     void ping(const vector<bbox_t>*);
     void guiUpdate(int);
+    void start();
 
 };
 #endif // MAINWINDOW_H

@@ -1099,7 +1099,7 @@ void VideoState::video_refresh(double* remaining_time)
         while (trying) {
 
             //cout << "\t\t-----" << endl;
-            QThread::msleep(1);
+            //QThread::msleep(1);
 
             if (pictq.nb_remaining() == 0) {
                 //cout << "pictq.nb_remaining == 0" << endl;
@@ -1567,6 +1567,7 @@ int VideoState::audio_open(int64_t wanted_channel_layout, int wanted_nb_channels
 int VideoState::stream_component_open(int stream_index)
 {
     //AVFormatContext* ic = ic;
+
     AVCodecContext* avctx;
     AVCodec* codec;
     const char* forced_codec_name = NULL;
@@ -1832,7 +1833,6 @@ void VideoState::read_loop()
         cout << "ERROR SDL_CreateMutex: " << SDL_GetError() << endl;
         return;
     }
-
     for (;;) {
         if (abort_request)
             break;
@@ -1930,9 +1930,11 @@ void VideoState::read_loop()
                     stream_has_enough_packets(video_st, video_stream, &videoq) &&
                     stream_has_enough_packets(subtitle_st, subtitle_stream, &subtitleq)))) {
             // wait 10 ms
-            SDL_LockMutex(wait_mutex);
-            SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
-            SDL_UnlockMutex(wait_mutex);
+
+            //SDL_LockMutex(wait_mutex);
+            //SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
+            //SDL_UnlockMutex(wait_mutex);
+
             continue;
         }
 
@@ -1990,7 +1992,7 @@ void VideoState::read_loop()
             videoq.put(pkt);
 
             // send update message to gui for slider
-            double current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
+            current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
             SDL_Event event;
             SDL_memset(&event, 0, sizeof(event));
             event.type = MW->sdlCustomEventType;
@@ -2000,7 +2002,6 @@ void VideoState::read_loop()
             event.user.data1 = &current_time;
             event.user.data2 = &total;
             SDL_PushEvent(&event);
-
         }
         else if (pkt->stream_index == subtitle_stream && pkt_in_play_range) {
             subtitleq.put(pkt);
@@ -2008,7 +2009,6 @@ void VideoState::read_loop()
         else {
             av_packet_unref(pkt);
         }
-
     }
     SDL_DestroyMutex(wait_mutex);
 }

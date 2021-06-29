@@ -78,11 +78,13 @@ public:
     FilterDialog(QMainWindow *parent);
     int getDefaultWidth() override;
     int getDefaultHeight() override;
+    const QString getSettingsKey() override;
     FilterPanel *panel;
     QMainWindow *mainWindow;
 
-    int defaultWidth = 520;
-    int defaultHeight = 720;
+    const int defaultWidth = 520;
+    const int defaultHeight = 720;
+    const QString settingsKey = "FilterPanel/size";
 
 };
 

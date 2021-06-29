@@ -32,13 +32,20 @@ void PanelDialog::showEvent(QShowEvent *event)
     shown = true;
 
     if (gm.width() == 0) {
-        int cx = MW->geometry().center().x();
-        int cy = MW->geometry().center().y();
-        int dw = getDefaultWidth();
-        int dh = getDefaultHeight();
-        int dx = cx - dw/2;
-        int dy = cy - dh/2;
-        gm = QRect(dx, dy, dw, dh);
+
+        int w = getDefaultWidth();
+        int h = getDefaultHeight();
+        if (getSettingsKey().length() > 0) {
+            if (MW->settings->contains(getSettingsKey())) {
+                QSize size = MW->settings->value(getSettingsKey()).toSize();
+                w = size.width();
+                h = size.height();
+            }
+        }
+
+        int x = MW->geometry().center().x() - w/2;
+        int y = MW->geometry().center().y() - h/2;
+        gm = QRect(x, y, w, h);
     }
 
     setGeometry(gm);
@@ -52,16 +59,15 @@ void PanelDialog::moveEvent(QMoveEvent *event)
 
 void PanelDialog::closeEvent(QCloseEvent *event)
 {
-    Q_UNUSED(event);
     if (shown)
         gm = geometry();
-    hide();
-}
 
-void PanelDialog::close()
-{
-    QCloseEvent event;
-    closeEvent(&event);
+    if (getSettingsKey().length() > 0) {
+        QSize size(gm.width(), gm.height());
+        MW->settings->setValue(getSettingsKey(), size);
+    }
+
+    QDialog::closeEvent(event);
 }
 
 int PanelDialog::getDefaultWidth()
@@ -72,4 +78,9 @@ int PanelDialog::getDefaultWidth()
 int PanelDialog::getDefaultHeight()
 {
     return defaultHeight;
+}
+
+const QString PanelDialog::getSettingsKey()
+{
+    return settingsKey;
 }

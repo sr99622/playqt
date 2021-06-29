@@ -132,7 +132,7 @@ CommandOptions::CommandOptions()
     options[24].name = "max_alloc";
     options[24].flags = HAS_ARG | OPT_NO_GUI;
     options[24].u.func_arg = opt_max_alloc;
-    options[24].help = "set maximum size of a single allocated block";
+    options[24].help = "set maximum size of an allocated block";
     options[24].argname = "bytes";
 
     options[25].name = "cpuflags";
@@ -218,25 +218,25 @@ CommandOptions::CommandOptions()
     options[39].name = "ss";
     options[39].flags = HAS_ARG;
     options[39].u.func_arg = opt_seek;
-    options[39].help = "seek to a given position in seconds";
+    options[39].help = "seek to a position in seconds";
     options[39].argname = "pos";
 
     options[40].name = "t";
     options[40].flags = HAS_ARG;
     options[40].u.func_arg = opt_duration;
-    options[40].help = "play  \"duration\" seconds of audio/video";
+    options[40].help = "play duration in seconds";
     options[40].argname = "duration";
 
     options[41].name = "bytes";
     options[41].flags = OPT_INT | HAS_ARG;
     options[41].u.dst_ptr = &seek_by_bytes;
-    options[41].help = "seek by bytes 0=off 1=on -1=auto";
+    options[41].help = "seek by bytes";
     options[41].argname = "val";
 
     options[42].name = "seek_interval";
     options[42].flags = OPT_FLOAT | HAS_ARG;
     options[42].u.dst_ptr = &seek_interval;
-    options[42].help = "set seek interval for left/right keys, in seconds";
+    options[42].help = "set seek interval in seconds";
     options[42].argname = "seconds";
 
     options[43].name = "nodisp";
@@ -252,7 +252,7 @@ CommandOptions::CommandOptions()
     options[45].name = "volume";
     options[45].flags = OPT_INT | HAS_ARG;
     options[45].u.dst_ptr = &startup_volume;
-    options[45].help = "set startup volume 0=min 100=max";
+    options[45].help = "set startup volume";
     options[45].argname = "volume";
 
     options[46].name = "f";
@@ -288,7 +288,7 @@ CommandOptions::CommandOptions()
     options[51].name = "drp";
     options[51].flags = OPT_INT | HAS_ARG | OPT_EXPERT;
     options[51].u.dst_ptr = &decoder_reorder_pts;
-    options[51].help = "let decoder reorder pts 0=off 1=on -1=auto";
+    options[51].help = "let decoder reorder pts";
     options[51].argname = "";
 
     options[52].name = "lowres";
@@ -300,7 +300,7 @@ CommandOptions::CommandOptions()
     options[53].name = "sync";
     options[53].flags = HAS_ARG | OPT_EXPERT;
     options[53].u.func_arg = opt_sync;
-    options[53].help = "set audio-video sync. type (type=audio/video/ext)";
+    options[53].help = "set audio-video sync";
     options[53].argname = "type";
 
     options[54].name = "autoexit";
@@ -336,7 +336,7 @@ CommandOptions::CommandOptions()
     options[59].name = "infbuf";
     options[59].flags = OPT_BOOL | OPT_EXPERT;
     options[59].u.dst_ptr = &infinite_buffer;
-    options[59].help = "don't limit the input buffer size (useful with realtime streams)";
+    options[59].help = "infinite input buffer";
     options[59].argname = "";
 
     options[60].name = "window_title";

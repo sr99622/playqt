@@ -65,7 +65,7 @@ void Darknet::filter(Frame *vp)
         loading = true;
         model = new DarknetModel(mainWindow);
         model->initialize(cfg->filename, weights->filename, names->filename, 0);
-        loading = false;
+        //loading = false;
     }
 
     if (!loading) {
@@ -116,6 +116,9 @@ void Darknet::setModelDimensions()
     modelDimensions = QSize(width, height);
 
     QFile file(cfg->filename);
+    if (!file.exists())
+        return;
+
     if (!file.open(QIODevice::ReadWrite | QIODevice::Text))
         return;
 
@@ -141,12 +144,15 @@ void Darknet::setModelDimensions()
     file.write(contents.toUtf8());
     file.close();
     setDims->setEnabled(false);
-
 }
 
 QSize Darknet::getModelDimensions()
 {
     QFile file(cfg->filename);
+
+    if (!file.exists())
+        return QSize(0, 0);
+
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return QSize(0, 0);
 
@@ -184,7 +190,7 @@ void Darknet::initialize()
 
 void Darknet::setNames(const QString &path)
 {
-    //namesFilename = path;
+    MW->settings->setValue("DarknetModel/names", path);
 }
 
 void Darknet::cfgEdited(const QString &text)
@@ -205,16 +211,17 @@ void Darknet::setCfg(const QString &path)
         modelHeight->setIntValue(dims.height());
     }
     setDims->setEnabled(false);
+    MW->settings->setValue("DarknetModel/cfg", path);
 }
 
 void Darknet::setWeights(const QString &path)
 {
-    //weightsFilename = path;
+    MW->settings->setValue("DarknetModel/weights", path);
 }
 
 void Darknet::setInitOnStartup(int arg)
 {
-    //initFlag = arg;
+    MW->settings->setValue("DarknetModel/initOnStartup", initOnStartup->isChecked());
 }
 
 void Darknet::saveSettings(QSettings *settings)
@@ -249,6 +256,7 @@ void DarknetLoader::run()
 {
     ((DarknetModel*)model)->detector = new Detector(cfg_file, weights_file, gpu_id);
     emit done(0);
+    ((Darknet*)((MainWindow*)((DarknetModel*)model)->mainWindow)->filterDialog->panel->getFilterByName("Darknet"))->loading = false;
 }
 
 DarknetModel::DarknetModel(QMainWindow *parent) : QObject(parent)
@@ -265,8 +273,8 @@ vector<bbox_t> DarknetModel::infer(Frame *vp, float detection_threshold)
     vector<bbox_t> result;
 
     try {
-        image_t img = hw_get_image(vp);
-        //image_t img = get_image(vp);
+        //image_t img = hw_get_image(vp);
+        image_t img = get_image(vp);
         result = detector->detect(img, detection_threshold);
         detector->free_image(img);
     }
@@ -285,6 +293,7 @@ image_t DarknetModel::get_image(Frame *vp)
 
     img.h = vp->frame->height;
     img.w = vp->frame->linesize[0];
+    //img.w = vp->frame->width;
     img.c = 3;
     img.data = (float*)malloc(sizeof(float) * img.w * img.h * 3);
     memset(img.data, 0, sizeof(float) * img.w * img.h * 3);

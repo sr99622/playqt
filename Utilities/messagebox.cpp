@@ -59,3 +59,18 @@ void MessageBox::copy()
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(message->toPlainText());
 }
+
+int MessageBox::getDefaultWidth()
+{
+    return defaultWidth;
+}
+
+int MessageBox::getDefaultHeight()
+{
+    return defaultHeight;
+}
+
+const QString MessageBox::getSettingsKey()
+{
+    return settingsKey;
+}

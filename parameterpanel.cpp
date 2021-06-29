@@ -11,12 +11,20 @@ ParameterDialog::ParameterDialog(QMainWindow *parent) : PanelDialog(parent)
     setLayout(layout);
 }
 
-
 int ParameterDialog::getDefaultHeight()
 {
-    return 320;
+    return defaultHeight;
 }
 
+int ParameterDialog::getDefaultWidth()
+{
+    return defaultWidth;
+}
+
+const QString ParameterDialog::getSettingsKey()
+{
+    return settingsKey;
+}
 
 void ParameterDialog::show()
 {
@@ -87,6 +95,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 
     QPushButton *set = new QPushButton("Set");
     QPushButton *clear = new QPushButton("Clear");
+    set->setFocusPolicy(Qt::NoFocus);
     clear->setFocusPolicy(Qt::NoFocus);
 
     QWidget *commandPanel = new QWidget(this);
@@ -248,6 +257,7 @@ void ParameterPanel::saveCmdLine()
     storedOption->arg = getOptionStorageString();
     savedCmdLines->addItem(storedOption);
     cmdLineName->setText("");
+    saveSettings(MW->settings);
 }
 
 const QString ParameterPanel::getOptionStorageString()
@@ -490,6 +500,9 @@ void ParameterPanel::clear()
     MW->co->video_codec_name = 0;
     MW->co->audio_disable = 0;
     MW->co->startup_volume = 100;
+    MW->co->wanted_stream_spec[AVMEDIA_TYPE_AUDIO] = 0;
+    MW->co->wanted_stream_spec[AVMEDIA_TYPE_VIDEO] = 0;
+    MW->co->wanted_stream_spec[AVMEDIA_TYPE_SUBTITLE] = 0;
 
     saved_options.clear();
 

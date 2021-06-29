@@ -24,7 +24,6 @@
 
 #include <QDialog>
 #include <QMainWindow>
-#include <QCloseEvent>
 
 class PanelDialog : public QDialog
 {
@@ -37,20 +36,16 @@ public:
     void moveEvent(QMoveEvent *event) override;
     virtual int getDefaultWidth();
     virtual int getDefaultHeight();
+    virtual const QString getSettingsKey();
 
     QMainWindow *mainWindow;
     QRect gm;
     bool shown = false;
-    bool intialized = false;
 
     const int defaultWidth = 320;
     const int defaultHeight = 240;
+    const QString settingsKey = "";
 
-signals:
-    void guiUpdate(int);
-
-public slots:
-    void close();
 };
 
 #endif // PANELDIALOG_H

@@ -8,18 +8,27 @@ EventHandler::EventHandler(QMainWindow *parent)
 
 void EventHandler::event_loop()
 {
+    looping = true;
     running = true;
     elapsed = 0;
     total = 0;
     percentage = 0;
 
-    while (running) {
+    while (looping) {
         feed();
     }
 
     if (MW->is != nullptr)
         MW->is->stream_close();
+
     MW->is = nullptr;
+
+    DisplayContainer *dc = MW->mainPanel->displayContainer;
+    dc->slider->setValue(0);
+    dc->elapsed->setText("");
+    dc->total->setText("");
+    MW->repaint();
+    running = false;
 }
 
 void EventHandler::feed()
@@ -48,6 +57,18 @@ void EventHandler::feed()
         }
     }
     else if (event.type == FF_QUIT_EVENT) {
-        running = false;
+        cout << "QUIT EVENT" << endl;
+        looping = false;
+        dc->slider->setValue(0);
+        dc->elapsed->setText("");
+        dc->total->setText("");
+        MW->repaint();
+    }
+    else if (event.type == SDL_KEYDOWN) {
+        switch (event.key.keysym.sym) {
+        case SDLK_SPACE:
+            MW->is->toggle_pause();
+            break;
+        }
     }
 }

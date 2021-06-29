@@ -31,6 +31,20 @@ QTreeView {
 
 QTreeView::item:hover {
     color : selection_light;
+    background-color : background_medium;
+}
+
+QTreeView::item:selected:active {
+    background : selection_medium;
+}
+
+QTreeView::item QLineEdit {
+    padding : 0 px;
+    margin : 0 px;
+    border : 0 px;
+    color : black;
+    background : foreground_light;
+    selection-background-color : #024B94;
 }
 
 QHeaderView::section {
