@@ -132,10 +132,9 @@ void FilePanel::info()
         av.ck(video_stream = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0), AFBS);
         video = fmt_ctx->streams[video_stream];
 
-        QString str = "File reader parameters\n";
+        QString str = "File video parameters\n";
 
         char buf[16];
-
 
         QString codec_str;
         const AVCodecDescriptor *cd = avcodec_descriptor_get(video->codecpar->codec_id);
@@ -147,13 +146,15 @@ void FilePanel::info()
             QTextStream(&codec_str) << "Uknown codec" << "\n";
         }
 
-        if (fmt_ctx->metadata == NULL) str.append("\nmetadata is NULL\n"); else {
+        if (fmt_ctx->metadata == NULL) {
+            str.append("\nmetadata is NULL\n");
+        }
+        else {
             QTextStream(&str) << "\n";
             AVDictionaryEntry *t = NULL;
             while (t = av_dict_get(fmt_ctx->metadata, "", t, AV_DICT_IGNORE_SUFFIX)) {
                 QTextStream(&codec_str) << t->key << " : " << t->value << "\n";
             }
-
         }
 
         QTextStream(&str)

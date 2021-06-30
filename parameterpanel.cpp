@@ -503,6 +503,9 @@ void ParameterPanel::clear()
     MW->co->wanted_stream_spec[AVMEDIA_TYPE_AUDIO] = 0;
     MW->co->wanted_stream_spec[AVMEDIA_TYPE_VIDEO] = 0;
     MW->co->wanted_stream_spec[AVMEDIA_TYPE_SUBTITLE] = 0;
+    MW->co->clock_sync = nullptr;
+    MW->co->av_sync_type = AV_SYNC_AUDIO_MASTER;
+    MW->co->seek_by_bytes = -1;
 
     saved_options.clear();
 

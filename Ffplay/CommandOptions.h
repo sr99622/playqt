@@ -8,6 +8,7 @@ extern"C" {
 #include <SDL.h>
 #include <QObject>
 #include <QString>
+#include <QMainWindow>
 
 //#include "VideoState.h"
 
@@ -67,6 +68,8 @@ public:
     static void opt_input_file(void* optctx, const char* filename);
     static int opt_codec(void* optctx, const char* opt, const char* arg);
     static int opt_add_vfilter(void* optctx, const char* opt, const char* arg);
+
+    inline static QMainWindow *mainWindow;
 
     inline static int dummy;
 

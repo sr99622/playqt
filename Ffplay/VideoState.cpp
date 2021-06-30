@@ -1167,6 +1167,7 @@ void VideoState::video_refresh(double* remaining_time)
                 if (!step && (co->framedrop > 0 || (co->framedrop && get_master_sync_type() != AV_SYNC_VIDEO_MASTER)) && time > frame_timer + duration) {
                     cout << "frame drop" << endl;
                     frame_drops_late++;
+                    video_display();
                     pictq.next();
                     continue;
                 }

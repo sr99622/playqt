@@ -6,6 +6,7 @@ using namespace cv::cuda;
 MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent)
 {
     this->co = co;
+    co->mainWindow = this;
     filename = QString(co->input_filename);
     av_log_set_level(AV_LOG_PANIC);
 
@@ -203,18 +204,7 @@ void MainWindow::initializeSDL()
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    /*
-    cout << "MainWindow::paintEvent: " << TS << endl;
-    if (is) {
-        if (is->paused) {
-            is->video_display();
-            cout << "UPDATE" << endl;
-        }
-    }
-    else {
-        cout << "WTF" << endl;
-    }
-    */
+    cout << "mainwindow paint event" << TS << endl;
     QMainWindow::paintEvent(event);
 }
 

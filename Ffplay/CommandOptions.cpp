@@ -542,7 +542,7 @@ int CommandOptions::opt_frame_pix_fmt(void* optctx, const char* opt, const char*
 
 int CommandOptions::opt_sync(void* optctx, const char* opt, const char* arg)
 {
-    clock_sync = arg;
+    clock_sync = av_strdup(arg);
 
     if (!strcmp(arg, "audio"))
         av_sync_type = AV_SYNC_AUDIO_MASTER;
@@ -551,8 +551,14 @@ int CommandOptions::opt_sync(void* optctx, const char* opt, const char* arg)
     else if (!strcmp(arg, "ext"))
         av_sync_type = AV_SYNC_EXTERNAL_CLOCK;
     else {
-        av_log(NULL, AV_LOG_ERROR, "Unknown value for %s: %s\n", opt, arg);
-        exit(1);
+        QString msg = "Invalid option for sync\nUse audio, video or ext";
+        QMessageBox::warning(MW->parameterDialog, "Invalid setting", msg);
+        av_sync_type = AV_SYNC_AUDIO_MASTER;
+        clock_sync = nullptr;
+        MW->parameterDialog->panel->parameter->setText("");
+        //av_log(NULL, AV_LOG_ERROR, "Unknown value for %s: %s\n", opt, arg);
+        //exit(1);
+        return -1;
     }
     return 0;
 }
