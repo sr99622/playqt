@@ -1692,6 +1692,12 @@ int VideoState::stream_component_open(int stream_index)
         video_stream = stream_index;
         video_st = ic->streams[stream_index];
 
+        codec_name = avcodec_descriptor_get(video_st->codecpar->codec_id)->name;
+        if (codec_name.contains("jpeg")
+         || codec_name.contains("gif")
+         || codec_name.contains("png")
+         || codec_name.contains("bmp")) paused = 2;
+
         SDL_Event event;
         SDL_memset(&event, 0, sizeof(event));
         event.type = MW->sdlCustomEventType;
@@ -1932,9 +1938,9 @@ void VideoState::read_loop()
                     stream_has_enough_packets(subtitle_st, subtitle_stream, &subtitleq)))) {
             // wait 10 ms
 
-            //SDL_LockMutex(wait_mutex);
-            //SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
-            //SDL_UnlockMutex(wait_mutex);
+            SDL_LockMutex(wait_mutex);
+            SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
+            SDL_UnlockMutex(wait_mutex);
 
             continue;
         }

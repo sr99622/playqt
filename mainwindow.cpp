@@ -204,7 +204,7 @@ void MainWindow::initializeSDL()
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    cout << "mainwindow paint event" << TS << endl;
+    //cout << "mainwindow paint event" << TS << endl;
     QMainWindow::paintEvent(event);
 }
 
