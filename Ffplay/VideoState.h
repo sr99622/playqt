@@ -29,6 +29,7 @@ extern "C" {
 #define AV_SYNC_THRESHOLD_MAX 0.1
 #define AV_SYNC_FRAMEDUP_THRESHOLD 0.1
 #define FF_QUIT_EVENT    (SDL_USEREVENT + 2)
+#define FF_START_EVENT   (SDL_USEREVENT + 3)
 #define MAX_QUEUE_SIZE (15 * 1024 * 1024)
 #define MIN_FRAMES 25
 #define VIDEO_PICTURE_QUEUE_SIZE 3
@@ -51,7 +52,7 @@ class VideoState
 {
 
 public:
-    //VideoState();
+    VideoState();
 
     static VideoState* stream_open(QMainWindow *mw);
 

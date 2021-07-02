@@ -162,6 +162,7 @@ void MainWindow::runLoop()
 
 void MainWindow::start()
 {
+    cout << "start: " << co->input_filename << endl;
     if (co->input_filename) {
         is = VideoState::stream_open(this);
         e->event_loop();
@@ -302,16 +303,35 @@ Quitter::Quitter(QMainWindow *parent)
 
 void Quitter::run()
 {
-    // hack - stream seems to be unstable until it reaches an equillibrium, so make user wait until a few
-    // seconds have elapsed since starting before responding to the request to switch streams on the fly
-    if (MW->is->current_time > 3.0f) {
 
-        if (MW->is->paused)
+    //cout << "paused = " << MW->is->paused << endl;
+    //bool is_picture = false;
+    //if (MW->is->paused == 2)
+    //    is_picture = true;
+
+    //if (MW->is->current_time > 4.0f || is_picture) {
+
+        if (!MW->is->paused) {
             MW->is->toggle_pause();
+            QThread::msleep(10);
+        }
 
-        MW->e->looping = false;
+        //if (is_picture) {
+            SDL_Event event;
+            event.type = FF_QUIT_EVENT;
+            event.user.data1 = this;
+            SDL_PushEvent(&event);
+        //}
+        //else {
+        //    MW->e->looping = false;
+        //}
+
+
         while (MW->e->running)
             QThread::msleep(10);
+
         emit done();
-    }
+        //MW->start();
+
+    //}
 }

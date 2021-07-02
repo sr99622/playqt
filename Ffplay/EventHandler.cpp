@@ -64,11 +64,4 @@ void EventHandler::feed()
         dc->total->setText("");
         MW->repaint();
     }
-    else if (event.type == SDL_KEYDOWN) {
-        switch (event.key.keysym.sym) {
-        case SDLK_SPACE:
-            MW->is->toggle_pause();
-            break;
-        }
-    }
 }

@@ -22,12 +22,10 @@ static int audioThread(void* opaque)
     return static_cast<VideoState*>(opaque)->audio_thread();
 }
 
-/*
 VideoState::VideoState()
 {
-    //memset(this, 0, sizeof(VideoState));
+    memset(this, 0, sizeof(VideoState));
 }
-*/
 
 void VideoState::video_image_display()
 {
@@ -1679,6 +1677,18 @@ int VideoState::stream_component_open(int stream_index)
         audio_stream = stream_index;
         audio_st = ic->streams[stream_index];
 
+        if (MW->co->av_sync_type == AV_SYNC_AUDIO_MASTER) {
+            SDL_Event event;
+            SDL_memset(&event, 0, sizeof(event));
+            event.type = MW->sdlCustomEventType;
+            event.user.code = FILE_POSITION_UPDATE;
+            elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+            total = ic->duration * av_q2d(av_get_time_base_q());
+            event.user.data1 = &elapsed;
+            event.user.data2 = &total;
+            SDL_PushEvent(&event);
+        }
+
         auddec.init(avctx, &audioq, continue_read_thread, flush_pkt);
         if ((ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) && !ic->iformat->read_seek) {
             auddec.start_pts = audio_st->start_time;
@@ -1694,19 +1704,21 @@ int VideoState::stream_component_open(int stream_index)
 
         codec_name = avcodec_descriptor_get(video_st->codecpar->codec_id)->name;
         if (codec_name.contains("jpeg")
-         || codec_name.contains("gif")
+         //|| codec_name.contains("gif")
          || codec_name.contains("png")
          || codec_name.contains("bmp")) paused = 2;
 
-        SDL_Event event;
-        SDL_memset(&event, 0, sizeof(event));
-        event.type = MW->sdlCustomEventType;
-        event.user.code = FILE_POSITION_UPDATE;
-        elapsed = ic->start_time * av_q2d(av_get_time_base_q());
-        total = ic->duration * av_q2d(av_get_time_base_q());
-        event.user.data1 = &elapsed;
-        event.user.data2 = &total;
-        SDL_PushEvent(&event);
+        if (MW->co->av_sync_type == AV_SYNC_VIDEO_MASTER) {
+            SDL_Event event;
+            SDL_memset(&event, 0, sizeof(event));
+            event.type = MW->sdlCustomEventType;
+            event.user.code = FILE_POSITION_UPDATE;
+            elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+            total = ic->duration * av_q2d(av_get_time_base_q());
+            event.user.data1 = &elapsed;
+            event.user.data2 = &total;
+            SDL_PushEvent(&event);
+        }
 
         viddec.init(avctx, &videoq, continue_read_thread, flush_pkt);
         if ((ret = viddec.start(videoThread, "video_decoder", this)) < 0)
@@ -1824,7 +1836,6 @@ void VideoState::assign_read_options()
         co->seek_by_bytes = !!(ic->iformat->flags & AVFMT_TS_DISCONT) && strcmp("ogg", ic->iformat->name);
 
     max_frame_duration = (ic->iformat->flags & AVFMT_TS_DISCONT) ? 10.0 : 3600.0;
-
 }
 
 void VideoState::read_loop()
@@ -1840,9 +1851,11 @@ void VideoState::read_loop()
         cout << "ERROR SDL_CreateMutex: " << SDL_GetError() << endl;
         return;
     }
+
     for (;;) {
-        if (abort_request)
+        if (abort_request) {
             break;
+        }
 
         if (paused != last_paused) {
             last_paused = paused;
@@ -1936,7 +1949,6 @@ void VideoState::read_loop()
                 || (stream_has_enough_packets(audio_st, audio_stream, &audioq) &&
                     stream_has_enough_packets(video_st, video_stream, &videoq) &&
                     stream_has_enough_packets(subtitle_st, subtitle_stream, &subtitleq)))) {
-            // wait 10 ms
 
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
@@ -1975,6 +1987,7 @@ void VideoState::read_loop()
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
+
             continue;
         }
         else {
@@ -1993,22 +2006,36 @@ void VideoState::read_loop()
 
         if (pkt->stream_index == audio_stream && pkt_in_play_range) {
             audioq.put(pkt);
+            if (MW->co->av_sync_type == AV_SYNC_AUDIO_MASTER) {
+                current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
+                SDL_Event event;
+                SDL_memset(&event, 0, sizeof(event));
+                event.type = MW->sdlCustomEventType;
+                event.user.code = FILE_POSITION_UPDATE;
+                elapsed = current_time;
+                total = ic->duration * av_q2d(av_get_time_base_q());
+                event.user.data1 = &current_time;
+                event.user.data2 = &total;
+                SDL_PushEvent(&event);
+            }
         }
         else if (pkt->stream_index == video_stream && pkt_in_play_range
             && !(video_st->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
             videoq.put(pkt);
 
             // send update message to gui for slider
-            current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
-            SDL_Event event;
-            SDL_memset(&event, 0, sizeof(event));
-            event.type = MW->sdlCustomEventType;
-            event.user.code = FILE_POSITION_UPDATE;
-            elapsed = current_time;
-            total = ic->duration * av_q2d(av_get_time_base_q());
-            event.user.data1 = &current_time;
-            event.user.data2 = &total;
-            SDL_PushEvent(&event);
+            if (MW->co->av_sync_type == AV_SYNC_VIDEO_MASTER) {
+                current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
+                SDL_Event event;
+                SDL_memset(&event, 0, sizeof(event));
+                event.type = MW->sdlCustomEventType;
+                event.user.code = FILE_POSITION_UPDATE;
+                elapsed = current_time;
+                total = ic->duration * av_q2d(av_get_time_base_q());
+                event.user.data1 = &current_time;
+                event.user.data2 = &total;
+                SDL_PushEvent(&event);
+            }
         }
         else if (pkt->stream_index == subtitle_stream && pkt_in_play_range) {
             subtitleq.put(pkt);
