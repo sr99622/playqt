@@ -9,50 +9,129 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
 {
     mainWindow = parent;
 
-    QPushButton *play = new QPushButton("Play");
-    QPushButton *rewind = new QPushButton("<<");
-    QPushButton *fastforward = new QPushButton(">>");
-    QPushButton *pause = new QPushButton("Pause");
+    icnPlay = QIcon("C:/Users/sr996/Projects/playqt/images/icons8-play-26.png");
+    icnPause = QIcon("C:/Users/sr996/Projects/playqt/images/icons8-pause-26.png");
+    btnPlay = new QPushButton(icnPlay, "");
+
+    icnStop = QIcon("C:/Users/sr996/Projects/playqt/images/icons8-stop-26.png");
+    btnStop = new QPushButton(icnStop, "");
+
+    icnRewind = QIcon("C:/Users/sr996/Projects/playqt/images/icons8-rewind-26.png");
+    btnRewind = new QPushButton(icnRewind, "");
+
+    icnFastForward = QIcon("C:/Users/sr996/Projects/playqt/images/icons8-fast-forward-26.png");
+    btnFastForward = new QPushButton(icnFastForward, "");
+
+    //QPushButton *rewind = new QPushButton("<<");
+    //QPushButton *fastforward = new QPushButton(">>");
     QPushButton *singlestep = new QPushButton("Single");
-    QPushButton *mute = new QPushButton("Mute");
-    QPushButton *volup = new QPushButton("^");
-    QPushButton *voldn = new QPushButton("v");
-    QPushButton *quit = new QPushButton("Quit");
     QPushButton *infer = new QPushButton("Infer");
     QPushButton *test = new QPushButton("Test");
+
+
     engageFilter = new QCheckBox("Engage Filter");
+    volumeSlider = new QSlider(Qt::Horizontal, mainWindow);
+    volumeSlider->setRange(0, 128);
+    volumeSlider->setValue(100);
+
+    icnAudioOn = QIcon("C:/Users/sr996/Projects/playqt/images/icons8-audio-26.png");
+    icnAudioOff = QIcon("C:/Users/sr996/Projects/playqt/images/icons8-mute-26.png");
+    btnMute = new QPushButton(icnAudioOn, "");
+
+    QWidget *volumePanel = new QWidget;
+    QHBoxLayout *volumeLayout = new QHBoxLayout;
+    volumeLayout->addWidget(btnMute);
+    volumeLayout->addWidget(volumeSlider);
+    volumePanel->setLayout(volumeLayout);
+    volumePanel->setMaximumWidth(240);
 
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(play,         1,  0, 1, 1);
-    layout->addWidget(rewind,       1,  1, 1, 1);
-    layout->addWidget(fastforward,  1,  2, 1, 1);
-    layout->addWidget(pause,        1,  3, 1, 1);
-    layout->addWidget(singlestep,   1,  4, 1, 1);
-    layout->addWidget(mute,         1,  5, 1, 1);
-    layout->addWidget(volup,        1,  6, 1, 1);
-    layout->addWidget(voldn,        1,  7, 1, 1);
-    layout->addWidget(quit,         1,  8, 1, 1);
-    layout->addWidget(test,         1,  9, 1, 1);
-    layout->addWidget(infer,        1, 10, 1, 1);
-    layout->addWidget(engageFilter, 1, 11, 1, 1);
+    layout->addWidget(btnPlay,         1,  0, 1, 1);
+    layout->addWidget(btnStop,         1,  1, 1, 1);
+    layout->addWidget(btnRewind,       1,  2, 1, 1);
+    layout->addWidget(btnFastForward,  1,  3, 1, 1);
+    layout->addWidget(singlestep,      1,  4, 1, 1);
+    layout->addWidget(test,            1,  5, 1, 1);
+    layout->addWidget(infer,           1,  6, 1, 1);
+    layout->addWidget(engageFilter,    1,  7, 1, 1);
+    layout->addWidget(volumePanel,     1,  9, 1, 1);
     setLayout(layout);
 
-    connect(play, SIGNAL(clicked()), mainWindow, SLOT(runLoop()));
-    connect(rewind, SIGNAL(clicked()), this, SLOT(rewind()));
-    connect(fastforward, SIGNAL(clicked()), this, SLOT(fastforward()));
-    connect(pause, SIGNAL(clicked()), this, SLOT(pause()));
+    connect(btnPlay, SIGNAL(clicked()), this, SLOT(play()));
+    connect(btnStop, SIGNAL(clicked()), this, SLOT(quit()));
+    connect(btnRewind, SIGNAL(clicked()), this, SLOT(rewind()));
+    connect(btnFastForward, SIGNAL(clicked()), this, SLOT(fastforward()));
     connect(singlestep, SIGNAL(clicked()), this, SLOT(singlestep()));
-    connect(mute, SIGNAL(clicked()), this, SLOT(mute()));
-    connect(volup, SIGNAL(clicked()), this, SLOT(volup()));
-    connect(voldn, SIGNAL(clicked()), this, SLOT(voldn()));
-    connect(quit, SIGNAL(clicked()), this, SLOT(quit()));
-    //connect(infer, SIGNAL(clicked()), mainWindow, SLOT(infer()));
+    connect(btnMute, SIGNAL(clicked()), this, SLOT(mute()));
+    connect(volumeSlider, SIGNAL(sliderMoved(int)), this, SLOT(sliderMoved(int)));
     connect(test, SIGNAL(clicked()), this, SLOT(test()));
 
 }
 
+void ControlPanel::sliderMoved(int arg)
+{
+    cout << "slider moved: " << arg << endl;
+    if (MW->is)
+        MW->is->audio_volume = arg;
+}
+
 void ControlPanel::resizeEvent(QResizeEvent *event) {
     cout << "ControlPanel width: " << event->size().width() << " height: " << event->size().height() << endl;
+}
+
+void ControlPanel::play()
+{
+    QString selected_filename = "";
+    FilePanel *filePanel = (FilePanel*)MW->tabWidget->currentWidget();
+    QModelIndex index = filePanel->tree->currentIndex();
+    if (index.isValid()) {
+        selected_filename = filePanel->model->filePath(index);
+    }
+
+    if (!MW->co->input_filename) {
+        if (selected_filename.length() > 0) {
+            MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
+        }
+        else {
+            QMessageBox::critical(mainWindow, "PlayQt", "No current file, please select a file from the playlist");
+            return;
+        }
+    }
+
+    cout << "selected filename: " << selected_filename.toStdString() << endl;
+    cout << "input_filename: " << MW->co->input_filename << endl;
+
+    if (stopped) {
+        if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
+            MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
+        }
+        stopped = false;
+        paused = false;
+        btnPlay->setIcon(icnPause);
+        MW->runLoop();
+    }
+    else if (paused) {
+        if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
+            MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
+            MW->runLoop();
+        }
+        else {
+            MW->is->toggle_pause();
+        }
+        paused = false;
+        btnPlay->setIcon(icnPause);
+    }
+    else {
+        if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
+            MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
+            MW->runLoop();
+        }
+        else {
+            MW->is->toggle_pause();
+            paused = true;
+            btnPlay->setIcon(icnPlay);
+        }
+    }
 }
 
 void ControlPanel::test()
@@ -75,44 +154,91 @@ void ControlPanel::volup()
 {
     if (MW->is)
         MW->is->update_volume(1, SDL_VOLUME_STEP);
+
+    if (MW->is)
+        cout << MW->is->audio_volume << endl;
 }
 
 void ControlPanel::voldn()
 {
     if (MW->is)
         MW->is->update_volume(-1, SDL_VOLUME_STEP);
+
+    if (MW->is)
+        cout << MW->is->audio_volume << endl;
 }
 
 void ControlPanel::rewind()
 {
+    //SDL_Event event;
+    //SDL_memset(&event, 0, sizeof(event));
+    //event.type = MW->sdlCustomEventType;
+    //event.user.code = REWIND;
+    //SDL_PushEvent(&event);
+
     if (MW->is)
         MW->is->rewind();
+
 }
 
 void ControlPanel::fastforward()
 {
+    //SDL_Event event;
+    //SDL_memset(&event, 0, sizeof(event));
+    //event.type = MW->sdlCustomEventType;
+    //event.user.code = FASTFORWARD;
+    //SDL_PushEvent(&event);
+
     if (MW->is)
         MW->is->fastforward();
+
 }
 
 void ControlPanel::pause()
 {
+    //SDL_Event event;
+    //SDL_memset(&event, 0, sizeof(event));
+    //event.type = MW->sdlCustomEventType;
+    //event.user.code = PAUSE;
+    //SDL_PushEvent(&event);
     if (MW->is)
         MW->is->toggle_pause();
 }
 
 void ControlPanel::mute()
 {
-    if (MW->is)
-        MW->is->toggle_mute();
+    muted = !muted;
+
+    if (muted) {
+        if (MW->is)
+            MW->is->audio_volume = 0;
+        volumeSlider->setEnabled(false);
+        btnMute->setIcon(icnAudioOff);
+    }
+    else {
+        if (MW->is)
+            MW->is->audio_volume = volumeSlider->value();
+        volumeSlider->setEnabled(true);
+        btnMute->setIcon(icnAudioOn);
+    }
+
 }
 
 void ControlPanel::quit()
 {
+    if (MW->is)
+        MW->is->abort_request = 1;
+
+    stopped = true;
+    paused = false;
+    btnPlay->setIcon(icnPlay);
+    MW->co->input_filename = nullptr;
+
     SDL_Event event;
     event.type = FF_QUIT_EVENT;
     event.user.data1 = this;
     SDL_PushEvent(&event);
+
     //MW->e->looping = false;
     //MW->timer->stop();
 }

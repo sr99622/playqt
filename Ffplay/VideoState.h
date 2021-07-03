@@ -75,6 +75,7 @@ public:
     void toggle_full_screen();
     void toggle_audio_display();
     void update_volume(int sign, double step);
+    void set_volume(double arg);
     void step_to_next_frame();
     void set_default_window_size(int width, int height, AVRational sar);
     int queue_picture(AVFrame* src_frame, double pts, double duration, int64_t pos, int serial);

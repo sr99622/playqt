@@ -74,7 +74,7 @@ public:
     inline static int dummy;
 
     inline static AVInputFormat* file_iformat;
-    inline static const char* input_filename;
+    inline static const char* input_filename = nullptr;
     inline static const char* window_title;
     inline static int default_width = 640;
     inline static int default_height = 480;

@@ -80,9 +80,10 @@ void FilePanel::setDirectory(const QString& path)
 void FilePanel::doubleClicked(const QModelIndex& index)
 {
     if (index.isValid()) {
-        QString str = model->filePath(index);
-        MW->co->input_filename = av_strdup(str.toLatin1().data());
-        MW->runLoop();
+        //QString str = model->filePath(index);
+        //MW->co->input_filename = av_strdup(str.toLatin1().data());
+        //MW->runLoop();
+        MW->mainPanel->controlPanel->play();
     }
 }
 

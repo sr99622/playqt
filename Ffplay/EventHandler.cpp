@@ -54,6 +54,18 @@ void EventHandler::feed()
                 ts += MW->is->ic->start_time;
             MW->is->stream_seek(ts, 0, 0);
             break;
+        case REWIND:
+            cout << "REWIND" << endl;
+            MW->is->rewind();
+            break;
+        case FASTFORWARD:
+            cout << "FASTFORWARD" << endl;
+            MW->is->fastforward();
+            break;
+        case PAUSE:
+            cout << "PAUSE" << endl;
+            MW->is->toggle_pause();
+            break;
         }
     }
     else if (event.type == FF_QUIT_EVENT) {

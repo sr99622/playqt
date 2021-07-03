@@ -390,6 +390,13 @@ void VideoState::update_volume(int sign, double step)
     audio_volume = av_clip(audio_volume == new_volume ? (audio_volume + sign) : new_volume, 0, SDL_MIX_MAXVOLUME);
 }
 
+void VideoState::set_volume(double arg)
+{
+    double volume_level = audio_volume ? (20 * log(audio_volume / (double)SDL_MIX_MAXVOLUME) / log(10)) : -1000.0;
+    int new_volume = lrint(SDL_MIX_MAXVOLUME * pow(10.0, (arg) / 20.0));
+    audio_volume = av_clip(audio_volume == new_volume ? (arg) : new_volume, 0, SDL_MIX_MAXVOLUME);
+}
+
 void VideoState::step_to_next_frame()
 {
     if (paused)
@@ -1371,13 +1378,10 @@ int VideoState::video_thread()
             tb = av_buffersink_get_time_base(filt_out);
 #endif
 
-
             duration = (frame_rate.num && frame_rate.den ? av_q2d(av_make_q(frame_rate.den, frame_rate.num)) : 0);
             pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
             ret = queue_picture(frame, pts, duration, frame->pkt_pos, viddec.pkt_serial);
             av_frame_unref(frame);
-
-
 
 #if CONFIG_AVFILTER
             if (videoq.serial != viddec.pkt_serial)
@@ -1854,6 +1858,7 @@ void VideoState::read_loop()
 
     for (;;) {
         if (abort_request) {
+            cout << "ABORT REQUEST" << endl;
             break;
         }
 
@@ -1950,9 +1955,13 @@ void VideoState::read_loop()
                     stream_has_enough_packets(video_st, video_stream, &videoq) &&
                     stream_has_enough_packets(subtitle_st, subtitle_stream, &subtitleq)))) {
 
+            //cout << "fuck you" << endl;
+
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
+
+            //cout << "suck my cock" << endl;
 
             continue;
         }
@@ -2191,14 +2200,21 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     is->extclk.init_clock(&is->extclk.serial);
     is->audio_clock_serial = -1;
 
+    /*
     if (is->co->startup_volume < 0)
         av_log(NULL, AV_LOG_WARNING, "-volume=%d < 0, setting to 0\n", is->co->startup_volume);
     if (is->co->startup_volume > 100)
         av_log(NULL, AV_LOG_WARNING, "-volume=%d > 100, setting to 100\n", is->co->startup_volume);
     is->co->startup_volume = av_clip(is->co->startup_volume, 0, 100);
     is->co->startup_volume = av_clip(SDL_MIX_MAXVOLUME * is->co->startup_volume / 100, 0, SDL_MIX_MAXVOLUME);
-    is->audio_volume = is->co->startup_volume;
+    //is->audio_volume = is->co->startup_volume;
     is->muted = 0;
+    */
+
+    is->audio_volume = ((MainWindow*)mw)->mainPanel->controlPanel->volumeSlider->value();
+    if (((MainWindow*)mw)->mainPanel->controlPanel->muted)
+        is->audio_volume = 0;
+
     is->av_sync_type = is->co->av_sync_type;
     is->read_tid = SDL_CreateThread(readThread, "read_thread", is);
 

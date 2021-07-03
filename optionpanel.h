@@ -52,7 +52,7 @@ public:
     const QString print_codec(const AVCodec *c);
     const QString show_formats_devices(int device_only, int muxdemuxers);
     int is_device(const AVClass *avclass);
-    void show_formats();
+    const QString show_formats();
     void show_muxers();
     const QString show_demuxers();
     const QString show_devices();
@@ -70,6 +70,7 @@ public slots:
     void filters();
     void bsfs();
     void pix_fmts();
+    void formats();
     void sample_fmts();
     void protocols();
     void layouts();

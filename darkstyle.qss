@@ -83,6 +83,10 @@ QSlider::handle:horizontal {
   border-radius: 4px;
 }
 
+QSlider::groove:horizontal:disabled {
+  background: background_medium;
+}
+
 QAbstractItemView {
   alternate-background-color: #19232D;
   color: #F0F0F0;

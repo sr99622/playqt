@@ -43,6 +43,7 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     filter_set->setMaximumWidth(30);
     QPushButton *bsfs = new QPushButton("bsfs");
     QPushButton *pix_fmts = new QPushButton("pix_fmts");
+    QPushButton *formats = new QPushButton("formats");
     QPushButton *sample_fmts = new QPushButton("sample_fmts");
     QPushButton *protocols = new QPushButton("protocols");
     QPushButton *layouts = new QPushButton("layouts");
@@ -73,17 +74,18 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     layout->addWidget(filters,        2,  1,  1,  1, Qt::AlignCenter);
     layout->addWidget(bsfs,           3,  1,  1,  1, Qt::AlignCenter);
     layout->addWidget(pix_fmts,       4,  1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(sample_fmts,    5,  1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(protocols,      6,  1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(layouts,        7,  1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(colors,         8,  1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(demuxers,       9,  1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(devices,        10, 1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(help,           11, 1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(details,        12, 1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(config,         13, 1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(clear,          16, 3,  1,  1, Qt::AlignCenter);
-    layout->addWidget(close,          16, 5,  1,  1, Qt::AlignCenter);
+    layout->addWidget(formats,        5,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(sample_fmts,    6,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(protocols,      7,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(layouts,        8,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(colors,         9,  1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(demuxers,       10, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(devices,        11, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(help,           12, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(details,        13, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(config,         14, 1,  1,  1, Qt::AlignCenter);
+    layout->addWidget(clear,          15, 3,  1,  1, Qt::AlignCenter);
+    layout->addWidget(close,          15, 5,  1,  1, Qt::AlignCenter);
 
     //layout->setColumnStretch(0, 1);
     //layout->setColumnStretch(1, 1);
@@ -99,6 +101,7 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     connect(filters, SIGNAL(clicked()), this, SLOT(filters()));
     connect(bsfs, SIGNAL(clicked()), this, SLOT(bsfs()));
     connect(pix_fmts, SIGNAL(clicked()), this, SLOT(pix_fmts()));
+    connect(formats, SIGNAL(clicked()), this, SLOT(formats()));
     connect(sample_fmts, SIGNAL(clicked()), this, SLOT(sample_fmts()));
     connect(protocols, SIGNAL(clicked()), this, SLOT(protocols()));
     connect(layouts, SIGNAL(clicked()), this, SLOT(layouts()));
@@ -172,6 +175,11 @@ void OptionPanel::sample_fmts()
 void OptionPanel::pix_fmts()
 {
     display(show_pix_fmts(), "Pixel Formats");
+}
+
+void OptionPanel::formats()
+{
+    display(show_formats(), "Formats");
 }
 
 void OptionPanel::bsfs()
@@ -260,9 +268,9 @@ void OptionPanel::show_muxers()
     show_formats_devices(0, SHOW_MUXERS);
 }
 
-void OptionPanel::show_formats()
+const QString OptionPanel::show_formats()
 {
-    show_formats_devices(1, SHOW_DEFAULT);
+    return show_formats_devices(0, SHOW_DEFAULT);
 }
 
 int OptionPanel::is_device(const AVClass *avclass)

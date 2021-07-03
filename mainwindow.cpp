@@ -311,10 +311,12 @@ void Quitter::run()
 
     //if (MW->is->current_time > 4.0f || is_picture) {
 
-        if (!MW->is->paused) {
-            MW->is->toggle_pause();
-            QThread::msleep(10);
-        }
+        //if (!MW->is->paused) {
+        //    MW->is->toggle_pause();
+        //    QThread::msleep(10);
+        //}
+    if (MW->is)
+        MW->is->abort_request = 1;
 
         //if (is_picture) {
             SDL_Event event;
