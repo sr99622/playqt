@@ -34,12 +34,16 @@ void DisplaySlider::mouseReleaseEvent(QMouseEvent *e)
         return;
 
     tick = 1000 * e->position().x() / width();
+    //if (MW->is)
+    //    MW->is->stream_seek(tick, 0, 0);
+
     SDL_Event event;
     SDL_memset(&event, 0, sizeof(event));
     event.type = MW->sdlCustomEventType;
     event.user.code = SLIDER_POSITION_UPDATE;
     event.user.data1 = &tick;
     SDL_PushEvent(&event);
+
 }
 
 void DisplaySlider::keyPressEvent(QKeyEvent *event)

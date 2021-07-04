@@ -304,13 +304,13 @@ void VideoState::stream_seek(int64_t pos, int64_t rel, int seek_by_bytes)
             seek_flags |= AVSEEK_FLAG_BYTE;
         seek_req = 1;
 
-        //if (!paused) {
+        if (!paused) {
             SDL_CondSignal(continue_read_thread);
             cout << "stream seek" << endl;
-        //}
-        //else {
-        //    cout << "stream is paused" << endl;
-        //}
+        }
+        else {
+            cout << "stream is paused" << endl;
+        }
     }
 }
 
@@ -1135,8 +1135,10 @@ void VideoState::video_refresh(double* remaining_time)
 
                 /**/
                 /// empty the picture queue and display if paused
+
                 while (pictq.nb_remaining() > 0)
                     pictq.next();
+
                 //video_display();
 
                 break;
@@ -1858,13 +1860,12 @@ void VideoState::read_loop()
 
     for (;;) {
         if (abort_request) {
-            cout << "ABORT REQUEST" << endl;
             break;
         }
 
         if (paused != last_paused) {
             last_paused = paused;
-            if (paused) {
+            if (paused && !seek_req) {
                 read_pause_return = av_read_pause(ic);
             }
             else {
@@ -1913,6 +1914,8 @@ void VideoState::read_loop()
                 else {
                     extclk.set_clock(seek_target / (double)AV_TIME_BASE, 0);
                 }
+
+                QThread::msleep(10);
             }
             seek_req = 0;
             queue_attachments_req = 1;
@@ -1931,9 +1934,7 @@ void VideoState::read_loop()
                 double dummy = 0;
 
                 video_refresh(&dummy);
-
-                stream_toggle_pause();
-                step = 1;
+                step_to_next_frame();
             }
         }
 
@@ -1955,13 +1956,9 @@ void VideoState::read_loop()
                     stream_has_enough_packets(video_st, video_stream, &videoq) &&
                     stream_has_enough_packets(subtitle_st, subtitle_stream, &subtitleq)))) {
 
-            //cout << "fuck you" << endl;
-
             SDL_LockMutex(wait_mutex);
             SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
-
-            //cout << "suck my cock" << endl;
 
             continue;
         }

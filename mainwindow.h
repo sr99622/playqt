@@ -52,7 +52,8 @@ enum CustomEventCode {
     SLIDER_POSITION_UPDATE,
     REWIND,
     FASTFORWARD,
-    PAUSE
+    PAUSE,
+    FLUSH
 };
 
 #define APP_DEFAULT_WIDTH 1200

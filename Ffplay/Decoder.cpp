@@ -82,6 +82,7 @@ int Decoder::decode_frame(AVFrame* frame, AVSubtitle* sub)
 		} while (queue->serial != pkt_serial);
 
 		if (pkt1.data == flush_pkt.data) {
+            cout << "flush_pkt" << endl;
 			avcodec_flush_buffers(avctx);
 			finished = 0;
 			next_pts = start_pts;

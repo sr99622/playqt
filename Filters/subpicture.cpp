@@ -178,7 +178,8 @@ void SubPicture::filter(Frame *vp)
         av_frame_copy(vp->frame, dummy.frame);
     }
     else {
-        MW->is->step_to_next_frame();
+        if (MW->is->paused)
+            MW->is->step_to_next_frame();
     }
 
 }
