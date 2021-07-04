@@ -10,15 +10,34 @@ DisplaySlider::DisplaySlider(QMainWindow *parent) : QSlider(parent)
     //setMaximum(1000);
     //setValue(0);
 
-    //setMouseTracking(true);
+    setMouseTracking(true);
     connect(this, SIGNAL(sliderMoved(int)), this, SLOT(moved(int)));
     connect(this, SIGNAL(sliderPressed()), this, SLOT(pressed()));
     connect(this, SIGNAL(sliderReleased()), this, SLOT(released()));
 }
 
+bool DisplaySlider::event(QEvent *e)
+{
+    if (e->type() == QEvent::Leave)
+        QToolTip::hideText();
+
+    return QSlider::event(e);
+}
+
 void DisplaySlider::mouseMoveEvent(QMouseEvent *e)
 {
-    //cout << "mouse position x: " << e->pos().x() << " y: " << e->pos().y() << endl;
+    QToolTip::hideText();
+
+    double percentage = e->pos().x() / (double)width();
+    if (MW->is) {
+        double position = percentage * MW->is->total;
+        QString output = MW->is->formatTime(position);
+        if (output.startsWith("00:"))
+            output = output.mid(3);
+
+        const QPoint pos = mapToGlobal(QPoint(e->position().x(), geometry().top()));
+        QToolTip::showText(pos, output);
+    }
 }
 
 void DisplaySlider::mousePressEvent(QMouseEvent *e)
@@ -34,8 +53,6 @@ void DisplaySlider::mouseReleaseEvent(QMouseEvent *e)
         return;
 
     tick = 1000 * e->position().x() / width();
-    //if (MW->is)
-    //    MW->is->stream_seek(tick, 0, 0);
 
     SDL_Event event;
     SDL_memset(&event, 0, sizeof(event));

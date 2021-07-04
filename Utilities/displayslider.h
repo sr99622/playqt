@@ -20,7 +20,7 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     void keyPressEvent(QKeyEvent *e) override;
-
+    bool event(QEvent *e) override;
 
 public slots:
     void moved(int value);

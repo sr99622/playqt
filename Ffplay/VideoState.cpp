@@ -514,8 +514,7 @@ double VideoState::compute_target_delay(double delay)
         }
     }
 
-    av_log(NULL, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n",
-        delay, -diff);
+    av_log(NULL, AV_LOG_TRACE, "video: delay=%0.3f A-V=%f\n", delay, -diff);
 
     return delay;
 }
@@ -1155,9 +1154,6 @@ video_refresh(double* remaining_time)
             last_duration = vp_duration(lastvp, vp);
             delay = compute_target_delay(last_duration);
 
-
-            cout << "target delay: " << delay << endl;
-
             double time = av_gettime_relative() / 1000000.0;
 
             if (time - frame_timer < 0) {
@@ -1693,18 +1689,6 @@ int VideoState::stream_component_open(int stream_index)
         audio_stream = stream_index;
         audio_st = ic->streams[stream_index];
 
-        if (MW->co->av_sync_type == AV_SYNC_AUDIO_MASTER) {
-            SDL_Event event;
-            SDL_memset(&event, 0, sizeof(event));
-            event.type = MW->sdlCustomEventType;
-            event.user.code = FILE_POSITION_UPDATE;
-            elapsed = ic->start_time * av_q2d(av_get_time_base_q());
-            total = ic->duration * av_q2d(av_get_time_base_q());
-            event.user.data1 = &elapsed;
-            event.user.data2 = &total;
-            SDL_PushEvent(&event);
-        }
-
         auddec.init(avctx, &audioq, continue_read_thread, flush_pkt);
         if ((ic->iformat->flags & (AVFMT_NOBINSEARCH | AVFMT_NOGENSEARCH | AVFMT_NO_BYTE_SEEK)) && !ic->iformat->read_seek) {
             auddec.start_pts = audio_st->start_time;
@@ -1726,18 +1710,6 @@ int VideoState::stream_component_open(int stream_index)
 
         codec_frame_duration = av_q2d(av_inv_q(video_st->codec->framerate));
 
-        if (MW->co->av_sync_type == AV_SYNC_VIDEO_MASTER) {
-            SDL_Event event;
-            SDL_memset(&event, 0, sizeof(event));
-            event.type = MW->sdlCustomEventType;
-            event.user.code = FILE_POSITION_UPDATE;
-            elapsed = ic->start_time * av_q2d(av_get_time_base_q());
-            total = ic->duration * av_q2d(av_get_time_base_q());
-            event.user.data1 = &elapsed;
-            event.user.data2 = &total;
-            SDL_PushEvent(&event);
-        }
-
         viddec.init(avctx, &videoq, continue_read_thread, flush_pkt);
         if ((ret = viddec.start(videoThread, "video_decoder", this)) < 0)
             goto out;
@@ -1754,6 +1726,19 @@ int VideoState::stream_component_open(int stream_index)
     default:
         break;
     }
+
+
+    SDL_Event event;
+    SDL_memset(&event, 0, sizeof(event));
+    event.type = MW->sdlCustomEventType;
+    event.user.code = FILE_POSITION_UPDATE;
+    elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+    total = ic->duration * av_q2d(av_get_time_base_q());
+    event.user.data1 = &elapsed;
+    event.user.data2 = &total;
+    SDL_PushEvent(&event);
+
+
     goto out;
 
 fail:
@@ -2022,36 +2007,10 @@ void VideoState::read_loop()
 
         if (pkt->stream_index == audio_stream && pkt_in_play_range) {
             audioq.put(pkt);
-            if (MW->co->av_sync_type == AV_SYNC_AUDIO_MASTER) {
-                current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
-                SDL_Event event;
-                SDL_memset(&event, 0, sizeof(event));
-                event.type = MW->sdlCustomEventType;
-                event.user.code = FILE_POSITION_UPDATE;
-                elapsed = current_time;
-                total = ic->duration * av_q2d(av_get_time_base_q());
-                event.user.data1 = &current_time;
-                event.user.data2 = &total;
-                SDL_PushEvent(&event);
-            }
         }
         else if (pkt->stream_index == video_stream && pkt_in_play_range
             && !(video_st->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
             videoq.put(pkt);
-
-            // send update message to gui for slider
-            if (MW->co->av_sync_type == AV_SYNC_VIDEO_MASTER) {
-                current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
-                SDL_Event event;
-                SDL_memset(&event, 0, sizeof(event));
-                event.type = MW->sdlCustomEventType;
-                event.user.code = FILE_POSITION_UPDATE;
-                elapsed = current_time;
-                total = ic->duration * av_q2d(av_get_time_base_q());
-                event.user.data1 = &current_time;
-                event.user.data2 = &total;
-                SDL_PushEvent(&event);
-            }
         }
         else if (pkt->stream_index == subtitle_stream && pkt_in_play_range) {
             subtitleq.put(pkt);
@@ -2059,6 +2018,18 @@ void VideoState::read_loop()
         else {
             av_packet_unref(pkt);
         }
+
+        current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
+        SDL_Event event;
+        SDL_memset(&event, 0, sizeof(event));
+        event.type = MW->sdlCustomEventType;
+        event.user.code = FILE_POSITION_UPDATE;
+        elapsed = current_time;
+        total = ic->duration * av_q2d(av_get_time_base_q());
+        event.user.data1 = &current_time;
+        event.user.data2 = &total;
+        SDL_PushEvent(&event);
+
     }
     SDL_DestroyMutex(wait_mutex);
 }

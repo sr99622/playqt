@@ -20,6 +20,7 @@
 #include <QMutex>
 #include <QRunnable>
 #include <QShortcut>
+#include <QToolTip>
 
 #include <iostream>
 #include <string>
