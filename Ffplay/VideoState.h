@@ -210,6 +210,7 @@ public:
     double frame_timer;
     double frame_last_returned_time;
     double frame_last_filter_delay;
+    double codec_frame_duration;
     int video_stream = -1;
     AVStream* video_st;
     PacketQueue videoq;

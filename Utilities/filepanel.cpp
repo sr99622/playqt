@@ -13,6 +13,7 @@ void FileTree::mouseDoubleClickEvent(QMouseEvent *event)
 
 void FileTree::keyPressEvent(QKeyEvent *event)
 {
+    /*
     switch(event->key()) {
     case Qt::Key_Return:
         ((FilePanel*)panel)->doubleClicked(currentIndex());
@@ -32,6 +33,8 @@ void FileTree::keyPressEvent(QKeyEvent *event)
         QTreeView::keyPressEvent(event);
         break;
     }
+    */
+    QTreeView::keyPressEvent(event);
 }
 
 FilePanel::FilePanel(QMainWindow *parent) : QWidget(parent)

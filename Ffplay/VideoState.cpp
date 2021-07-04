@@ -489,14 +489,20 @@ double VideoState::compute_target_delay(double delay)
     double sync_threshold, diff = 0;
 
     // update delay to follow master synchronisation source 
-    if (get_master_sync_type() != AV_SYNC_VIDEO_MASTER) {
+    if (get_master_sync_type() == AV_SYNC_VIDEO_MASTER) {
+        //delay = 0.017;
+        //cout << "framerate: " << video_st->codec->framerate.num << " / " << video_st->codec->framerate.den << endl;
+        //delay = av_q2d(av_inv_q(video_st->codec->framerate));
+        delay = codec_frame_duration;
+    }
+    else {
         // if video is slave, we try to correct big delays by
-        // duplicating or deleting a frame 
+        // duplicating or deleting a frame
         diff = vidclk.get_clock() - get_master_clock();
 
         // skip or repeat frame. We take into account the
         // delay to compute the threshold. I still don't know
-        // if it is the best guess 
+        // if it is the best guess
         sync_threshold = FFMAX(AV_SYNC_THRESHOLD_MIN, FFMIN(AV_SYNC_THRESHOLD_MAX, delay));
         if (!isnan(diff) && fabs(diff) < max_frame_duration) {
             if (diff <= -sync_threshold)
@@ -517,7 +523,7 @@ double VideoState::compute_target_delay(double delay)
 double VideoState::vp_duration(Frame* vp, Frame* nextvp) {
     if (vp->serial == nextvp->serial) {
         double duration = nextvp->pts - vp->pts;
-        if (isnan(duration) || duration <= 0 || duration >max_frame_duration)
+        if (isnan(duration) || duration <= 0 || duration > max_frame_duration)
             return vp->duration;
         else
             return duration;
@@ -1084,9 +1090,10 @@ void VideoState::subtitle_refresh()
     }
 }
 
-void VideoState::video_refresh(double* remaining_time)
+void VideoState::
+video_refresh(double* remaining_time)
 {
-    //cout << "\tVideoState::video_refresh " << TS << endl;
+    //cout << "VideoState::video_refresh " << TS << endl;
     if (!paused && get_master_sync_type() == AV_SYNC_EXTERNAL_CLOCK && realtime)
         check_external_clock_speed();
 
@@ -1147,6 +1154,9 @@ void VideoState::video_refresh(double* remaining_time)
 
             last_duration = vp_duration(lastvp, vp);
             delay = compute_target_delay(last_duration);
+
+
+            cout << "target delay: " << delay << endl;
 
             double time = av_gettime_relative() / 1000000.0;
 
@@ -1714,6 +1724,8 @@ int VideoState::stream_component_open(int stream_index)
          || codec_name.contains("png")
          || codec_name.contains("bmp")) paused = 2;
 
+        codec_frame_duration = av_q2d(av_inv_q(video_st->codec->framerate));
+
         if (MW->co->av_sync_type == AV_SYNC_VIDEO_MASTER) {
             SDL_Event event;
             SDL_memset(&event, 0, sizeof(event));
@@ -1873,9 +1885,7 @@ void VideoState::read_loop()
             }
         }
 
-        if (paused &&
-            (!strcmp(ic->iformat->name, "rtsp") ||
-                (ic->pb && !strncmp(co->input_filename, "mmsh:", 5)))) {
+        if (paused && (!strcmp(ic->iformat->name, "rtsp") || (ic->pb && !strncmp(co->input_filename, "mmsh:", 5)))) {
             // wait 10 ms to avoid trying to get another packet
             // XXX: horrible
             SDL_Delay(10);
@@ -1888,6 +1898,8 @@ void VideoState::read_loop()
             int64_t seek_max = seek_rel < 0 ? seek_target - seek_rel - 2 : INT64_MAX;
             // FIXME the +-2 is due to rounding being not done in the correct direction in generation
             //      of the seek_pos/seek_rel variables
+
+            cout << "seek request: " << seek_target << endl;
 
             int ret = avformat_seek_file(ic, -1, seek_min, seek_target, seek_max, seek_flags);
             if (ret < 0) {
@@ -1914,8 +1926,6 @@ void VideoState::read_loop()
                 else {
                     extclk.set_clock(seek_target / (double)AV_TIME_BASE, 0);
                 }
-
-                QThread::msleep(10);
             }
             seek_req = 0;
             queue_attachments_req = 1;

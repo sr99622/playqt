@@ -22,12 +22,9 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     icnFastForward = QIcon("C:/Users/sr996/Projects/playqt/images/icons8-fast-forward-26.png");
     btnFastForward = new QPushButton(icnFastForward, "");
 
-    //QPushButton *rewind = new QPushButton("<<");
-    //QPushButton *fastforward = new QPushButton(">>");
     QPushButton *singlestep = new QPushButton("Single");
     QPushButton *infer = new QPushButton("Infer");
     QPushButton *test = new QPushButton("Test");
-
 
     engageFilter = new QCheckBox("Engage Filter");
     volumeSlider = new QSlider(Qt::Horizontal, mainWindow);
@@ -97,9 +94,6 @@ void ControlPanel::play()
             return;
         }
     }
-
-    cout << "selected filename: " << selected_filename.toStdString() << endl;
-    cout << "input_filename: " << MW->co->input_filename << endl;
 
     if (stopped) {
         if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {

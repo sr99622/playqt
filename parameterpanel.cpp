@@ -295,6 +295,9 @@ const QString ParameterPanel::getOptionStorageString()
             }
             QTextStream(&arg) << ";";
         }
+        else if (!strcmp(option.name, "sync")) {
+            QTextStream(&arg) << "," << MW->co->clock_sync << ";";
+        }
     }
     return arg;
 }
