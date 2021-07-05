@@ -26,10 +26,12 @@ bool DisplaySlider::event(QEvent *e)
 
 void DisplaySlider::mouseMoveEvent(QMouseEvent *e)
 {
-    QToolTip::hideText();
 
-    double percentage = e->pos().x() / (double)width();
+    if (last_position_x != e->position().x())
+        QToolTip::hideText();
+
     if (MW->is) {
+        double percentage = e->position().x() / (double)width();
         double position = percentage * MW->is->total;
         QString output = MW->is->formatTime(position);
         if (output.startsWith("00:"))
@@ -37,6 +39,7 @@ void DisplaySlider::mouseMoveEvent(QMouseEvent *e)
 
         const QPoint pos = mapToGlobal(QPoint(e->position().x(), geometry().top()));
         QToolTip::showText(pos, output);
+        last_position_x = e->position().x();
     }
 }
 

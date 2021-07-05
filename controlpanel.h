@@ -39,6 +39,9 @@ public:
     bool stopped = true;
     bool input_switched = false;
 
+signals:
+    void msg(const QString&);
+
 public slots:
     void test();
     void play();

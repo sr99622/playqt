@@ -114,20 +114,21 @@ LIBS += -L$$(CUDA_PATH)/lib/x64 \
         -lnppitc
 
 LIBS += -L$$(CONTRIB_PATH)/lib \
-    -llibavcodec \
-    -llibavformat \
-    -llibavutil \
-    -llibswscale \
-    -llibswresample \
-    -llibavdevice \
-    -llibavfilter \
-    -llibpostproc \
-    -ldarknet \
-    -llibsdl2 \
-    -lopencv_world451
+        -llibavcodec \
+        -llibavformat \
+        -llibavutil \
+        -llibswscale \
+        -llibswresample \
+        -llibavdevice \
+        -llibavfilter \
+        -llibpostproc \
+        -ldarknet \
+        -llibsdl2 \
+        -lopencv_world451
 
 
-RESOURCES += images/images.qrc
+RESOURCES += resources/resources.qrc
 
 DISTFILES += \
-    darkstyle.qss
+            resources/darkstyle.qss \
+            resources/resources.rcc

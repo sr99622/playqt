@@ -24,7 +24,7 @@ static int audioThread(void* opaque)
 
 VideoState::VideoState()
 {
-    memset(this, 0, sizeof(VideoState));
+    //memset(this, 0, sizeof(VideoState));
 }
 
 void VideoState::video_image_display()
@@ -304,13 +304,13 @@ void VideoState::stream_seek(int64_t pos, int64_t rel, int seek_by_bytes)
             seek_flags |= AVSEEK_FLAG_BYTE;
         seek_req = 1;
 
-        if (!paused) {
+        //if (!paused) {
             SDL_CondSignal(continue_read_thread);
             cout << "stream seek" << endl;
-        }
-        else {
-            cout << "stream is paused" << endl;
-        }
+        //}
+        //else {
+        //    cout << "stream is paused" << endl;
+        //}
     }
 }
 
@@ -1391,6 +1391,13 @@ int VideoState::video_thread()
             ret = queue_picture(frame, pts, duration, frame->pkt_pos, viddec.pkt_serial);
             av_frame_unref(frame);
 
+            if (showNextFrame) {
+                force_refresh = 1;
+                double dummy = 0;
+                video_refresh(&dummy);
+                showNextFrame = false;
+            }
+
 #if CONFIG_AVFILTER
             if (videoq.serial != viddec.pkt_serial)
                 break;
@@ -1751,6 +1758,12 @@ out:
 
 void VideoState::rewind()
 {
+    double pctg = MW->mainPanel->displayContainer->slider->value() / (double) 1000;
+    double elapsed = pctg * MW->is->ic->duration / AV_TIME_BASE;
+    double target = elapsed - MW->co->seek_interval;
+    MW->is->stream_seek(target * AV_TIME_BASE, 0, 0);
+
+    /*
     double incr = MW->co->seek_interval ? -MW->co->seek_interval : -10.0;
     double pos = get_master_clock();
     if (isnan(pos))
@@ -1759,10 +1772,17 @@ void VideoState::rewind()
     if (ic->start_time != AV_NOPTS_VALUE && pos < ic->start_time / (double)AV_TIME_BASE)
         pos = ic->start_time / (double)AV_TIME_BASE;
     stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+    */
 }
 
 void VideoState::fastforward()
 {
+    double pctg = MW->mainPanel->displayContainer->slider->value() / (double) 1000;
+    double elapsed = pctg * MW->is->ic->duration / AV_TIME_BASE;
+    double target = elapsed + MW->co->seek_interval;
+    MW->is->stream_seek(target * AV_TIME_BASE, 0, 0);
+
+    /*
     double incr = MW->co->seek_interval ? MW->co->seek_interval : 10.0;
     double pos = get_master_clock();
     if (isnan(pos))
@@ -1771,6 +1791,7 @@ void VideoState::fastforward()
     if (ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
         pos = ic->start_time / (double)AV_TIME_BASE;
     stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
+    */
 }
 
 const QString VideoState::formatTime(double time_in_seconds)
@@ -1917,19 +1938,34 @@ void VideoState::read_loop()
             eof = 0;
 
             if (paused) {
-
+                /**/
                 while (pictq.nb_remaining() > 0)
                     pictq.next();
                 while (subpq.nb_remaining() > 0)
                     subpq.next();
                 while (sampq.nb_remaining() > 0)
                     sampq.next();
+                /**/
 
-                force_refresh = 1;
-                double dummy = 0;
+                //force_refresh = 1;
+                //double dummy = 0;
 
-                video_refresh(&dummy);
+
+                for (int i = 0; i < 10; i++) {
+                    SDL_Event event;
+                    SDL_memset(&event, 0, sizeof(event));
+                    event.type = MW->sdlCustomEventType;
+                    event.user.code = FLUSH;
+                    //elapsed = current_time;
+                    force_refresh = 1;
+                    SDL_PushEvent(&event);
+                    QThread::msleep(1);
+                }
+
+                //video_refresh(&dummy);
                 step_to_next_frame();
+                showNextFrame = true;
+                //break;
             }
         }
 
@@ -2051,7 +2087,6 @@ int VideoState::read_thread()
         return ret;
     }
 
-    // probably doesn't do anything
     ic->interrupt_callback.callback = decode_interrupt_cb;
     ic->interrupt_callback.opaque = this;
 
@@ -2092,7 +2127,6 @@ int VideoState::read_thread()
         st_index[AVMEDIA_TYPE_AUDIO] = av_find_best_stream(ic, AVMEDIA_TYPE_AUDIO, st_index[AVMEDIA_TYPE_AUDIO], st_index[AVMEDIA_TYPE_VIDEO], NULL, 0);
     if (!co->video_disable && !co->subtitle_disable)
         st_index[AVMEDIA_TYPE_SUBTITLE] = av_find_best_stream(ic, AVMEDIA_TYPE_SUBTITLE, st_index[AVMEDIA_TYPE_SUBTITLE], (st_index[AVMEDIA_TYPE_AUDIO] >= 0 ? st_index[AVMEDIA_TYPE_AUDIO] : st_index[AVMEDIA_TYPE_VIDEO]), NULL, 0);
-
 
     show_mode = SHOW_MODE_VIDEO;
 

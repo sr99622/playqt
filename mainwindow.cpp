@@ -26,7 +26,18 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     else
         setGeometry(defaultGeometry);
 
-    setWindowTitle(filename);
+    QString title = "PlayQt";
+    if (co->input_filename) {
+        if (!strcmp(co->input_filename, "-")) {
+            title = title + " - pipe:";
+        }
+        else {
+            QFileInfo fi(co->input_filename);
+            title = title + " - " + fi.fileName();
+        }
+    }
+
+    setWindowTitle(title);
     status = new QStatusBar(this);
     setStatusBar(status);
 
@@ -34,7 +45,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     connect(timer, SIGNAL(timeout()), this, SLOT(poll()));
     timer->start(1000 / 30);
 
-    QFile f("C:/Users/sr996/Projects/playqt/darkstyle.qss");
+    QFile f(":darkstyle.qss");
     QString style;
 
     if (!f.exists()) {
@@ -108,28 +119,47 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     filterChain = new FilterChain(this);
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(tr("&Next"));
-    fileMenu->addAction(tr("&Previous"));
-    fileMenu->addAction(tr("&Save"));
-    fileMenu->addAction(tr("&Quit"));
+    QAction *actOpen = new QAction(tr("&Open"));
+    actOpen->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
+    fileMenu->addAction(actOpen);
+    QAction *actExit = new QAction(tr("E&xit"));
+    actExit->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_X));
+    fileMenu->addAction(actExit);
+
+    QMenu *mediaMenu = menuBar()->addMenu(tr("&Media"));
+    QAction *actPlay = new QAction(tr("&Play/Pause"));
+    actPlay->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_P));
+    mediaMenu->addAction(actPlay);
+    QAction *actRewind = new QAction(tr("&Rewind"));
+    actRewind->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
+    mediaMenu->addAction(actRewind);
+    QAction *actFastForward = new QAction(tr("&Fast Forward"));
+    actFastForward->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
+    mediaMenu->addAction(actFastForward);
+    QAction *actMute = new QAction(tr("&Mute"));
+    actMute->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_M));
+    mediaMenu->addAction(actMute);
+    QAction *actQuit = new QAction(tr("&Quit"));
+    actQuit->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
+    mediaMenu->addAction(actQuit);
 
     QMenu *toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction(tr("&Filters"));
     toolsMenu->addAction(tr("Set &Parameters"));
-    //toolsMenu->addAction(tr("&Messages"));
-    QAction *actMessages = new QAction(tr("&Messages"));
-    actMessages->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_M));
-    toolsMenu->addAction(actMessages);
+    toolsMenu->addAction(tr("&Messages"));
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&Options"));
 
+    /*
     QShortcut *ctrl_F = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_F), this);
     connect(ctrl_F, SIGNAL(activated()), filterDialog, SLOT(show()));
     QShortcut *ctrl_P = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_P), this);
     connect(ctrl_P, SIGNAL(activated()), parameterDialog, SLOT(show()));
+    */
 
     connect(fileMenu, SIGNAL(triggered(QAction*)), this, SLOT(fileMenuAction(QAction*)));
+    connect(mediaMenu, SIGNAL(triggered(QAction*)), this, SLOT(mediaMenuAction(QAction*)));
     connect(toolsMenu, SIGNAL(triggered(QAction*)), this, SLOT(toolsMenuAction(QAction*)));
     connect(helpMenu, SIGNAL(triggered(QAction*)), this, SLOT(helpMenuAction(QAction*)));
     connect(co, SIGNAL(showHelp(const QString&)), optionDialog->panel, SLOT(showConfig(const QString&)));
@@ -139,20 +169,31 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     flush_pkt.data = (uint8_t*)&flush_pkt;
     e = new EventHandler(this);
     timer->start();
-    quitter = new Quitter(this);
-    connect(quitter, SIGNAL(done()), this, SLOT(start()));
 
     //viewerDialog = new ViewerDialog(this);
+
+    if (co->input_filename) {
+        launcher = new Launcher(this);
+        connect(launcher, SIGNAL(done()), mainPanel->controlPanel, SLOT(play()));
+        QThreadPool::globalInstance()->tryStart(launcher);
+    }
+
+
 }
 
 MainWindow::~MainWindow()
 {
-    //delete quitter;
+    if (quitter)
+        delete quitter;
 }
 
 void MainWindow::runLoop()
 {
     if (is) {
+        if (!quitter) {
+            quitter = new Quitter(this);
+            connect(quitter, SIGNAL(done()), mainPanel->controlPanel, SLOT(play()));
+        }
         QThreadPool::globalInstance()->tryStart(quitter);
     }
     else {
@@ -226,6 +267,11 @@ void MainWindow::moveEvent(QMoveEvent *event)
     QMainWindow::moveEvent(event);
 }
 
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     settings->setValue(geometryKey, saveGeometry());
@@ -254,9 +300,34 @@ void MainWindow::msg(const QString &str)
 void MainWindow::fileMenuAction(QAction *action)
 {
     cout << action->text().toStdString() << endl;
-    if (action->text() == "&Quit") {
+    if (action->text() == "&Open") {
+        QString default_path = QDir::homePath();
+
+        QString path = QFileDialog::getOpenFileName(this, "", default_path, "");
+        if (path.length() > 0) {
+            co->input_filename = av_strdup(path.toLatin1().data());
+            mainPanel->controlPanel->play();
+        }
+
+    }
+    else if (action->text() == "E&xit") {
         close();
     }
+}
+
+void MainWindow::mediaMenuAction(QAction *action)
+{
+    cout << action->text().toStdString() << endl;
+    if (action->text() == "&Play/Pause")
+        mainPanel->controlPanel->play();
+    else if (action->text() == "&Rewind")
+        mainPanel->controlPanel->rewind();
+    else if (action->text() == "&Fast Forward")
+        mainPanel->controlPanel->fastforward();
+    else if (action->text() == "&Quit")
+        mainPanel->controlPanel->quit();
+    else if (action->text() == "&Mute")
+        mainPanel->controlPanel->mute();
 }
 
 void MainWindow::toolsMenuAction(QAction *action)
@@ -292,7 +363,20 @@ void MainWindow::ping(const vector<bbox_t>* arg)
 
 void MainWindow::test()
 {
-    cout << "eat my shit" << endl;
+    cout << "MainWindow::test" << endl;
+}
+
+Launcher::Launcher(QMainWindow *parent)
+{
+    mainWindow = parent;
+}
+
+void Launcher::run()
+{
+    while (!mainWindow->isVisible())
+        QThread::msleep(10);
+
+    emit done();
 }
 
 Quitter::Quitter(QMainWindow *parent)
@@ -303,37 +387,19 @@ Quitter::Quitter(QMainWindow *parent)
 
 void Quitter::run()
 {
-
-    //cout << "paused = " << MW->is->paused << endl;
-    //bool is_picture = false;
-    //if (MW->is->paused == 2)
-    //    is_picture = true;
-
-    //if (MW->is->current_time > 4.0f || is_picture) {
-
-        //if (!MW->is->paused) {
-        //    MW->is->toggle_pause();
-        //    QThread::msleep(10);
-        //}
     if (MW->is)
         MW->is->abort_request = 1;
 
-        //if (is_picture) {
-            SDL_Event event;
-            event.type = FF_QUIT_EVENT;
-            event.user.data1 = this;
-            SDL_PushEvent(&event);
-        //}
-        //else {
-        //    MW->e->looping = false;
-        //}
+    SDL_Event event;
+    event.type = FF_QUIT_EVENT;
+    event.user.data1 = this;
+    SDL_PushEvent(&event);
 
+    while (MW->e->running)
+        QThread::msleep(10);
 
-        while (MW->e->running)
-            QThread::msleep(10);
+    MW->mainPanel->controlPanel->stopped = true;
+    MW->mainPanel->controlPanel->paused = false;
 
-        emit done();
-        //MW->start();
-
-    //}
+    emit done();
 }

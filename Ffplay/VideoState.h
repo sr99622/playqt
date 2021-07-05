@@ -120,6 +120,7 @@ public:
     double total;
     double current_time;
     QString codec_name;
+    bool showNextFrame = false;
 
     QMainWindow* mainWindow;
     FilterChain* filterChain;

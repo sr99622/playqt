@@ -14,6 +14,7 @@ public:
     QMainWindow *mainWindow;
     bool previously_paused;
     int tick;
+    int last_position_x;
 
 protected:
     void mouseMoveEvent(QMouseEvent *e) override;

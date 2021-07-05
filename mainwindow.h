@@ -21,6 +21,7 @@
 #include <QRunnable>
 #include <QShortcut>
 #include <QToolTip>
+#include <QFileDialog>
 
 #include <iostream>
 #include <string>
@@ -80,6 +81,21 @@ signals:
 
 };
 
+class Launcher : public QObject, public QRunnable
+{
+    Q_OBJECT
+
+public:
+    Launcher(QMainWindow *parent);
+    void run() override;
+
+    QMainWindow *mainWindow;
+
+signals:
+    void done();
+
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -91,6 +107,7 @@ public:
     void resizeEvent(QResizeEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
+    void showEvent(QShowEvent *event) override;
     void initializeSDL();
 
     QString filename;
@@ -119,7 +136,8 @@ public:
     OptionDialog *optionDialog;
 
     ViewerDialog *viewerDialog;
-    Quitter *quitter;
+    Quitter *quitter = nullptr;
+    Launcher *launcher;
 
     Uint32 sdlCustomEventType;
     QTimer *timer;
@@ -138,6 +156,7 @@ public slots:
     void runLoop();
     void poll();
     void fileMenuAction(QAction*);
+    void mediaMenuAction(QAction*);
     void toolsMenuAction(QAction*);
     void helpMenuAction(QAction*);
     void showHelp(const QString&);

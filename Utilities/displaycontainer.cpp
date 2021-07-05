@@ -33,6 +33,7 @@ DisplayContainer::DisplayContainer(QMainWindow *parent)
     display->setMinimumHeight(displayInitialHeight);
     //display->setUpdatesEnabled(false);  // This setting prevents flicker in the display, deferred to render
     QGridLayout *layout = new QGridLayout();
+    layout->setContentsMargins(11, 0, 11, 0);
     slider = new DisplaySlider(mainWindow);
     slider->setOrientation(Qt::Horizontal);
     slider->setMinimum(0);
@@ -50,12 +51,14 @@ DisplayContainer::DisplayContainer(QMainWindow *parent)
     total->setReadOnly(true);
 
     sliderPanel = new QWidget;
+    //sliderPanel->setStyleSheet("QWidget { background-color: blue; }");
     QHBoxLayout *sliderLayout = new QHBoxLayout;
+    sliderLayout->setContentsMargins(0, 0, 0, 0);
     sliderLayout->addWidget(elapsed);
     sliderLayout->addWidget(slider);
     sliderLayout->addWidget(total);
     sliderPanel->setLayout(sliderLayout);
-    sliderPanel->setMaximumHeight(elapsed->fontMetrics().height() * 3.0);
+    sliderPanel->setMaximumHeight(elapsed->fontMetrics().height() * 2.0);
 
     layout->addWidget(display, 0, 0, 1, 2);
     layout->addWidget(sliderPanel, 1, 0, 1, 2);
