@@ -10,6 +10,7 @@
 //#include "avexception.h"
 //#include "yolo_v2_class.hpp"
 #include "Utilities/displayslider.h"
+#include "Utilities/avexception.h"
 
 class ControlPanel : public QWidget
 {
@@ -18,6 +19,7 @@ class ControlPanel : public QWidget
 public:
     ControlPanel(QMainWindow *parent);
     void resizeEvent(QResizeEvent *event) override;
+    bool checkCodec(QString filename);
 
     QMainWindow *mainWindow;
     QCheckBox *engageFilter;
@@ -37,7 +39,9 @@ public:
     bool muted = false;
     bool paused = false;
     bool stopped = true;
-    bool input_switched = false;
+    //bool input_switched = false;
+
+    AVExceptionHandler av;
 
 signals:
     void msg(const QString&);

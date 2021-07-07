@@ -83,9 +83,6 @@ void FilePanel::setDirectory(const QString& path)
 void FilePanel::doubleClicked(const QModelIndex& index)
 {
     if (index.isValid()) {
-        //QString str = model->filePath(index);
-        //MW->co->input_filename = av_strdup(str.toLatin1().data());
-        //MW->runLoop();
         MW->mainPanel->controlPanel->play();
     }
 }
@@ -139,6 +136,58 @@ void FilePanel::info()
     }
     catch (AVException *e) {
         emit msg(QString("Unable to open format context %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));
+        return;
+    }
+
+    try {
+        av.ck(audio_stream = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0), AFBS);
+        audio = fmt_ctx->streams[audio_stream];
+        QString str = "File audio parameters\n";
+
+        char buf[16];
+
+        QString codec_str;
+        const AVCodecDescriptor *cd = avcodec_descriptor_get(audio->codecpar->codec_id);
+        if (cd) {
+            QTextStream(&codec_str) << "codec_name: " << cd->name << "\n"
+                                    << "codec_long_name: " << cd->long_name << "\n";
+        }
+        else {
+            QTextStream(&codec_str) << "Uknown codec" << "\n";
+        }
+
+        if (fmt_ctx->metadata == NULL) {
+            str.append("\nmetadata is NULL\n");
+        }
+        else {
+            QTextStream(&str) << "\n";
+            AVDictionaryEntry *t = NULL;
+            while (t = av_dict_get(fmt_ctx->metadata, "", t, AV_DICT_IGNORE_SUFFIX)) {
+                QTextStream(&codec_str) << t->key << " : " << t->value << "\n";
+            }
+        }
+
+        QTextStream(&str)
+            << "filename: " << filename << "\n"
+            << codec_str
+
+            << "format: " << fmt_ctx->iformat->long_name << " (" << fmt_ctx->iformat->name << ")\n"
+            << "flags: " << fmt_ctx->iformat->flags << "\n"
+            << "extradata_size: " << audio->codecpar->extradata_size << "\n"
+            << "codec time_base:  " << audio->codec->time_base.num << " / " << audio->codec->time_base.den << "\n"
+            << "audio time_base: " << audio->time_base.num << " / " << audio->time_base.den << "\n"
+            << "codec framerate: " << audio->codec->framerate.num << " / " << audio->codec->framerate.den << "\n"
+            << "ticks_per_frame: " << audio->codec->ticks_per_frame << "\n"
+            << "bit_rate: " << fmt_ctx->bit_rate << "\n"
+            << "codec framerate: " << av_q2d(audio->codec->framerate) << "\n"
+            << "start_time: " << fmt_ctx->start_time * av_q2d(av_get_time_base_q()) << "\n"
+            << "duration: " << fmt_ctx->duration * av_q2d(av_get_time_base_q()) << "\n";
+
+        emit msg(str);
+        MW->messageBox->show();
+    }
+    catch (AVException *e) {
+        emit msg(QString("Unable to process audio stream %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));
     }
 
     try {
@@ -194,57 +243,6 @@ void FilePanel::info()
     }
     catch (AVException *e) {
         emit msg(QString("Unable to process video stream %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));
-    }
-
-    try {
-        av.ck(audio_stream = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0), AFBS);
-        audio = fmt_ctx->streams[audio_stream];
-        QString str = "File audio parameters\n";
-
-        char buf[16];
-
-        QString codec_str;
-        const AVCodecDescriptor *cd = avcodec_descriptor_get(audio->codecpar->codec_id);
-        if (cd) {
-            QTextStream(&codec_str) << "codec_name: " << cd->name << "\n"
-                                    << "codec_long_name: " << cd->long_name << "\n";
-        }
-        else {
-            QTextStream(&codec_str) << "Uknown codec" << "\n";
-        }
-
-        if (fmt_ctx->metadata == NULL) {
-            str.append("\nmetadata is NULL\n");
-        }
-        else {
-            QTextStream(&str) << "\n";
-            AVDictionaryEntry *t = NULL;
-            while (t = av_dict_get(fmt_ctx->metadata, "", t, AV_DICT_IGNORE_SUFFIX)) {
-                QTextStream(&codec_str) << t->key << " : " << t->value << "\n";
-            }
-        }
-
-        QTextStream(&str)
-            << "filename: " << filename << "\n"
-            << codec_str
-
-            << "format: " << fmt_ctx->iformat->long_name << " (" << fmt_ctx->iformat->name << ")\n"
-            << "flags: " << fmt_ctx->iformat->flags << "\n"
-            << "extradata_size: " << audio->codecpar->extradata_size << "\n"
-            << "codec time_base:  " << audio->codec->time_base.num << " / " << audio->codec->time_base.den << "\n"
-            << "audio time_base: " << audio->time_base.num << " / " << audio->time_base.den << "\n"
-            << "codec framerate: " << audio->codec->framerate.num << " / " << audio->codec->framerate.den << "\n"
-            << "ticks_per_frame: " << audio->codec->ticks_per_frame << "\n"
-            << "bit_rate: " << fmt_ctx->bit_rate << "\n"
-            << "codec framerate: " << av_q2d(audio->codec->framerate) << "\n"
-            << "start_time: " << fmt_ctx->start_time * av_q2d(av_get_time_base_q()) << "\n"
-            << "duration: " << fmt_ctx->duration * av_q2d(av_get_time_base_q()) << "\n";
-
-        emit msg(str);
-        MW->messageBox->show();
-    }
-    catch (AVException *e) {
-        emit msg(QString("Unable to process audio stream %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));
     }
 
     if (fmt_ctx != nullptr)

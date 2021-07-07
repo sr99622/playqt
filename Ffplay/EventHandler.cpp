@@ -34,7 +34,12 @@ void EventHandler::event_loop()
 void EventHandler::feed()
 {
     //cout << "event handler: " << QTime::currentTime().toString("hh:mm:ss.zzz").toStdString() << endl;
-    MW->is->refresh_loop_wait_event(&event);
+
+    if (event.type == MW->sdlCustomEventType && event.user.code == FLUSH)
+        MW->is->refresh_loop_flush_event(&event);
+    else
+        MW->is->refresh_loop_wait_event(&event);
+
     DisplayContainer *dc = MW->mainPanel->displayContainer;
 
     if (event.type == MW->sdlCustomEventType) {

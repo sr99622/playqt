@@ -129,6 +129,5 @@ LIBS += -L$$(CONTRIB_PATH)/lib \
 
 RESOURCES += resources/resources.qrc
 
-DISTFILES += \
-            resources/darkstyle.qss \
-            resources/resources.rcc
+DISTFILES += resources/darkstyle.qss \
+             resources/resources.rcc

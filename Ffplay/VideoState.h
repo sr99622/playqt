@@ -110,6 +110,7 @@ public:
     int synchronize_audio(int nb_samples);
     int audio_decode_frame();
     void refresh_loop_wait_event(SDL_Event* event);
+    void refresh_loop_flush_event(SDL_Event* event);
     void do_exit();
 
     void rewind();
@@ -120,7 +121,7 @@ public:
     double total;
     double current_time;
     QString codec_name;
-    bool showNextFrame = false;
+    //bool showNextFrame = false;
 
     QMainWindow* mainWindow;
     FilterChain* filterChain;

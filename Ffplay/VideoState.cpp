@@ -930,10 +930,11 @@ int VideoState::audio_decode_frame()
             dec_channel_layout, (AVSampleFormat)af->frame->format, af->frame->sample_rate,
             0, NULL);
         if (!swr_ctx || swr_init(swr_ctx) < 0) {
-            av_log(NULL, AV_LOG_ERROR,
-                "Cannot create sample rate converter for conversion of %d Hz %s %d channels to %d Hz %s %d channels!\n",
+            char buf[1024];
+            sprintf(buf, "Cannot create sample rate converter for conversion of %d Hz %s %d channels to %d Hz %s %d channels!\n",
                 af->frame->sample_rate, av_get_sample_fmt_name((AVSampleFormat)af->frame->format), af->frame->channels,
                 audio_tgt.freq, av_get_sample_fmt_name(audio_tgt.fmt), audio_tgt.channels);
+            MW->msg(buf);
             swr_free(&swr_ctx);
             return -1;
         }
@@ -950,13 +951,13 @@ int VideoState::audio_decode_frame()
         int out_size = av_samples_get_buffer_size(NULL, audio_tgt.channels, out_count, audio_tgt.fmt, 0);
         int len2;
         if (out_size < 0) {
-            av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size() failed\n");
+            MW->msg("av_samples_get_buffer_size() failed\n");
             return -1;
         }
         if (wanted_nb_samples != af->frame->nb_samples) {
             if (swr_set_compensation(swr_ctx, (wanted_nb_samples - af->frame->nb_samples) * audio_tgt.freq / af->frame->sample_rate,
                 wanted_nb_samples * audio_tgt.freq / af->frame->sample_rate) < 0) {
-                av_log(NULL, AV_LOG_ERROR, "swr_set_compensation() failed\n");
+                MW->msg("swr_set_compensation() failed\n");
                 return -1;
             }
         }
@@ -965,7 +966,7 @@ int VideoState::audio_decode_frame()
             return AVERROR(ENOMEM);
         len2 = swr_convert(swr_ctx, out, out_count, in, af->frame->nb_samples);
         if (len2 < 0) {
-            av_log(NULL, AV_LOG_ERROR, "swr_convert() failed\n");
+            MW->msg("swr_convert() failed\n");
             return -1;
         }
         if (len2 == out_count) {
@@ -1391,12 +1392,14 @@ int VideoState::video_thread()
             ret = queue_picture(frame, pts, duration, frame->pkt_pos, viddec.pkt_serial);
             av_frame_unref(frame);
 
+            /*
             if (showNextFrame) {
                 force_refresh = 1;
                 double dummy = 0;
                 video_refresh(&dummy);
                 showNextFrame = false;
             }
+            */
 
 #if CONFIG_AVFILTER
             if (videoq.serial != viddec.pkt_serial)
@@ -1529,7 +1532,7 @@ int VideoState::audio_open(int64_t wanted_channel_layout, int wanted_nb_channels
     wanted_spec.channels = wanted_nb_channels;
     wanted_spec.freq = wanted_sample_rate;
     if (wanted_spec.freq <= 0 || wanted_spec.channels <= 0) {
-        av_log(NULL, AV_LOG_ERROR, "Invalid sample rate or channel count!\n");
+        MW->msg("Invalid sample rate or channel count!\n");
         return -1;
     }
     while (next_sample_rate_idx && next_sample_rates[next_sample_rate_idx] >= wanted_spec.freq)
@@ -1548,23 +1551,24 @@ int VideoState::audio_open(int64_t wanted_channel_layout, int wanted_nb_channels
             wanted_spec.freq = next_sample_rates[next_sample_rate_idx--];
             wanted_spec.channels = wanted_nb_channels;
             if (!wanted_spec.freq) {
-                av_log(NULL, AV_LOG_ERROR,
-                    "No more combinations to try, audio open failed\n");
+                MW->msg("No more combinations to try, audio open failed\n");
                 return -1;
             }
         }
         wanted_channel_layout = av_get_default_channel_layout(wanted_spec.channels);
     }
     if (spec.format != AUDIO_S16SYS) {
-        av_log(NULL, AV_LOG_ERROR,
-            "SDL advised audio format %d is not supported!\n", spec.format);
+        char buf[256];
+        sprintf(buf, "SDL advised audio format %d is not supported!\n", spec.format);
+        MW->msg(buf);
         return -1;
     }
     if (spec.channels != wanted_spec.channels) {
         wanted_channel_layout = av_get_default_channel_layout(spec.channels);
         if (!wanted_channel_layout) {
-            av_log(NULL, AV_LOG_ERROR,
-                "SDL advised channel count %d is not supported!\n", spec.channels);
+            char buf[256];
+            sprintf(buf, "SDL advised channel count %d is not supported!\n", spec.channels);
+            MW->msg(buf);
             return -1;
         }
     }
@@ -1576,7 +1580,7 @@ int VideoState::audio_open(int64_t wanted_channel_layout, int wanted_nb_channels
     audio_hw_params->frame_size = av_samples_get_buffer_size(NULL, audio_hw_params->channels, 1, audio_hw_params->fmt, 1);
     audio_hw_params->bytes_per_sec = av_samples_get_buffer_size(NULL, audio_hw_params->channels, audio_hw_params->freq, audio_hw_params->fmt, 1);
     if (audio_hw_params->bytes_per_sec <= 0 || audio_hw_params->frame_size <= 0) {
-        av_log(NULL, AV_LOG_ERROR, "av_samples_get_buffer_size failed\n");
+        MW->msg("av_samples_get_buffer_size failed\n");
         return -1;
     }
     return spec.size;
@@ -1618,18 +1622,25 @@ int VideoState::stream_component_open(int stream_index)
     if (forced_codec_name)
         codec = avcodec_find_decoder_by_name(forced_codec_name);
     if (!codec) {
-        if (forced_codec_name)
-            av_log(NULL, AV_LOG_WARNING, "No codec could be found with name '%s'\n", forced_codec_name);
-        else
-            av_log(NULL, AV_LOG_WARNING, "No decoder could be found for codec %s\n", avcodec_get_name(avctx->codec_id));
+        if (forced_codec_name) {
+            char buf[256];
+            sprintf(buf, "No codec could be found with name '%s'\n", forced_codec_name);
+            MW->msg(buf);
+        }
+        else {
+            char buf[256];
+            sprintf(buf, "No decoder could be found for codec %s\n", avcodec_get_name(avctx->codec_id));
+            MW->msg(buf);
+        }
         ret = AVERROR(EINVAL);
         goto fail;
     }
 
     avctx->codec_id = codec->id;
     if (stream_lowres > codec->max_lowres) {
-        av_log(avctx, AV_LOG_WARNING, "The maximum value for lowres supported by the decoder is %d\n",
-            codec->max_lowres);
+        char buf[256];
+        sprintf(buf, "The maximum value for lowres supported by the decoder is %d\n", codec->max_lowres);
+        MW->msg(buf);
         stream_lowres = codec->max_lowres;
     }
     avctx->lowres = stream_lowres;
@@ -1648,7 +1659,9 @@ int VideoState::stream_component_open(int stream_index)
         goto fail;
     }
     if ((t = av_dict_get(opts, "", NULL, AV_DICT_IGNORE_SUFFIX))) {
-        av_log(NULL, AV_LOG_ERROR, "Option %s not found.\n", t->key);
+        char buf[256];
+        sprintf(buf, "Option %s not found.\n", t->key);
+        MW->msg(buf);
         ret = AVERROR_OPTION_NOT_FOUND;
         goto fail;
     }
@@ -1713,7 +1726,7 @@ int VideoState::stream_component_open(int stream_index)
         if (codec_name.contains("jpeg")
          //|| codec_name.contains("gif")
          || codec_name.contains("png")
-         || codec_name.contains("bmp")) paused = 2;
+         || codec_name.contains("bmp")) paused = 1;
 
         codec_frame_duration = av_q2d(av_inv_q(video_st->codec->framerate));
 
@@ -1909,7 +1922,9 @@ void VideoState::read_loop()
 
             int ret = avformat_seek_file(ic, -1, seek_min, seek_target, seek_max, seek_flags);
             if (ret < 0) {
-                av_log(NULL, AV_LOG_ERROR, "%s: error while seeking\n", ic->url);
+                char buf[256];
+                sprintf(buf, "%s: error while seeking\n", ic->url);
+                MW->msg(buf);
                 cout << "error while seeking" << ic->url << endl;
             }
             else {
@@ -1938,33 +1953,23 @@ void VideoState::read_loop()
             eof = 0;
 
             if (paused) {
-                /**/
                 while (pictq.nb_remaining() > 0)
                     pictq.next();
                 while (subpq.nb_remaining() > 0)
                     subpq.next();
                 while (sampq.nb_remaining() > 0)
                     sampq.next();
-                /**/
 
-                //force_refresh = 1;
-                //double dummy = 0;
+                SDL_Event event;
+                SDL_memset(&event, 0, sizeof(event));
+                event.type = MW->sdlCustomEventType;
+                event.user.code = FLUSH;
+                force_refresh = 1;
+                SDL_PushEvent(&event);
+                QThread::msleep(av_q2d(av_inv_q(video_st->codec->framerate)) * 1000);
 
-
-                for (int i = 0; i < 10; i++) {
-                    SDL_Event event;
-                    SDL_memset(&event, 0, sizeof(event));
-                    event.type = MW->sdlCustomEventType;
-                    event.user.code = FLUSH;
-                    //elapsed = current_time;
-                    force_refresh = 1;
-                    SDL_PushEvent(&event);
-                    QThread::msleep(1);
-                }
-
-                //video_refresh(&dummy);
                 step_to_next_frame();
-                showNextFrame = true;
+                //showNextFrame = true;
                 //break;
             }
         }
@@ -2105,7 +2110,9 @@ int VideoState::read_thread()
     }
     for (int i = 0; i < AVMEDIA_TYPE_NB; i++) {
         if (co->wanted_stream_spec[i] && st_index[i] == -1) {
-            av_log(NULL, AV_LOG_ERROR, "Stream specifier %s does not match any %s stream\n", co->wanted_stream_spec[i], av_get_media_type_string((AVMediaType)i));
+            char buf[256];
+            sprintf(buf, "Stream specifier %s does not match any %s stream\n", co->wanted_stream_spec[i], av_get_media_type_string((AVMediaType)i));
+            MW->msg(buf);
             st_index[i] = INT_MAX;
         }
     }
@@ -2238,6 +2245,17 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     }
 
     return is;
+}
+
+void VideoState::refresh_loop_flush_event(SDL_Event* event) {
+    double remaining_time = 0;
+    SDL_PumpEvents();
+    while (!SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
+        if (show_mode != SHOW_MODE_NONE && (!paused || force_refresh)) {
+            video_refresh(&remaining_time);
+        }
+        SDL_PumpEvents();
+    }
 }
 
 void VideoState::refresh_loop_wait_event(SDL_Event* event) {

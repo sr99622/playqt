@@ -172,6 +172,12 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     //viewerDialog = new ViewerDialog(this);
 
+    int startup_volume = av_clip(co->startup_volume, 0, 128);
+    if (startup_volume == 0)
+        mainPanel->controlPanel->mute();
+    else
+        mainPanel->controlPanel->volumeSlider->setValue(startup_volume);
+
     if (co->input_filename) {
         launcher = new Launcher(this);
         connect(launcher, SIGNAL(done()), mainPanel->controlPanel, SLOT(play()));
@@ -205,6 +211,9 @@ void MainWindow::start()
 {
     cout << "start: " << co->input_filename << endl;
     if (co->input_filename) {
+        QFileInfo fi(co->input_filename);
+        QString title = "PlayQt - " + fi.fileName();
+        setWindowTitle(title);
         is = VideoState::stream_open(this);
         e->event_loop();
     }

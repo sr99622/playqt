@@ -92,6 +92,8 @@ void ControlPanel::play()
 
     if (!MW->co->input_filename) {
         if (selected_filename.length() > 0) {
+            if (!checkCodec(selected_filename))
+                return;
             MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
         }
         else {
@@ -100,15 +102,11 @@ void ControlPanel::play()
         }
     }
 
-    if (selected_filename.length() > 0) {
-        QString title = "PlayQt";
-        QFileInfo fi(selected_filename);
-        title = title + " - " + fi.fileName();
-        MW->setWindowTitle(title);
-    }
 
     if (stopped) {
         if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
+            if (!checkCodec(selected_filename))
+                return;
             MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
         }
         stopped = false;
@@ -118,6 +116,8 @@ void ControlPanel::play()
     }
     else if (paused) {
         if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
+            if (!checkCodec(selected_filename))
+                return;
             MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
             MW->runLoop();
         }
@@ -129,6 +129,8 @@ void ControlPanel::play()
     }
     else {
         if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
+            if (!checkCodec(selected_filename))
+                return;
             MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
             MW->runLoop();
         }
@@ -138,6 +140,49 @@ void ControlPanel::play()
             btnPlay->setIcon(icnPlay);
         }
     }
+}
+
+bool ControlPanel::checkCodec(QString filename)
+{
+    if (MW->co->video_codec_name && filename != MW->co->input_filename) {
+
+        cout << "HAS VIDEO CODEC" << endl;
+
+        AVFormatContext *fmt_ctx = nullptr;
+        AVStream *video;
+        int video_stream;
+
+        try {
+            av.ck(avformat_open_input(&fmt_ctx, filename.toLatin1().data(), NULL, NULL), AOI);
+            av.ck(avformat_find_stream_info(fmt_ctx, NULL), AFSI);
+            av.ck(video_stream = av_find_best_stream(fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0), AFBS);
+            video = fmt_ctx->streams[video_stream];
+            const AVCodecDescriptor *cd = avcodec_descriptor_get(video->codecpar->codec_id);
+            if (cd) {
+                QString forced_codec_name = MW->co->video_codec_name;
+                if (!forced_codec_name.contains(cd->name)) {
+                    QString str;
+                    QFileInfo fi(filename);
+                    QTextStream(&str) << "User specified codec '" << forced_codec_name << "' may not support the codec '" << cd->name
+                                      << "'\n found in the file '" << fi.fileName() << "'   Do you want to proceed anyway ?";
+                    QMessageBox::StandardButton result = QMessageBox::question(MW, "PlayQt", str);
+                    if (result == QMessageBox::No) {
+                        if (fmt_ctx)
+                            avformat_close_input(&fmt_ctx);
+                        return false;
+                    }
+                }
+            }
+        }
+        catch (AVException *e) {
+            emit msg(QString("Unable to open format context %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));
+        }
+
+        if (fmt_ctx)
+            avformat_close_input(&fmt_ctx);
+    }
+
+    return true;
 }
 
 void ControlPanel::test()

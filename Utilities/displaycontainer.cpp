@@ -39,6 +39,7 @@ DisplayContainer::DisplayContainer(QMainWindow *parent)
     slider->setMinimum(0);
     slider->setMaximum(1000);
     slider->setValue(0);
+    slider->setFocusPolicy(Qt::NoFocus);
 
     elapsed = new QLineEdit;
     elapsed->setMaximumWidth(elapsed->fontMetrics().boundingRect("00:00:00").width() * 1.2);

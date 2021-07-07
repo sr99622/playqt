@@ -384,7 +384,7 @@ CommandOptions::CommandOptions()
     options[66].argname = "";
 
     options[67].name = "i";
-    options[67].flags = OPT_BOOL;
+    options[67].flags = OPT_BOOL | OPT_NO_GUI;
     options[67].u.dst_ptr = &dummy;
     options[67].help = "read specified file";
     options[67].argname = "input_file";
@@ -601,9 +601,9 @@ int CommandOptions::opt_codec(void* optctx, const char* opt, const char* arg)
 {
     const char* spec = strchr(opt, ':');
     if (!spec) {
-        av_log(NULL, AV_LOG_ERROR,
-            "No media specifier was specified in '%s' in option '%s'\n",
-            arg, opt);
+        char buf[256];
+        sprintf(buf, "No media specifier was specified in '%s' in option '%s'\n", arg, opt);
+        MW->msg(buf);
         return AVERROR(EINVAL);
     }
     spec++;
@@ -612,8 +612,8 @@ int CommandOptions::opt_codec(void* optctx, const char* opt, const char* arg)
     case 's': subtitle_codec_name = arg; break;
     case 'v':    video_codec_name = arg; break;
     default:
-        av_log(NULL, AV_LOG_ERROR,
-            "Invalid media specifier '%s' in option '%s'\n", spec, opt);
+        char buf[256];
+        sprintf(buf, "Invalid media specifier '%s' in option '%s'\n", spec, opt);
         return AVERROR(EINVAL);
     }
     return 0;

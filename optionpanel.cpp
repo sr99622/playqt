@@ -474,7 +474,7 @@ void OptionPanel::show_help_codec(const char *name, int encoder)
     const AVCodec *codec;
 
     if (!name) {
-        av_log(NULL, AV_LOG_ERROR, "No codec name specified.\n");
+        MW->msg("No codec name specified.\n");
         return;
     }
 
@@ -493,14 +493,17 @@ void OptionPanel::show_help_codec(const char *name, int encoder)
         }
 
         if (!printed) {
-            av_log(NULL, AV_LOG_ERROR, "Codec '%s' is known to FFmpeg, "
+            char buf[1024];
+            sprintf(buf, "Codec '%s' is known to FFmpeg, "
                    "but no %s for it are available. FFmpeg might need to be "
                    "recompiled with additional external libraries.\n",
                    name, encoder ? "encoders" : "decoders");
+            MW->msg(buf);
         }
     } else {
-        av_log(NULL, AV_LOG_ERROR, "Codec '%s' is not recognized by FFmpeg.\n",
-               name);
+        char buf[256];
+        sprintf(buf, "Codec '%s' is not recognized by FFmpeg.\n", name);
+        MW->msg(buf);
     }
 
 }
@@ -723,7 +726,7 @@ unsigned OptionPanel::get_codecs_sorted(const AVCodecDescriptor ***rcodecs)
     while ((desc = avcodec_descriptor_next(desc)))
         nb_codecs++;
     if (!(codecs = (const AVCodecDescriptor**)av_calloc(nb_codecs, sizeof(*codecs)))) {
-        av_log(NULL, AV_LOG_ERROR, "Out of memory\n");
+        cout << "Out of memory\n" << endl;
         exit_program(1);
     }
     desc = NULL;

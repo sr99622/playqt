@@ -108,7 +108,7 @@ public:
     inline static enum ShowMode show_mode = SHOW_MODE_NONE;
     inline static const char* audio_codec_name;
     inline static const char* subtitle_codec_name;
-    inline static const char* video_codec_name;
+    inline static const char* video_codec_name = nullptr;
     inline static double rdftspeed = 0.02;
     inline static int64_t cursor_last_shown;
     inline static int cursor_hidden = 0;
