@@ -46,10 +46,9 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     timer->start(1000 / 30);
 
     QFile f(":darkstyle.qss");
-    QString style;
 
     if (!f.exists()) {
-        cout << "Error: MainWindow::getThemes() Style sheet not found" << endl;
+        msg("Error: MainWindow::getThemes() Style sheet not found");
     }
     else {
         f.open(QFile::ReadOnly | QFile::Text);

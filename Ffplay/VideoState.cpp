@@ -2086,6 +2086,9 @@ int VideoState::read_thread()
         return ret;
     }
 
+    MW->msg("VideoState::read_thread");
+    MW->msg(filename);
+
     ret = avformat_open_input(&ic, filename, NULL, NULL);
     if (ret < 0) {
         cout << "error avformat_open_input" << endl;

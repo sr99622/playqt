@@ -45,7 +45,7 @@
 #include "Filters/filterchain.h"
 #include "mainpanel.h"
 #include "optionpanel.h"
-#include "camerapanel.h"
+#include "Cameras/camerapanel.h"
 #include "streampanel.h"
 #include "viewer.h"
 
@@ -138,6 +138,7 @@ public:
     ViewerDialog *viewerDialog;
     Quitter *quitter = nullptr;
     Launcher *launcher;
+    QString style;
 
     Uint32 sdlCustomEventType;
     QTimer *timer;

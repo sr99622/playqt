@@ -5,6 +5,20 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++11
 
 SOURCES += \
+    Cameras/admintab.cpp \
+    Cameras/camera.cpp \
+    Cameras/cameradialogtab.cpp \
+    Cameras/cameralistmodel.cpp \
+    Cameras/cameralistview.cpp \
+    Cameras/camerapanel.cpp \
+    Cameras/configtab.cpp \
+    Cameras/discovery.cpp \
+    Cameras/imagetab.cpp \
+    Cameras/logindialog.cpp \
+    Cameras/networktab.cpp \
+    Cameras/onvifmanager.cpp \
+    Cameras/ptztab.cpp \
+    Cameras/videotab.cpp \
     Ffplay/Clock.cpp \
     Ffplay/CommandOptions.cpp \
     Ffplay/Decoder.cpp \
@@ -35,7 +49,6 @@ SOURCES += \
     Utilities/paneldialog.cpp \
     Utilities/waitbox.cpp \
     Utilities/yuvcolor.cpp \
-    camerapanel.cpp \
     controlpanel.cpp \
     main.cpp \
     mainpanel.cpp \
@@ -47,6 +60,20 @@ SOURCES += \
     viewer.cpp
 
 HEADERS += \
+    Cameras/admintab.h \
+    Cameras/camera.h \
+    Cameras/cameradialogtab.h \
+    Cameras/cameralistmodel.h \
+    Cameras/cameralistview.h \
+    Cameras/camerapanel.h \
+    Cameras/configtab.h \
+    Cameras/discovery.h \
+    Cameras/imagetab.h \
+    Cameras/logindialog.h \
+    Cameras/networktab.h \
+    Cameras/onvifmanager.h \
+    Cameras/ptztab.h \
+    Cameras/videotab.h \
     Ffplay/Clock.h \
     Ffplay/CommandOptions.h \
     Ffplay/Decoder.h \
@@ -78,7 +105,6 @@ HEADERS += \
     Utilities/paneldialog.h \
     Utilities/waitbox.h \
     Utilities/yuvcolor.h \
-    camerapanel.h \
     controlpanel.h \
     mainpanel.h \
     mainwindow.h \
@@ -96,6 +122,7 @@ INCLUDEPATH += $$(CUDA_PATH)/include \
                $$(CONTRIB_PATH)/include/SDL \
                $$(CONTRIB_PATH)/include \
                $$(CONTRIB_PATH)/include/darknet \
+               $$(CONTRIB_PATH)/include/libxml2 \
                $$(OPENCV_PATH)/include
 
 LIBS += -L$$(CUDA_PATH)/lib/x64 \
@@ -124,6 +151,7 @@ LIBS += -L$$(CONTRIB_PATH)/lib \
         -llibpostproc \
         -ldarknet \
         -llibsdl2 \
+        -llibonvif \
         -lopencv_world451
 
 
