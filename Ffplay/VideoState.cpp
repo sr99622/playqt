@@ -4,6 +4,7 @@
 static int decode_interrupt_cb(void* ctx)
 {
     VideoState* is = (VideoState*)ctx;
+    //cout << "DECODE INTERRUPT CB: " << is->abort_request << " " << TS << endl;
     return is->abort_request;
 }
 
@@ -239,6 +240,7 @@ void VideoState::stream_close()
         SDL_DestroyTexture(sub_texture);
 
     cout << "stream_close 8" << endl;
+
     av_free(this);
 }
 
@@ -453,8 +455,9 @@ int VideoState::get_video_frame(AVFrame* frame)
 {
     int got_picture;
 
-    if ((got_picture = viddec.decode_frame(frame, NULL)) < 0)
+    if ((got_picture = viddec.decode_frame(frame, NULL)) < 0) {
         return -1;
+    }
 
     if (got_picture) {
         double dpts = NAN;
@@ -1093,7 +1096,6 @@ void VideoState::subtitle_refresh()
 void VideoState::
 video_refresh(double* remaining_time)
 {
-    //cout << "VideoState::video_refresh " << TS << endl;
     if (!paused && get_master_sync_type() == AV_SYNC_EXTERNAL_CLOCK && realtime)
         check_external_clock_speed();
 
@@ -1207,6 +1209,7 @@ video_refresh(double* remaining_time)
     force_refresh = 0;
     if (co->show_status)
         show_status();
+
 }
 
 int VideoState::audio_thread()
@@ -1392,15 +1395,6 @@ int VideoState::video_thread()
             ret = queue_picture(frame, pts, duration, frame->pkt_pos, viddec.pkt_serial);
             av_frame_unref(frame);
 
-            /*
-            if (showNextFrame) {
-                force_refresh = 1;
-                double dummy = 0;
-                video_refresh(&dummy);
-                showNextFrame = false;
-            }
-            */
-
 #if CONFIG_AVFILTER
             if (videoq.serial != viddec.pkt_serial)
                 break;
@@ -1409,8 +1403,6 @@ int VideoState::video_thread()
 
         if (ret < 0)
             goto the_end;
-
-
 
     }
 the_end:
@@ -1846,11 +1838,16 @@ void VideoState::assign_read_options()
     if (co->genpts)
         ic->flags |= AVFMT_FLAG_GENPTS;
 
-    // probably doesn't do anything
     if (co->find_stream_info) {
         cout << "co->find_stream_info" << endl;
         AVDictionary** opts = setup_find_stream_info_opts(ic, codec_opts);
         int orig_nb_streams = ic->nb_streams;
+
+        cout << "orig_nb_streams: " << orig_nb_streams << endl;
+
+        for (int i = 0; i < orig_nb_streams; i++) {
+            cout << "av_dict_count: " << av_dict_count(opts[i]);
+        }
 
         ret = avformat_find_stream_info(ic, opts);
 
@@ -1859,7 +1856,10 @@ void VideoState::assign_read_options()
         av_freep(&opts);
 
         if (ret < 0) {
-            av_log(NULL, AV_LOG_WARNING, "%s: could not find codec parameters\n", filename);
+            char buf[256];
+            sprintf(buf, "%s: could not find codec parameters\n", filename);
+            MW->msg(buf);
+            cout << buf << endl;
             ret = -1;
             return;
         }
@@ -1890,6 +1890,7 @@ void VideoState::read_loop()
     }
 
     for (;;) {
+
         if (abort_request) {
             break;
         }
@@ -2014,6 +2015,7 @@ void VideoState::read_loop()
         */
 
         ret = av_read_frame(ic, pkt);
+
         if (ret < 0) {
             if ((ret == AVERROR_EOF || avio_feof(ic->pb)) && !eof) {
                 if (video_stream >= 0)
@@ -2070,7 +2072,6 @@ void VideoState::read_loop()
         event.user.data1 = &current_time;
         event.user.data2 = &total;
         SDL_PushEvent(&event);
-
     }
     SDL_DestroyMutex(wait_mutex);
 }
@@ -2158,10 +2159,14 @@ int VideoState::read_thread()
         stream_component_open(st_index[AVMEDIA_TYPE_SUBTITLE]);
     }
 
-
     realtime = is_realtime(ic);
-    if (co->infinite_buffer < 0 && realtime)
+    if (co->infinite_buffer < 0 && realtime) {
+        cout << "infinite buffer" << endl;
         co->infinite_buffer = 1;
+    }
+    else {
+        co->infinite_buffer = -1;
+    }
 
     read_loop();
 
@@ -2262,6 +2267,7 @@ void VideoState::refresh_loop_flush_event(SDL_Event* event) {
 }
 
 void VideoState::refresh_loop_wait_event(SDL_Event* event) {
+
     double remaining_time = 0.0;
     SDL_PumpEvents();
     while (!SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
@@ -2277,6 +2283,7 @@ void VideoState::refresh_loop_wait_event(SDL_Event* event) {
         }
         SDL_PumpEvents();
     }
+
 }
 
 /*

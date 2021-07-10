@@ -27,7 +27,6 @@
 CameraPanel::CameraPanel(QMainWindow *parent)
 {
     mainWindow = parent;
-    //setMaximumHeight(280);
 
     tabWidget = new QTabWidget();
     videoTab = new VideoTab(this);
@@ -81,7 +80,21 @@ CameraPanel::CameraPanel(QMainWindow *parent)
     connect(cameraListModel, SIGNAL(showCameraData()), this, SLOT(showData()));
     connect(cameraListModel, SIGNAL(getCameraData()), this, SLOT(fillData()));
 
+    configTab->commonUsername->setText(MW->settings->value(usernameKey, "").toString());
+    configTab->commonPassword->setText(MW->settings->value(passwordKey, "").toString());
+    configTab->autoDiscovery->setChecked(MW->settings->value(autoDiscKey, false).toBool());
+
+    QString netIntf = MW->settings->value(netIntfKey, "").toString();
+    if (netIntf.length() > 0)
+        configTab->networkInterfaces->setCurrentText(netIntf);
+
     discovery = new Discovery(this);
+    cameraNames = new QSettings("Onvif", "Camera Names");
+    foreach(QString key, cameraNames->allKeys())
+        discovery->cameraAlias.insert(key, cameraNames->value(key).toString());
+
+    if (configTab->autoDiscovery->isChecked())
+        discovery->start();
 }
 
 void CameraPanel::receiveOnvifData(OnvifData *onvif_data)
@@ -139,6 +152,27 @@ void CameraPanel::showData()
     ptzTab->setActive(camera->hasPTZ());
     camera->onvif_data_read = true;
     applyButton->setEnabled(false);   
+}
+
+void CameraPanel::saveUsername()
+{
+    MW->settings->setValue(usernameKey, configTab->commonUsername->text());
+}
+
+void CameraPanel::savePassword()
+{
+    MW->settings->setValue(passwordKey, configTab->commonPassword->text());
+}
+
+void CameraPanel::saveAutoDiscovery()
+{
+    MW->settings->setValue(autoDiscKey, configTab->autoDiscovery->isChecked());
+}
+
+void CameraPanel::saveNetIntf(const QString& name)
+{
+    cout << "net intf: " << name.toStdString() << endl;
+    MW->settings->setValue(netIntfKey, name);
 }
 
 void CameraPanel::signalStreamer(bool on)

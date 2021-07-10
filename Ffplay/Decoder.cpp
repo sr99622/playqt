@@ -69,8 +69,9 @@ int Decoder::decode_frame(AVFrame* frame, AVSubtitle* sub)
 		}
 
 		do {
-			if (queue->nb_packets == 0)
+            if (queue->nb_packets == 0) {
 				SDL_CondSignal(empty_queue_cond);
+            }
 			if (packet_pending) {
 				av_packet_move_ref(&pkt1, &pkt);
 				packet_pending = 0;

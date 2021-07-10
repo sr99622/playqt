@@ -86,7 +86,7 @@ void VideoTab::setActive(bool active)
 
 void VideoTab::initialize()
 {
-    OnvifData *onvif_data = ((CameraPanel *)cameraPanel)->camera->onvif_data;
+    OnvifData *onvif_data = CP->camera->onvif_data;
 
     comboResolutions->clear();
 
@@ -120,7 +120,7 @@ void VideoTab::initialize()
     spinGovLength->setValue(onvif_data->gov_length);
     spinFrameRate->setValue(onvif_data->frame_rate);
     spinBitrate->setValue(onvif_data->bitrate);
-    ((CameraPanel *)cameraPanel)->applyButton->setEnabled(false);
+    CP->applyButton->setEnabled(false);
 
     /*
     QPushButton *streamerButton = ((MainWindow*) ((CameraPanel *)cameraPanel)->mainWindow)->controlPanel->streamerButton;
@@ -133,7 +133,7 @@ void VideoTab::initialize()
 }
 
 bool VideoTab::hasBeenEdited() {
-    OnvifData *onvif_data = ((CameraPanel *)cameraPanel)->camera->onvif_data;
+    OnvifData *onvif_data = CP->camera->onvif_data;
     bool result = false;
     if (strcmp(comboResolutions->currentText().toLatin1().data(), "") != 0) {
         if (spinGovLength->value() != onvif_data->gov_length)
@@ -153,15 +153,15 @@ bool VideoTab::hasBeenEdited() {
 
 void VideoTab::onCurrentIndexChanged(int index) {
     if (hasBeenEdited())
-        ((CameraPanel *)cameraPanel)->applyButton->setEnabled(true);
+        CP->applyButton->setEnabled(true);
     else
-        ((CameraPanel *)cameraPanel)->applyButton->setEnabled(false);
+        CP->applyButton->setEnabled(false);
 }
 
 void VideoTab::onValueChanged(int index) {
     if (hasBeenEdited())
-        ((CameraPanel *)cameraPanel)->applyButton->setEnabled(true);
+        CP->applyButton->setEnabled(true);
     else
-        ((CameraPanel *)cameraPanel)->applyButton->setEnabled(false);
+        CP->applyButton->setEnabled(false);
 }
 

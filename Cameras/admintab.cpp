@@ -23,6 +23,7 @@
 
 #include <QGridLayout>
 #include <QLabel>
+#include <QMessageBox>
 #include <QThreadPool>
 
 AdminTab::AdminTab(QWidget *parent)
@@ -76,11 +77,12 @@ AdminTab::AdminTab(QWidget *parent)
 
 void AdminTab::update()
 {
-    OnvifData *onvif_data = ((CameraPanel *)cameraPanel)->camera->onvif_data;
+    OnvifData *onvif_data = CP->camera->onvif_data;
     strcpy(onvif_data->camera_name, textCameraName->text().toLatin1().data());
     setUser(textAdminPassword->text().toLatin1().data(), onvif_data);
-    ((CameraPanel*)cameraPanel)->applyButton->setEnabled(false);
-    ((CameraPanel*)cameraPanel)->refreshList();
+    CP->applyButton->setEnabled(false);
+    CP->refreshList();
+    CP->cameraNames->setValue(onvif_data->serial_number, onvif_data->camera_name);
     strcpy(onvif_data->password, textAdminPassword->text().toLatin1().data());
 }
 
@@ -98,8 +100,7 @@ bool AdminTab::hasBeenEdited()
 {
     bool result = false;
 
-
-    OnvifData *onvif_data = ((CameraPanel *)cameraPanel)->camera->onvif_data;
+    OnvifData *onvif_data = CP->camera->onvif_data;
     QString camera_name = onvif_data->camera_name;
     if (camera_name != textCameraName->text())
         result = true;
@@ -112,7 +113,7 @@ bool AdminTab::hasBeenEdited()
 
 void AdminTab::initialize()
 {
-    OnvifData *onvif_data = ((CameraPanel *)cameraPanel)->camera->onvif_data;
+    OnvifData *onvif_data = CP->camera->onvif_data;
     textCameraName->setText(tr(onvif_data->camera_name));
     buttonReboot->setEnabled(false);
     buttonHardReset->setEnabled(false);
@@ -122,7 +123,7 @@ void AdminTab::initialize()
 
 void AdminTab::launchBrowserClicked()
 {
-    OnvifData *onvif_data = ((CameraPanel *)cameraPanel)->camera->onvif_data;
+    OnvifData *onvif_data = CP->camera->onvif_data;
     char host[128];
     extractHost(onvif_data->xaddrs, host);
     char target[128];
@@ -143,12 +144,16 @@ void AdminTab::enableResetChecked()
 
 void AdminTab::rebootClicked()
 {
-    QThreadPool::globalInstance()->tryStart(rebooter);
+    QMessageBox::StandardButton result = QMessageBox::question(this, "PlayQt", "You are about to reboot the camera\nAre you sure you want to do this");
+    if (result == QMessageBox::Yes)
+        QThreadPool::globalInstance()->tryStart(rebooter);
 }
 
 void AdminTab::hardResetClicked()
 {
-    QThreadPool::globalInstance()->tryStart(resetter);
+    QMessageBox::StandardButton result = QMessageBox::question(this, "PlayQt", "You are about to HARD RESET the camera\nAll settings will be returned to default factory configuration\nAre you sure you want to do this");
+    if (result == QMessageBox::Yes)
+        QThreadPool::globalInstance()->tryStart(resetter);
 }
 
 void AdminTab::syncTimeClicked()
@@ -171,7 +176,7 @@ void AdminTab::doneResetting()
 void AdminTab::onTextChanged(const QString &)
 {
     if (hasBeenEdited())
-        ((CameraPanel*)cameraPanel)->applyButton->setEnabled(true);
+        CP->applyButton->setEnabled(true);
     else
-        ((CameraPanel*)cameraPanel)->applyButton->setEnabled(false);
+        CP->applyButton->setEnabled(false);
 }

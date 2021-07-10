@@ -53,13 +53,15 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     else {
         f.open(QFile::ReadOnly | QFile::Text);
         style = QString(f.readAll());
-        style.replace("background_dark", "#283445");
+        style.replace("background_light",  "#566170");
         style.replace("background_medium", "#3E4754");
-        style.replace("background_light", "#566170");
-        style.replace("foreground_light", "#C6D9F2");
-        style.replace("selection_light", "#FFFFFF");
-        style.replace("selection_dark", "#2C5059");
-        style.replace("selection_medium", "#4A8391");
+        style.replace("background_dark",   "#283445");
+        style.replace("foreground_light",  "#C6D9F2");
+        style.replace("foreground_medium", "#9DADC2");
+        style.replace("foreground_dark",   "#808D9E");
+        style.replace("selection_light",   "#FFFFFF");
+        style.replace("selection_medium",  "#4A8391");
+        style.replace("selection_dark",    "#2C5059");
         setStyleSheet(style);
     }
 
@@ -214,6 +216,7 @@ void MainWindow::start()
         QString title = "PlayQt - " + fi.fileName();
         setWindowTitle(title);
         is = VideoState::stream_open(this);
+        cout << "stream opened" << endl;
         e->event_loop();
     }
 }
@@ -226,8 +229,9 @@ void MainWindow::poll()
         }
 
         double remaining_time = REFRESH_RATE;
-        if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh))
+        if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh)) {
             is->video_refresh(&remaining_time);
+        }
     }
 }
 

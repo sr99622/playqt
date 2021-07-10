@@ -56,6 +56,15 @@ QPushButton {
     color : foreground_light;
 }
 
+QPushButton:disabled {
+    background-color : background_medium;
+    color : foreground_medium;
+}
+
+QPushButton:hover {
+    color : selection_light;
+}
+
 QPushButton:pressed {
     background-color : background_medium;
 }

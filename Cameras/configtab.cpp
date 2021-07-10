@@ -32,8 +32,31 @@ ConfigTab::ConfigTab(QWidget *parent)
     layout->addWidget(commonPassword,      3, 1, 1, 1);
     setLayout(layout);
 
-    //connect(this, SIGNAL(msg(const QString&)), ((CameraPanel*)cameraPanel)->mainWindow, SLOT(msg(const QString&)));
     getActiveNetworkInterfaces();
+
+    connect(commonUsername, SIGNAL(editingFinished()), this, SLOT(usernameUpdated()));
+    connect(commonPassword, SIGNAL(editingFinished()), this, SLOT(passwordUpdated()));
+    connect(autoDiscovery, SIGNAL(stateChanged(int)), this, SLOT(autoDiscoveryClicked(int)));
+    connect(networkInterfaces, SIGNAL(currentTextChanged(const QString&)), this, SLOT(netIntfChanged(const QString&)));
+}
+
+void ConfigTab::netIntfChanged(const QString& name)
+{
+    CP->saveNetIntf(name);
+}
+void ConfigTab::autoDiscoveryClicked(int state)
+{
+    CP->saveAutoDiscovery();
+}
+
+void ConfigTab::usernameUpdated()
+{
+    CP->saveUsername();
+}
+
+void ConfigTab::passwordUpdated()
+{
+    CP->savePassword();
 }
 
 void ConfigTab::getActiveNetworkInterfaces()
@@ -41,7 +64,7 @@ void ConfigTab::getActiveNetworkInterfaces()
     PIP_ADAPTER_INFO pAdapterInfo;
     PIP_ADAPTER_INFO pAdapter = NULL;
     DWORD dwRetVal = 0;
-    UINT i;
+    //UINT i;
 
     ULONG ulOutBufLen = sizeof (IP_ADAPTER_INFO);
     pAdapterInfo = (IP_ADAPTER_INFO *) malloc(sizeof (IP_ADAPTER_INFO));

@@ -34,19 +34,19 @@ class VideoTab : public CameraDialogTab
 
 public:
     VideoTab(QWidget *parent);
+    void update() override;
+    void setActive(bool active) override;
+    bool hasBeenEdited() override;
 
+
+    QWidget *cameraPanel;
     QComboBox *comboResolutions;
     QSpinBox *spinFrameRate;
     QSpinBox *spinGovLength;
     QSpinBox *spinBitrate;
 
-    QWidget *cameraPanel;
-
     VideoUpdater *updater;
-
-    void update() override;
-    void setActive(bool active) override;
-    bool hasBeenEdited() override;
+    bool updating = false;
 
 public slots:
     void initialize();

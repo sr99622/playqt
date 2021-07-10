@@ -40,6 +40,7 @@
 #include <QTabWidget>
 #include <QPushButton>
 #include <QMainWindow>
+#include <QSettings>
 
 #define CP dynamic_cast<CameraPanel*>(cameraPanel)
 
@@ -51,7 +52,12 @@ public:
     CameraPanel(QMainWindow *parent);
     void signalStreamer(bool on);
     void refreshList();
+    void saveUsername();
+    void savePassword();
+    void saveAutoDiscovery();
+    void saveNetIntf(const QString& name);
 
+    Camera *camera;
     QTabWidget *tabWidget;
     QPushButton *applyButton;
     QPushButton *discoverButton;
@@ -61,12 +67,17 @@ public:
     PTZTab *ptzTab;
     AdminTab *adminTab;
     ConfigTab *configTab;
-    Camera *camera;
     QMainWindow *mainWindow;
     Filler *filler;
     CameraListView *cameraList;
     Discovery *discovery;
     LoginDialog *loginDialog = nullptr;
+    QSettings *cameraNames;
+
+    const QString usernameKey = "CameraPanel/username";
+    const QString passwordKey = "CameraPanel/password";
+    const QString autoDiscKey = "CameraPanel/autodiscovery";
+    const QString netIntfKey = "CameraPanel/networkInterface";
 
 signals:
     void stopStreaming();

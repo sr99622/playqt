@@ -26,6 +26,12 @@ public:
 signals:
     void msg(const QString&);
 
+public slots:
+    void usernameUpdated();
+    void passwordUpdated();
+    void autoDiscoveryClicked(int);
+    void netIntfChanged(const QString&);
+
 };
 
 #endif // CONFIGTAB_H

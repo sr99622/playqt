@@ -14,6 +14,12 @@ void EventHandler::event_loop()
     total = 0;
     percentage = 0;
 
+
+    //QString str = MW->co->input_filename;
+    //if (str.startsWith("rtsp")) {
+        MW->is->refresh_loop_flush_event(&event);
+    //}
+
     while (looping) {
         feed();
     }
@@ -29,6 +35,7 @@ void EventHandler::event_loop()
     dc->total->setText("");
     MW->repaint();
     running = false;
+
 }
 
 void EventHandler::feed()
@@ -59,26 +66,16 @@ void EventHandler::feed()
                 ts += MW->is->ic->start_time;
             MW->is->stream_seek(ts, 0, 0);
             break;
-        case REWIND:
-            cout << "REWIND" << endl;
-            MW->is->rewind();
-            break;
-        case FASTFORWARD:
-            cout << "FASTFORWARD" << endl;
-            MW->is->fastforward();
-            break;
-        case PAUSE:
-            cout << "PAUSE" << endl;
-            MW->is->toggle_pause();
-            break;
         }
     }
     else if (event.type == FF_QUIT_EVENT) {
         cout << "QUIT EVENT" << endl;
         looping = false;
+        /*
         dc->slider->setValue(0);
         dc->elapsed->setText("");
         dc->total->setText("");
         MW->repaint();
+        */
     }
 }

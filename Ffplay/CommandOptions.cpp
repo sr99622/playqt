@@ -357,11 +357,13 @@ CommandOptions::CommandOptions()
     options[62].help = "set the y position for the top of the window";
     options[62].argname = "y pos";
 
+#if CONFIG_AVFILTER
     options[63].name = "vf";
     options[63].flags = OPT_EXPERT | HAS_ARG;
     options[63].u.func_arg = opt_add_vfilter;
     options[63].help = "set video filters";
     options[63].argname = "filter_graph";
+#endif
 
     options[64].name = "af";
     options[64].flags = OPT_STRING | HAS_ARG;
@@ -422,7 +424,7 @@ CommandOptions::CommandOptions()
     options[73].name = "find_stream_info";
     options[73].flags = OPT_BOOL | OPT_INPUT | OPT_EXPERT | OPT_NO_GUI;
     options[73].u.dst_ptr = &find_stream_info;
-    options[73].help = "read and decode the streams to fill missing information with heuristics";
+    options[73].help = "find stream information";
 
     options[74].name = "filter_threads";
     options[74].flags = HAS_ARG | OPT_INT | OPT_EXPERT;
