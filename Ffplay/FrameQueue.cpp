@@ -115,7 +115,7 @@ Frame* FrameQueue::peek_next()
 
 Frame* FrameQueue::peek_last()
 {
-	return &queue[rindex];
+    return &queue[rindex];
 }
 
 Frame* FrameQueue::peek_writable()

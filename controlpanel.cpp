@@ -83,8 +83,6 @@ void ControlPanel::resizeEvent(QResizeEvent *event) {
 
 void ControlPanel::play()
 {
-    cout << "TEST A" << endl;
-
     QString selected_filename = "";
 
     if (MW->tabWidget->tabText(MW->tabWidget->currentIndex()) == "Cameras") {
@@ -105,8 +103,6 @@ void ControlPanel::play()
         }
     }
 
-    cout << "TEST B" << endl;
-
     if (!MW->co->input_filename) {
         if (selected_filename.length() > 0) {
             if (!checkCodec(selected_filename))
@@ -119,12 +115,7 @@ void ControlPanel::play()
         }
     }
 
-
-    cout << "TEST C" << endl;
-
     if (stopped) {
-        cout << "TEST D" << endl;
-
         if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
             if (!checkCodec(selected_filename))
                 return;
@@ -134,12 +125,8 @@ void ControlPanel::play()
         paused = false;
         btnPlay->setIcon(icnPause);
         MW->runLoop();
-        cout << "TEST E" << endl;
-
     }
     else if (paused) {
-        cout << "TEST F" << endl;
-
         if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
             if (!checkCodec(selected_filename))
                 return;
@@ -151,12 +138,8 @@ void ControlPanel::play()
         }
         paused = false;
         btnPlay->setIcon(icnPause);
-        cout << "TEST G" << endl;
-
     }
     else {
-        cout << "TEST H" << endl;
-
         if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
             if (!checkCodec(selected_filename))
                 return;
@@ -168,11 +151,7 @@ void ControlPanel::play()
             paused = true;
             btnPlay->setIcon(icnPlay);
         }
-        cout << "TEST I" << endl;
-
     }
-    cout << "TEST J" << endl;
-
 }
 
 bool ControlPanel::checkCodec(QString filename)

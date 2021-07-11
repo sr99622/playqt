@@ -6,6 +6,7 @@ extern "C" {
 #include "libavformat/avformat.h"
 #include "libswscale/swscale.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/pixdesc.h"
 }
 #include "opencv2/opencv.hpp"
 #include <npp.h>
@@ -37,6 +38,7 @@ public:
     void pip(int ulc_x, int ulc_y, Frame *sub_vp);
     void allocateFrame(int width, int height, const AVPixelFormat& pix_fmt);
     void copy(Frame *vp);
+    void showPixelFormat();
 
     Mat toMat();
     void readMat(const Mat& mat);

@@ -88,9 +88,14 @@ int Display::upload_texture(SDL_Texture** tex, AVFrame* frame, struct SwsContext
     int ret = 0;
     Uint32 sdl_pix_fmt;
     SDL_BlendMode sdl_blendmode;
+
+    if (!frame)
+        return -1;
+
     get_sdl_pix_fmt_and_blendmode(frame->format, &sdl_pix_fmt, &sdl_blendmode);
     if (realloc_texture(tex, sdl_pix_fmt == SDL_PIXELFORMAT_UNKNOWN ? SDL_PIXELFORMAT_ARGB8888 : sdl_pix_fmt, frame->width, frame->height, sdl_blendmode, 0) < 0)
         return -1;
+
     switch (sdl_pix_fmt) {
     case SDL_PIXELFORMAT_UNKNOWN:
         /* This should only happen if we are not using avfilter... */
@@ -136,6 +141,7 @@ int Display::upload_texture(SDL_Texture** tex, AVFrame* frame, struct SwsContext
         }
         break;
     }
+
     return ret;
 }
 

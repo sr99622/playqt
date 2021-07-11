@@ -14,11 +14,7 @@ void EventHandler::event_loop()
     total = 0;
     percentage = 0;
 
-
-    //QString str = MW->co->input_filename;
-    //if (str.startsWith("rtsp")) {
-        MW->is->refresh_loop_flush_event(&event);
-    //}
+    MW->is->refresh_loop_flush_event(&event);
 
     while (looping) {
         feed();

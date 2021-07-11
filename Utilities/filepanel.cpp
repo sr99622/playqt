@@ -196,8 +196,6 @@ void FilePanel::info()
 
         QString str = "File video parameters\n";
 
-        char buf[16];
-
         QString codec_str;
         const AVCodecDescriptor *cd = avcodec_descriptor_get(video->codecpar->codec_id);
         if (cd) {
@@ -221,7 +219,7 @@ void FilePanel::info()
 
         QTextStream(&str)
             << "filename: " << filename << "\n"
-            << "pixel format: " << av_get_pix_fmt_string(buf, 16, (AVPixelFormat)video->codecpar->format) << "\n"
+            << "pixel format: " << av_get_pix_fmt_name((AVPixelFormat)video->codecpar->format) << "\n"
             << codec_str
             << "format: " << fmt_ctx->iformat->long_name << " (" << fmt_ctx->iformat->name << ")\n"
             << "flags: " << fmt_ctx->iformat->flags << "\n"

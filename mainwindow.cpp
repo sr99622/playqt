@@ -212,9 +212,20 @@ void MainWindow::start()
 {
     cout << "start: " << co->input_filename << endl;
     if (co->input_filename) {
-        QFileInfo fi(co->input_filename);
-        QString title = "PlayQt - " + fi.fileName();
-        setWindowTitle(title);
+        if (tabWidget->tabText(tabWidget->currentIndex()) == "Cameras") {
+            CameraPanel *cameraPanel = (CameraPanel*)tabWidget->currentWidget();
+            Camera *camera = cameraPanel->cameraList->getCurrentCamera();
+            if (camera) {
+                QString title = "PlayQt - ";
+                title += camera->onvif_data->camera_name;
+                setWindowTitle(title);
+            }
+        }
+        else {
+            QFileInfo fi(co->input_filename);
+            QString title = "PlayQt - " + fi.fileName();
+            setWindowTitle(title);
+        }
         is = VideoState::stream_open(this);
         cout << "stream opened" << endl;
         e->event_loop();

@@ -35,12 +35,10 @@ void VideoState::video_image_display()
     Frame* sp = NULL;
     SDL_Rect rect;
 
-
     if (paused)
         vp = &MW->filterChain->fp;
     else
         vp = pictq.peek_last();
-
 
     //vp = pictq.peek_last();
 
@@ -580,9 +578,6 @@ int VideoState::video_open()
 
 void VideoState::video_display()
 {
-    //display_in_progress = true;
-
-    //mutex.lock();
     SDL_LockMutex(display_mutex);
 
     if (!width)
@@ -590,29 +585,12 @@ void VideoState::video_display()
 
     SDL_SetRenderDrawColor(disp->renderer, 0, 0, 0, 255);
     SDL_RenderClear(disp->renderer);
-    //if (audio_st && show_mode != SHOW_MODE_VIDEO)
-    //    video_audio_display();
-    //else if (video_st)
+
     if (video_st)
         video_image_display();
 
     SDL_RenderPresent(disp->renderer);
-
-    //mutex.unlock();
     SDL_UnlockMutex(display_mutex);
-
-    //display_in_progress = false;
-
-    /*
-    // QImage version
-    Frame *vp = pictq.peek_last();
-    Mat mat = vp->hwToMat();
-    QImage image((uchar*)mat.data, mat.cols, mat.rows, QImage::Format_RGB888);
-    QPixmap pixmap;
-    pixmap.convertFromImage(image);
-    MW->viewerDialog->viewer->displayContainer->display->setPixmap(pixmap);
-    ///////////////////////////////////////////////////////////////////////
-    */
 }
 
 #if CONFIG_AVFILTER
@@ -1093,8 +1071,7 @@ void VideoState::subtitle_refresh()
     }
 }
 
-void VideoState::
-video_refresh(double* remaining_time)
+void VideoState::video_refresh(double* remaining_time)
 {
     if (!paused && get_master_sync_type() == AV_SYNC_EXTERNAL_CLOCK && realtime)
         check_external_clock_speed();
@@ -1846,7 +1823,7 @@ void VideoState::assign_read_options()
         cout << "orig_nb_streams: " << orig_nb_streams << endl;
 
         for (int i = 0; i < orig_nb_streams; i++) {
-            cout << "av_dict_count: " << av_dict_count(opts[i]);
+            cout << "av_dict_count: " << av_dict_count(opts[i]) << endl;
         }
 
         ret = avformat_find_stream_info(ic, opts);
@@ -2028,9 +2005,13 @@ void VideoState::read_loop()
             }
             if (ic->pb && ic->pb->error)
                 break;
+
+            //cout << "SDL_LockMutex " << TS << endl;
             SDL_LockMutex(wait_mutex);
+            //cout << "acquired lock " << endl;
             SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
+            //cout << "SDL_UnlockMutex" << endl;
 
             continue;
         }
@@ -2267,7 +2248,6 @@ void VideoState::refresh_loop_flush_event(SDL_Event* event) {
 }
 
 void VideoState::refresh_loop_wait_event(SDL_Event* event) {
-
     double remaining_time = 0.0;
     SDL_PumpEvents();
     while (!SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
@@ -2275,15 +2255,16 @@ void VideoState::refresh_loop_wait_event(SDL_Event* event) {
             SDL_ShowCursor(1);
             co->cursor_hidden = 0;
         }
+
         if (remaining_time > 0.0)
             av_usleep((int64_t)(remaining_time * 1000000.0));
+
         remaining_time = REFRESH_RATE;
         if (show_mode != SHOW_MODE_NONE && (!paused || force_refresh)) {
             video_refresh(&remaining_time);
         }
         SDL_PumpEvents();
     }
-
 }
 
 /*

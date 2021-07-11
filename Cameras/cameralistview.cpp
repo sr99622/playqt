@@ -35,21 +35,15 @@ CameraListView::CameraListView(QMainWindow *parent)
 void CameraListView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     //MW->cameraListDoubleClicked(currentIndex());
-    cout << "test 1" << endl;
     Camera *camera = getCurrentCamera();
     if (camera) {
-        cout << "test 2" << endl;
         QString rtsp = camera->onvif_data->stream_uri;
         QString username = camera->onvif_data->username;
         QString password = camera->onvif_data->password;
         QString str = rtsp.mid(0, 7) + username + ":" + password + "@" + rtsp.mid(7);
-        cout << str.toStdString() << endl;
         MW->co->input_filename = av_strdup(str.toLatin1().data());
-        cout << "test 3" << endl;
         MW->runLoop();
-        cout << "test 4" << endl;
     }
-    cout << "test 5" << endl;
 }
 
 Camera *CameraListView::getCurrentCamera()

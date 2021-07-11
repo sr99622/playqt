@@ -43,7 +43,12 @@ void FilterChain::process(Frame *vp)
         fp.copy(vp);
     }
     else {
-        fp.copy(MW->is->pictq.peek_last());
+        Frame *tmp = MW->is->pictq.peek_last();
+        if (tmp) {
+            if (tmp->frame->width) {
+                fp.copy(tmp);
+            }
+        }
     }
 
     if (MW->mainPanel->controlPanel->engageFilter->isChecked()) {

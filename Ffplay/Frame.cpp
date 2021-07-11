@@ -72,16 +72,35 @@ void Frame::pip(int ulc_x, int ulc_y, Frame *sub_vp)
 
 void Frame::slice(int x, int y, Frame *sub_vp)
 {
-    int slice_height = sub_vp->frame->height;
-    int offset = y * width + x;
-    for (int i = 0; i < slice_height; i++)
-        memcpy(sub_vp->frame->data[0] + (i * sub_vp->frame->linesize[0]), frame->data[0] + i * frame->linesize[0] + offset, sub_vp->frame->linesize[0]);
 
-    int slice_u_height = slice_height >> 1;
-    int u_offset = (y >> 1) * frame->linesize[1] + (x >> 1);
-    for (int i = 0; i < slice_u_height; i++) {
-        memcpy(sub_vp->frame->data[1] + (i * sub_vp->frame->linesize[1]), frame->data[1] + (i * frame->linesize[1]) + u_offset, sub_vp->frame->linesize[1]);
-        memcpy(sub_vp->frame->data[2] + (i * sub_vp->frame->linesize[2]), frame->data[2] + (i * frame->linesize[2]) + u_offset, sub_vp->frame->linesize[2]);
+    //showPixelFormat();
+    //cout << "linesize[0]: " << frame->linesize[0] << endl;
+    //cout << "linesize[1]: " << frame->linesize[1] << endl;
+    //cout << "linesize[2]: " << frame->linesize[2] << endl;
+
+    const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get((AVPixelFormat)format);
+    if (pix_desc->flags & AV_PIX_FMT_FLAG_RGB) {
+        int slice_height = sub_vp->frame->height;
+        int offset = y * frame->linesize[0] + x * pix_desc->nb_components;
+        for (int i = 0; i < slice_height; i++) {
+            memcpy(sub_vp->frame->data[0] + (i * sub_vp->frame->linesize[0]), frame->data[0] + i * frame->linesize[0] + offset, sub_vp->frame->linesize[0]);
+        }
+    }
+    else {
+        int slice_height = sub_vp->frame->height;
+        int offset = y * frame->linesize[0] + x;
+        for (int i = 0; i < slice_height; i++)
+            memcpy(sub_vp->frame->data[0] + (i * sub_vp->frame->linesize[0]), frame->data[0] + i * frame->linesize[0] + offset, sub_vp->frame->linesize[0]);
+
+        int slice_u_height = slice_height >> 1;
+        int u_offset = (y >> 1) * frame->linesize[1] + (x >> 1);
+        for (int i = 0; i < slice_u_height; i++)
+            memcpy(sub_vp->frame->data[1] + (i * sub_vp->frame->linesize[1]), frame->data[1] + (i * frame->linesize[1]) + u_offset, sub_vp->frame->linesize[1]);
+
+        int slice_v_height = slice_height >> 1;
+        int v_offset = (y >> 1) * frame->linesize[2] + (x >> 1);
+        for (int i = 0; i < slice_v_height; i++)
+            memcpy(sub_vp->frame->data[2] + (i * sub_vp->frame->linesize[2]), frame->data[2] + (i * frame->linesize[2]) + v_offset, sub_vp->frame->linesize[2]);
     }
 
     sub_vp->frame->pts = pts;
@@ -251,4 +270,23 @@ Mat Frame::toMat()
   sws_scale(conversion, frame->data, frame->linesize, 0, height, &image.data, cvLinesizes);
   sws_freeContext(conversion);
   return image;
+}
+
+void Frame::showPixelFormat()
+{
+    const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get((AVPixelFormat)format);
+    cout << "pixel format: " << pix_desc->name << endl;
+    cout << "number of components: " << (int)pix_desc->nb_components << endl;
+    cout << "pixel bit depth: " << av_get_bits_per_pixel(pix_desc) << endl;
+
+    if (pix_desc->flags & AV_PIX_FMT_FLAG_PLANAR)
+        cout << "Planar format" << endl;
+    else
+        cout << "Packed format" << endl;
+
+    if (pix_desc->flags & AV_PIX_FMT_FLAG_RGB)
+        cout << "RGB format" << endl;
+    else
+        cout << "YUV format" << endl;
+
 }
