@@ -144,14 +144,14 @@ public:
     QTimer *timer;
     QScreen *screen;
 
-    const QString geometryKey = "MainWindow/geometry";
-    const QString splitterKey = "MainWindow/splitter";
-    const QString videoPanelHeaderKey = "MainWindow/VideoPanel/header";
-    const QString videoPanelDirKey = "MainWindow/VideoPanel/dir";
+    const QString geometryKey           = "MainWindow/geometry";
+    const QString splitterKey           = "MainWindow/splitter";
+    const QString videoPanelHeaderKey   = "MainWindow/VideoPanel/header";
+    const QString videoPanelDirKey      = "MainWindow/VideoPanel/dir";
     const QString picturePanelHeaderKey = "MainWindow/PicturePanel/header";
-    const QString picturePanelDirKey = "MainWindow/PicturePanel/dir";
-    const QString audioPanelHeaderKey = "MainWindow/AudioPanel/header";
-    const QString audioPanelDirKey = "MainWindow/AudioPanel/dir";
+    const QString picturePanelDirKey    = "MainWindow/PicturePanel/dir";
+    const QString audioPanelHeaderKey   = "MainWindow/AudioPanel/header";
+    const QString audioPanelDirKey      = "MainWindow/AudioPanel/dir";
 
 public slots:
     void runLoop();

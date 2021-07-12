@@ -46,6 +46,35 @@ void CameraListView::mouseDoubleClickEvent(QMouseEvent *event)
     }
 }
 
+QModelIndex CameraListView::previousIndex() const
+{
+    QModelIndex previous;
+    QModelIndex index = currentIndex();
+    if (index.isValid()) {
+        if (index.row() > 0) {
+            QRect rect = rectForIndex(index);
+            cout << "rect y: " << rect.y() << " rect.h: " << rect.height() << endl;
+            QPoint previous_center = QPoint(rect.center().x(), rect.center().y() - rect.height());
+            previous = indexAt(previous_center);
+        }
+    }
+    return previous;
+}
+
+QModelIndex CameraListView::nextIndex() const
+{
+    QModelIndex next;
+    QModelIndex index = currentIndex();
+    if (index.isValid()) {
+        if (index.row() + 1 < model()->rowCount()) {
+            QRect rect = rectForIndex(index);
+            QPoint next_center = QPoint(rect.center().x(), rect.center().y() + rect.height());
+            next = indexAt(next_center);
+        }
+    }
+    return next;
+}
+
 Camera *CameraListView::getCurrentCamera()
 {
     if (currentIndex().isValid())

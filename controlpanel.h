@@ -29,6 +29,8 @@ public:
     QPushButton *btnStop;
     QPushButton *btnRewind;
     QPushButton *btnFastForward;
+    QPushButton *btnNext;
+    QPushButton *btnPrevious;
     QIcon icnAudioOn;
     QIcon icnAudioOff;
     QIcon icnPlay;
@@ -36,6 +38,8 @@ public:
     QIcon icnStop;
     QIcon icnRewind;
     QIcon icnFastForward;
+    QIcon icnNext;
+    QIcon icnPrevious;
     bool muted = false;
     bool paused = false;
     bool stopped = true;
@@ -56,6 +60,8 @@ public slots:
     void quit();
     void fastforward();
     void rewind();
+    void previous();
+    void next();
     void singlestep();
     void sliderMoved(int);
 

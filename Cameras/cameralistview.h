@@ -38,6 +38,8 @@ public:
     void refresh();
     void animateWriter();
     void animateSnapshot();
+    QModelIndex previousIndex() const;
+    QModelIndex nextIndex() const;
 
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;

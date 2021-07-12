@@ -25,6 +25,12 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     icnFastForward = QIcon(":fast-forward.png");
     btnFastForward = new QPushButton(icnFastForward, "");
 
+    icnNext = QIcon(":next.png");
+    btnNext = new QPushButton(icnNext, "");
+
+    icnPrevious = QIcon(":previous.png");
+    btnPrevious = new QPushButton(icnPrevious, "");
+
     //QPushButton *test = new QPushButton("Test");
 
     engageFilter = new QCheckBox("Engage Filter");
@@ -50,11 +56,13 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     layout->addWidget(btnStop,         1,  1, 1, 1);
     layout->addWidget(btnRewind,       1,  2, 1, 1);
     layout->addWidget(btnFastForward,  1,  3, 1, 1);
-    layout->addWidget(engageFilter,    1,  4, 1, 1);
-    layout->addWidget(new QLabel,      1,  5, 1, 1);
-    layout->addWidget(volumePanel,     1,  6, 1, 1);
+    layout->addWidget(btnPrevious,     1,  4, 1, 1);
+    layout->addWidget(btnNext,         1,  5, 1, 1);
+    layout->addWidget(engageFilter,    1,  6, 1, 1);
+    layout->addWidget(new QLabel,      1,  7, 1, 1);
+    layout->addWidget(volumePanel,     1,  8, 1, 1);
     //layout->addWidget(test,            1,  7, 1, 1);
-    layout->setColumnStretch(5, 10);
+    layout->setColumnStretch(7, 10);
     setLayout(layout);
 
     setMaximumHeight(32);
@@ -63,6 +71,8 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     connect(btnStop, SIGNAL(clicked()), this, SLOT(quit()));
     connect(btnRewind, SIGNAL(clicked()), this, SLOT(rewind()));
     connect(btnFastForward, SIGNAL(clicked()), this, SLOT(fastforward()));
+    connect(btnPrevious, SIGNAL(clicked()), this, SLOT(previous()));
+    connect(btnNext, SIGNAL(clicked()), this, SLOT(next()));
     connect(btnMute, SIGNAL(clicked()), this, SLOT(mute()));
     connect(volumeSlider, SIGNAL(sliderMoved(int)), this, SLOT(sliderMoved(int)));
     connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
@@ -250,6 +260,47 @@ void ControlPanel::fastforward()
     if (MW->is)
         MW->is->fastforward();
 
+}
+
+void ControlPanel::previous()
+{
+    if (MW->tabWidget->tabText(MW->tabWidget->currentIndex()) == "Cameras") {
+        CameraPanel *cameraPanel = (CameraPanel*)MW->tabWidget->currentWidget();
+        QModelIndex previous = cameraPanel->cameraList->previousIndex();
+        if (previous.isValid()) {
+            cout << "Valid previous index" << endl;
+            cameraPanel->cameraList->setCurrentIndex(previous);
+            MW->mainPanel->controlPanel->play();
+        }
+    }
+    else {
+        FilePanel *filePanel = (FilePanel*)MW->tabWidget->currentWidget();
+        QModelIndex previous = filePanel->tree->indexAbove(filePanel->tree->currentIndex());
+        if (previous.isValid()) {
+            filePanel->tree->setCurrentIndex(previous);
+            MW->mainPanel->controlPanel->play();
+        }
+    }
+}
+
+void ControlPanel::next()
+{
+    if (MW->tabWidget->tabText(MW->tabWidget->currentIndex()) == "Cameras") {
+        CameraPanel *cameraPanel = (CameraPanel*)MW->tabWidget->currentWidget();
+        QModelIndex next = cameraPanel->cameraList->nextIndex();
+        if (next.isValid()) {
+            cameraPanel->cameraList->setCurrentIndex(next);
+            MW->mainPanel->controlPanel->play();
+        }
+    }
+    else {
+        FilePanel *filePanel = (FilePanel*)MW->tabWidget->currentWidget();
+        QModelIndex next = filePanel->tree->indexBelow(filePanel->tree->currentIndex());
+        if (next.isValid()) {
+            filePanel->tree->setCurrentIndex(next);
+            MW->mainPanel->controlPanel->play();
+        }
+    }
 }
 
 void ControlPanel::pause()

@@ -9,5 +9,7 @@
     <file>stop.png</file>
     <file>rewind.png</file>
     <file>fast-forward.png</file>
+    <file>next.png</file>
+    <file>previous.png</file>
 </qresource>
 </RCC>

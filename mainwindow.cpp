@@ -137,6 +137,12 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     QAction *actFastForward = new QAction(tr("&Fast Forward"));
     actFastForward->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
     mediaMenu->addAction(actFastForward);
+    QAction *actPrevious = new QAction(tr("Pre&vious"));
+    actPrevious->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_V));
+    mediaMenu->addAction(actPrevious);
+    QAction *actNext = new QAction(tr("&Next"));
+    actNext->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_N));
+    mediaMenu->addAction(actNext);
     QAction *actMute = new QAction(tr("&Mute"));
     actMute->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_M));
     mediaMenu->addAction(actMute);
@@ -347,6 +353,10 @@ void MainWindow::mediaMenuAction(QAction *action)
         mainPanel->controlPanel->rewind();
     else if (action->text() == "&Fast Forward")
         mainPanel->controlPanel->fastforward();
+    else if (action->text() == "Pre&vious")
+        mainPanel->controlPanel->previous();
+    else if (action->text() == "&Next")
+        mainPanel->controlPanel->next();
     else if (action->text() == "&Quit")
         mainPanel->controlPanel->quit();
     else if (action->text() == "&Mute")
