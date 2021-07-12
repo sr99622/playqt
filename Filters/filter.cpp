@@ -50,3 +50,14 @@ void Filter::restoreSettings(QSettings *settings)
 {
 
 }
+
+void Filter::keyPressEvent(QKeyEvent *event)
+{
+
+}
+
+
+void Filter::keyReleaseEvent(QKeyEvent *event)
+{
+
+}

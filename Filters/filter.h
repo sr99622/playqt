@@ -37,6 +37,8 @@ public:
 
     virtual void filter(Frame *vp);
     virtual void initialize();
+    virtual void keyPressEvent(QKeyEvent *event);
+    virtual void keyReleaseEvent(QKeyEvent *event);
     virtual void deactivate();
     virtual void saveSettings(QSettings *settings);
     virtual void restoreSettings(QSettings *settings);

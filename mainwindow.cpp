@@ -134,8 +134,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     QAction *actRewind = new QAction(tr("&Rewind"));
     actRewind->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
     mediaMenu->addAction(actRewind);
-    QAction *actFastForward = new QAction(tr("&Fast Forward"));
-    actFastForward->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
+    QAction *actFastForward = new QAction(tr("Fas&t Forward"));
+    actFastForward->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
     mediaMenu->addAction(actFastForward);
     QAction *actPrevious = new QAction(tr("Pre&vious"));
     actPrevious->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_V));
@@ -151,8 +151,15 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     mediaMenu->addAction(actQuit);
 
     QMenu *toolsMenu = menuBar()->addMenu(tr("&Tools"));
-    toolsMenu->addAction(tr("&Filters"));
-    toolsMenu->addAction(tr("Set &Parameters"));
+    QAction *actFilter = new QAction(tr("&Filters"));
+    actFilter->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_F));
+    toolsMenu->addAction(actFilter);
+    QAction *actEngage = new QAction(tr("&Engage"));
+    actEngage->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E));
+    toolsMenu->addAction(actEngage);
+    QAction *actSetParameters = new QAction(tr("&Set Parameters"));
+    actSetParameters->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
+    toolsMenu->addAction(actSetParameters);
     toolsMenu->addAction(tr("&Messages"));
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -273,6 +280,11 @@ void MainWindow::initializeSDL()
     }
 }
 
+void MainWindow::getKeyEvent(QKeyEvent *event)
+{
+    QMainWindow::keyPressEvent(event);
+}
+
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     //cout << "mainwindow paint event" << TS << endl;
@@ -351,7 +363,7 @@ void MainWindow::mediaMenuAction(QAction *action)
         mainPanel->controlPanel->play();
     else if (action->text() == "&Rewind")
         mainPanel->controlPanel->rewind();
-    else if (action->text() == "&Fast Forward")
+    else if (action->text() == "Fas&t Forward")
         mainPanel->controlPanel->fastforward();
     else if (action->text() == "Pre&vious")
         mainPanel->controlPanel->previous();
@@ -368,7 +380,9 @@ void MainWindow::toolsMenuAction(QAction *action)
     cout << action->text().toStdString() << endl;
     if (action->text() == "&Filters")
         filterDialog->show();
-    else if (action->text() == "Set &Parameters")
+    else if (action->text() == "&Engage")
+        filterDialog->panel->engageFilter->setChecked(!filterDialog->panel->engageFilter->isChecked());
+    else if (action->text() == "&Set Parameters")
         parameterDialog->show();
     else if (action->text() == "&Messages")
         messageBox->show();

@@ -195,6 +195,79 @@ void SubPicture::initialize()
 
 }
 
+void SubPicture::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->isAutoRepeat())
+        return;
+
+    cout << "release event: " << event->key() << endl;
+    if (event->modifiers() & Qt::ControlModifier) {
+        switch (event->key()) {
+        case Qt::Key_Semicolon:
+            cout << "Left" << endl;
+            stop();
+            break;
+        case Qt::Key_Apostrophe:
+            cout << "Right" << endl;
+            stop();
+            break;
+        case Qt::Key_BracketLeft:
+            cout << "Up" << endl;
+            stop();
+            break;
+        case Qt::Key_Slash:
+            cout << "Down" << endl;
+            stop();
+            break;
+        case Qt::Key_Comma:
+            cout << "In" << endl;
+            stop();
+            break;
+        case Qt::Key_Period:
+            cout << "Out" << endl;
+            stop();
+            break;
+        }
+    }
+}
+
+void SubPicture::keyPressEvent(QKeyEvent *event)
+{
+
+    if (event->isAutoRepeat())
+        return;
+
+    cout << "press event: " << event->key() << endl;
+    if (event->modifiers() & Qt::ControlModifier) {
+        switch (event->key()) {
+        case Qt::Key_Semicolon:
+            cout << "Left" << endl;
+            move(-1, 0, 0);
+            break;
+        case Qt::Key_Apostrophe:
+            cout << "Right" << endl;
+            move(1, 0, 0);
+            break;
+        case Qt::Key_BracketLeft:
+            cout << "Up" << endl;
+            move(0, 1, 0);
+            break;
+        case Qt::Key_Slash:
+            cout << "Down" << endl;
+            move(0, -1, 0);
+            break;
+        case Qt::Key_Comma:
+            cout << "In" << endl;
+            move(0, 0, 1);
+            break;
+        case Qt::Key_Period:
+            cout << "Out" << endl;
+            move(0, 0, -1);
+            break;
+        }
+    }
+}
+
 void SubPicture::update(int x_arg, int y_arg, int w_arg, int h_arg)
 {
     x = x_arg; y = y_arg; w = w_arg; h = h_arg;

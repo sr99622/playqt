@@ -27,6 +27,54 @@ PanelDialog::PanelDialog(QMainWindow *parent) : QDialog(parent, Qt::WindowSystem
     mainWindow = parent;
 }
 
+void PanelDialog::keyPressEvent(QKeyEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        switch (event->key()) {
+        case Qt::Key_O:
+            break;
+        case Qt::Key_X:
+            MW->close();
+            break;
+        case Qt::Key_P:
+            MW->mainPanel->controlPanel->play();
+            break;
+        case Qt::Key_R:
+            MW->mainPanel->controlPanel->rewind();
+            break;
+        case Qt::Key_T:
+            MW->mainPanel->controlPanel->fastforward();
+            break;
+        case Qt::Key_V:
+            MW->mainPanel->controlPanel->previous();
+            break;
+        case Qt::Key_N:
+            MW->mainPanel->controlPanel->next();
+            break;
+        case Qt::Key_M:
+            MW->mainPanel->controlPanel->mute();
+            break;
+        case Qt::Key_Q:
+            MW->mainPanel->controlPanel->quit();
+            break;
+        case Qt::Key_E:
+            MW->filterDialog->panel->engageFilter->setChecked(!MW->filterDialog->panel->engageFilter->isChecked());
+            break;
+        case Qt::Key_S:
+            MW->parameterDialog->show();
+            break;
+        }
+    }
+
+    /*
+    if (isCtrl && event->key() == Qt::Key_P)
+        MW->mainPanel->controlPanel->play();
+    */
+
+    QDialog::keyPressEvent(event);
+    //MW->getKeyEvent(event);
+}
+
 void PanelDialog::showEvent(QShowEvent *event)
 {
     shown = true;

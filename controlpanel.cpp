@@ -14,7 +14,6 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     icnPlay = QIcon(":play.png");
     icnPause = QIcon(":pause.png");
     btnPlay = new QPushButton(icnPlay, "");
-    //btnPlay->setMinimumSize(QSize(32, 32));
 
     icnStop = QIcon(":stop.png");
     btnStop = new QPushButton(icnStop, "");

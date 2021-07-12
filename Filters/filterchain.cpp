@@ -51,7 +51,7 @@ void FilterChain::process(Frame *vp)
         }
     }
 
-    if (MW->mainPanel->controlPanel->engageFilter->isChecked()) {
+    if (MW->filterDialog->panel->engageFilter->isChecked()) {
         size = panel->leftModel->filters.size();
         for (int i = 0; i < size; i++) {
             panel->leftModel->filters[i]->filter(vp);

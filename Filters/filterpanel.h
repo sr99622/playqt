@@ -29,6 +29,7 @@
 #include <QVector>
 #include <QPushButton>
 #include <QMainWindow>
+#include <QCheckBox>
 
 class FilterPanel : public QWidget
 {
@@ -44,6 +45,7 @@ public:
     bool isFilterActive(Filter *filter);
     bool isFilterActive(QString filter_name);
     Filter *getFilterByName(QString filter_name);
+    Filter *getCurrentFilter();
 
     FilterListView *leftView;
     FilterListModel *leftModel;
@@ -57,6 +59,7 @@ public:
     QTabWidget *tabWidget;
     QWidget *bottomPanel;
     QMainWindow *mainWindow;
+    QCheckBox *engageFilter;
 
     QVector<Filter*> filters;
 
@@ -68,6 +71,7 @@ public slots:
     void initializeFilters();
     void panelShow(int index);
     void panelHide(int index);
+
 };
 
 class FilterDialog : public PanelDialog
@@ -76,6 +80,8 @@ class FilterDialog : public PanelDialog
 
 public:
     FilterDialog(QMainWindow *parent);
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
     int getDefaultWidth() override;
     int getDefaultHeight() override;
     const QString getSettingsKey() override;

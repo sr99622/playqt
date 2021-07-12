@@ -95,18 +95,20 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 
     QPushButton *set = new QPushButton("Set");
     QPushButton *clear = new QPushButton("Clear");
+    QPushButton *apply = new QPushButton("Apply");
     set->setFocusPolicy(Qt::NoFocus);
     clear->setFocusPolicy(Qt::NoFocus);
 
     QWidget *commandPanel = new QWidget(this);
     QGridLayout *cpLayout = new QGridLayout();
     QGroupBox *cpGroup = new QGroupBox("Set Command Line");
-    cpLayout->addWidget(options,         0, 0, 1, 2);
-    cpLayout->addWidget(parameter,       1, 0, 1, 2);
-    cpLayout->addWidget(lbl00,           2, 0, 1, 2);
-    cpLayout->addWidget(cmdLineEquiv,    3, 0, 1, 2);
+    cpLayout->addWidget(options,         0, 0, 1, 3);
+    cpLayout->addWidget(parameter,       1, 0, 1, 3);
+    cpLayout->addWidget(lbl00,           2, 0, 1, 3);
+    cpLayout->addWidget(cmdLineEquiv,    3, 0, 1, 3);
     cpLayout->addWidget(clear,           4, 0, 1, 1, Qt::AlignCenter);
     cpLayout->addWidget(set,             4, 1, 1, 1, Qt::AlignCenter);
+    cpLayout->addWidget(apply,           4, 2, 1, 1, Qt::AlignCenter);
     cpLayout->setRowStretch(3, 10);
     cpGroup->setLayout(cpLayout);
     QHBoxLayout *gLayout = new QHBoxLayout();
@@ -119,7 +121,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     QFontMetrics fm = saveCmdLine->fontMetrics();
     saveCmdLine->setMaximumWidth(fm.boundingRect("Save").width() * 1.6);
     savedCmdLines = new SavedCmdLines(mainWindow);
-    QPushButton *clearSavedCmdLines = new QPushButton("Clear");
+    //QPushButton *clearSavedCmdLines = new QPushButton("Clear");
 
     QWidget *storagePanel = new QWidget(this);
     QGridLayout *spLayout = new QGridLayout();
@@ -128,7 +130,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     spLayout->addWidget(cmdLineName,        1, 0, 1, 4);
     spLayout->addWidget(saveCmdLine,        1, 4, 1, 1);
     spLayout->addWidget(savedCmdLines,      2, 0, 1, 5);
-    spLayout->addWidget(clearSavedCmdLines, 3, 2, 1, 1);
+    //spLayout->addWidget(clearSavedCmdLines, 3, 2, 1, 1);
     spGroup->setLayout(spLayout);
     QHBoxLayout *sLayout = new QHBoxLayout();
     sLayout->addWidget(spGroup);
@@ -136,8 +138,8 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 
     QGridLayout *mainLayout = new QGridLayout();
     commandPanel->setMaximumWidth(400);
-    mainLayout->addWidget(commandPanel,   0, 0, 1, 1);
-    mainLayout->addWidget(storagePanel,   0, 1, 1, 1);
+    mainLayout->addWidget(commandPanel,      0, 0, 1, 1);
+    mainLayout->addWidget(storagePanel,      0, 1, 1, 1);
 
     setLayout(mainLayout);
 
@@ -147,7 +149,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     connect(parameter, SIGNAL(returnPressed()), this, SLOT(parameterEntered()));
     connect(saveCmdLine, SIGNAL(clicked()), this, SLOT(saveCmdLine()));
     connect(savedCmdLines, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
-    connect(clearSavedCmdLines, SIGNAL(clicked()), this, SLOT(clearSavedCmdLines()));
+    //connect(clearSavedCmdLines, SIGNAL(clicked()), this, SLOT(clearSavedCmdLines()));
 }
 
 void ParameterPanel::clearSavedCmdLines()

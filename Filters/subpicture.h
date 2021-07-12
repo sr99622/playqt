@@ -41,6 +41,8 @@ public:
 
     void filter(Frame *vp) override;
     void initialize() override;
+    void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
     void saveSettings(QSettings *settings) override;
     void restoreSettings(QSettings *settings) override;
     void ptz();

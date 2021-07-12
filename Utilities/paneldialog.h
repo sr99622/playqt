@@ -34,6 +34,7 @@ public:
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
     virtual int getDefaultWidth();
     virtual int getDefaultHeight();
     virtual const QString getSettingsKey();

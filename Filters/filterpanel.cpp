@@ -36,6 +36,31 @@ FilterDialog::FilterDialog(QMainWindow *parent) : PanelDialog(parent)
     setLayout(layout);
 }
 
+void FilterDialog::keyPressEvent(QKeyEvent *event)
+{
+    //const Qt::KeyboardModifiers mods = event->modifiers();
+    //const int code = event->key();
+
+    //cout << "keyPressEvent" << endl;
+
+    Filter *filter = panel->getCurrentFilter();
+    if (filter) {
+        panel->getCurrentFilter()->keyPressEvent(event);
+    }
+
+    PanelDialog::keyPressEvent(event);
+
+}
+
+void FilterDialog::keyReleaseEvent(QKeyEvent *event)
+{
+    Filter *filter = panel->getCurrentFilter();
+    if (filter) {
+        filter->keyReleaseEvent(event);
+    }
+   PanelDialog::keyReleaseEvent(event);
+}
+
 int FilterDialog::getDefaultWidth()
 {
     return defaultWidth;
@@ -112,11 +137,11 @@ FilterPanel::FilterPanel(QMainWindow *parent)
     QGridLayout *viewLayout = new QGridLayout;
     viewLayout->setAlignment(Qt::AlignCenter);
     QWidget *viewPanel = new QWidget;
-    viewLayout->addWidget(rightButtonPanel, 0, 1, 1, 1);
-    viewLayout->addWidget(leftButtonPanel, 0, 2, 1, 1);
-    viewLayout->addWidget(upDownButtonPanel, 1, 0, 1, 1);
-    viewLayout->addWidget(leftView, 1, 1, 1, 1);
-    viewLayout->addWidget(rightView, 1, 2, 1, 1);
+    viewLayout->addWidget(rightButtonPanel,    0, 1, 1, 1);
+    viewLayout->addWidget(leftButtonPanel,     0, 2, 1, 1);
+    viewLayout->addWidget(upDownButtonPanel,   1, 0, 1, 1);
+    viewLayout->addWidget(leftView,            1, 1, 1, 1);
+    viewLayout->addWidget(rightView,           1, 2, 1, 1);
     viewPanel->setLayout(viewLayout);
 
     tabWidget = new QTabWidget;
@@ -131,9 +156,12 @@ FilterPanel::FilterPanel(QMainWindow *parent)
 
     tabWidget->addTab(bottomPanel, "");
 
+    engageFilter = new QCheckBox("Engage Filter");
+
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(viewPanel, 0, 0, 1, 1);
-    layout->addWidget(tabWidget, 1, 0, 1, 1);
+    layout->addWidget(viewPanel,        0, 0, 1, 1);
+    layout->addWidget(tabWidget,        1, 0, 1, 1);
+    layout->addWidget(engageFilter,     2, 0, 1, 1);
     layout->setRowStretch(0, 10);
     setLayout(layout);
 }
@@ -143,6 +171,17 @@ FilterPanel::~FilterPanel()
     while (filters.size() > 0) {
         filters.pop_back();
     }
+}
+
+Filter *FilterPanel::getCurrentFilter()
+{
+    Filter *result = nullptr;
+    //QModelIndex index = leftView->currentIndex();
+    //if (index.isValid()) {
+    if (leftModel->current_index > -1)
+        result = leftModel->filters[leftModel->current_index];
+    //}
+    return result;
 }
 
 void FilterPanel::addFilters()

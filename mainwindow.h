@@ -109,6 +109,7 @@ public:
     void paintEvent(QPaintEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void initializeSDL();
+    void getKeyEvent(QKeyEvent *event);
 
     QString filename;
 

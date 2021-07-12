@@ -8,6 +8,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QSettings>
+#include <QCheckBox>
 
 #include "Utilities/paneldialog.h"
 #include "Ffplay/CommandOptions.h"

@@ -2059,11 +2059,11 @@ void VideoState::read_loop()
 
 int VideoState::read_thread()
 {
-    int ret;
+    int ret = 0;
 
     ic = avformat_alloc_context();
     if (!ic) {
-        av_log(NULL, AV_LOG_FATAL, "Could not allocate context.\n");
+        MW->msg("Could not allocate context.");
         ret = AVERROR(ENOMEM);
         return ret;
     }
@@ -2071,9 +2071,11 @@ int VideoState::read_thread()
     MW->msg("VideoState::read_thread");
     MW->msg(filename);
 
-    ret = avformat_open_input(&ic, filename, NULL, NULL);
-    if (ret < 0) {
-        cout << "error avformat_open_input" << endl;
+    try {
+        av.ck(ret = avformat_open_input(&ic, filename, NULL, NULL), AOI);
+    }
+    catch(AVException *e) {
+        MW->msg(QString("Exception thrown in Decoder::fileInit during %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));
         return ret;
     }
 
@@ -2202,6 +2204,10 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
         av_log(NULL, AV_LOG_FATAL, "SDL_CreateCond(): %s\n", SDL_GetError());
         goto fail;
     }
+
+    is->audio_stream = -1;
+    is->video_stream = -1;
+    is->subtitle_stream = -1;
 
     is->vidclk.init_clock(&is->videoq.serial);
     is->audclk.init_clock(&is->audioq.serial);
