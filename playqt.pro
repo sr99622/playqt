@@ -44,6 +44,7 @@ SOURCES += \
     Utilities/displayslider.cpp \
     Utilities/filepanel.cpp \
     Utilities/filesetter.cpp \
+    Utilities/guichangemonitor.cpp \
     Utilities/messagebox.cpp \
     Utilities/numbertextbox.cpp \
     Utilities/paneldialog.cpp \
@@ -100,6 +101,7 @@ HEADERS += \
     Utilities/displayslider.h \
     Utilities/filepanel.h \
     Utilities/filesetter.h \
+    Utilities/guichangemonitor.h \
     Utilities/messagebox.h \
     Utilities/numbertextbox.h \
     Utilities/paneldialog.h \

@@ -34,7 +34,7 @@ public:
     MessageBox(QMainWindow *parent);
     int getDefaultWidth() override;
     int getDefaultHeight() override;
-    const QString getSettingsKey() override;
+    QString getSettingsKey() const override;
 
     QTextEdit *message;
 

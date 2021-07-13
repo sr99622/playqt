@@ -81,7 +81,6 @@ public slots:
     void details();
     void config();
     void showConfig(const QString&);
-    void showParameterDialog();
 
 };
 

@@ -4,12 +4,15 @@
 #include <QMainWindow>
 #include <QCheckBox>
 #include <QRunnable>
+#include <QMutex>
+#include <QSlider>
 
 #include "Ffplay/Frame.h"
 #include "Filters/filter.h"
 #include "Utilities/waitbox.h"
 #include "Utilities/filesetter.h"
 #include "Utilities/numbertextbox.h"
+#include "Utilities/guichangemonitor.h"
 #include "yolo_v2_class.hpp"
 
 class DarknetLoader : public QObject, public QRunnable
@@ -28,6 +31,7 @@ public:
 signals:
     void done(int);
 };
+
 
 class DarknetModel : QObject
 {
@@ -73,13 +77,21 @@ public:
     FileSetter *names;
     FileSetter *cfg;
     FileSetter *weights;
-    QCheckBox *initOnStartup;
     QSize modelDimensions;
     NumberTextBox *modelWidth;
     NumberTextBox *modelHeight;
     QPushButton *setDims;
+    QSlider *sldrThreshold;
+    GuiChangeMonitor *sliderMonitor = nullptr;
+    QLabel *lblThreshold;
+    float threshold = 0.2f;
 
     vector<bbox_t> result;
+
+    const QString cfgKey       = "DarknetModel/cfg";
+    const QString weightsKey   = "DarknetModel/weights";
+    const QString namesKey     = "DarknetModel/names";
+    const QString thresholdKey = "DarknetModel/threshold";
 
 signals:
     void ping(const vector<bbox_t>*);
@@ -88,12 +100,13 @@ public slots:
     void setNames(const QString&);
     void setCfg(const QString&);
     void setWeights(const QString&);
-    void setInitOnStartup(int);
     void cfgEdited(const QString &text);
     void setModelDimensions();
     void loadModel();
     void clearModel();
     void clearSettings();
+    void setThreshold(int);
+    void saveThreshold();
 
 };
 

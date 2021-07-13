@@ -71,7 +71,7 @@ int FilterDialog::getDefaultHeight()
     return defaultHeight;
 }
 
-const QString FilterDialog::getSettingsKey()
+QString FilterDialog::getSettingsKey() const
 {
     return settingsKey;
 }
@@ -232,8 +232,8 @@ void FilterPanel::restoreSettings(QSettings *settings)
         }
     }
 
-    for (int i = 0; i < filters.size(); i++)
-        filters[i]->restoreSettings(settings);
+    //for (int i = 0; i < filters.size(); i++)
+    //    filters[i]->restoreSettings(settings);
 }
 
 void FilterPanel::initializeFilters()

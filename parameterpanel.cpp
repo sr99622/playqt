@@ -21,7 +21,7 @@ int ParameterDialog::getDefaultWidth()
     return defaultWidth;
 }
 
-const QString ParameterDialog::getSettingsKey()
+QString ParameterDialog::getSettingsKey() const
 {
     return settingsKey;
 }
@@ -37,11 +37,13 @@ OptionBox::OptionBox(QWidget *parent) : QComboBox(parent)
 
 }
 
+/*
 void OptionBox::keyPressEvent(QKeyEvent *event)
 {
     keyInput = true;
     QComboBox::keyPressEvent(event);
 }
+*/
 
 void OptionBox::mousePressEvent(QMouseEvent *event)
 {
@@ -59,6 +61,7 @@ SavedCmdLines::SavedCmdLines(QMainWindow *parent) : QListWidget(parent)
     mainWindow = parent;
 }
 
+/*
 void SavedCmdLines::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Delete) {
@@ -78,6 +81,7 @@ void SavedCmdLines::keyPressEvent(QKeyEvent *event)
     }
     QListWidget::keyPressEvent(event);
 }
+*/
 
 ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 {
@@ -92,6 +96,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     QLabel *lbl00 = new QLabel("Command Line Equivalent: ");
     cmdLineEquiv = new QLabel();
     cmdLineEquiv->setStyleSheet("QLabel { background-color : #3E4754; color : #C6D9F2; }");
+    cmdLineEquiv->setWordWrap(true);
 
     QPushButton *set = new QPushButton("Set");
     QPushButton *clear = new QPushButton("Clear");
@@ -115,7 +120,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     gLayout->addWidget(cpGroup);
     commandPanel->setLayout(gLayout);
 
-    QLabel *lbl01 = new QLabel("Save the current command line to Profile: ");
+    QLabel *lbl01 = new QLabel("Save the current command: ");
     cmdLineName = new QLineEdit();
     QPushButton *saveCmdLine = new QPushButton("Save");
     QFontMetrics fm = saveCmdLine->fontMetrics();
@@ -145,11 +150,17 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 
     connect(set, SIGNAL(clicked()), this, SLOT(set()));
     connect(clear, SIGNAL(clicked()), this, SLOT(clear()));
+    connect(apply, SIGNAL(clicked()), mainWindow, SLOT(runLoop()));
     connect(options, SIGNAL(currentIndexChanged(int)), this, SLOT(optionChanged(int)));
     connect(parameter, SIGNAL(returnPressed()), this, SLOT(parameterEntered()));
     connect(saveCmdLine, SIGNAL(clicked()), this, SLOT(saveCmdLine()));
     connect(savedCmdLines, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
     //connect(clearSavedCmdLines, SIGNAL(clicked()), this, SLOT(clearSavedCmdLines()));
+}
+
+void ParameterPanel::apply()
+{
+    MW->runLoop();
 }
 
 void ParameterPanel::clearSavedCmdLines()

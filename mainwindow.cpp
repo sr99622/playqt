@@ -160,22 +160,17 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     QAction *actSetParameters = new QAction(tr("&Set Parameters"));
     actSetParameters->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
     toolsMenu->addAction(actSetParameters);
-    toolsMenu->addAction(tr("&Messages"));
+    QAction *actMessages = new QAction(tr("Messa&ges"));
+    actMessages->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_G));
+    toolsMenu->addAction(actMessages);
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&Options"));
 
-    /*
-    QShortcut *ctrl_F = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_F), this);
-    connect(ctrl_F, SIGNAL(activated()), filterDialog, SLOT(show()));
-    QShortcut *ctrl_P = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_P), this);
-    connect(ctrl_P, SIGNAL(activated()), parameterDialog, SLOT(show()));
-    */
-
-    connect(fileMenu, SIGNAL(triggered(QAction*)), this, SLOT(fileMenuAction(QAction*)));
-    connect(mediaMenu, SIGNAL(triggered(QAction*)), this, SLOT(mediaMenuAction(QAction*)));
-    connect(toolsMenu, SIGNAL(triggered(QAction*)), this, SLOT(toolsMenuAction(QAction*)));
-    connect(helpMenu, SIGNAL(triggered(QAction*)), this, SLOT(helpMenuAction(QAction*)));
+    connect(fileMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
+    connect(mediaMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
+    connect(toolsMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
+    connect(helpMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
     connect(co, SIGNAL(showHelp(const QString&)), optionDialog->panel, SLOT(showConfig(const QString&)));
 
     sdlCustomEventType = SDL_RegisterEvents(1);
@@ -280,31 +275,19 @@ void MainWindow::initializeSDL()
     }
 }
 
-void MainWindow::getKeyEvent(QKeyEvent *event)
-{
-    QMainWindow::keyPressEvent(event);
-}
-
 void MainWindow::paintEvent(QPaintEvent *event)
 {
-    //cout << "mainwindow paint event" << TS << endl;
     QMainWindow::paintEvent(event);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     //cout << QTime::currentTime().toString("hh:mm:ss.zzz").toStdString() << endl;
-    //if (is != nullptr) {
-    //    is->video_display();
-    //}
     QMainWindow::resizeEvent(event);
 }
 
 void MainWindow::moveEvent(QMoveEvent *event)
 {
-    //if (is != nullptr) {
-    //    is->video_display();
-    //}
     QMainWindow::moveEvent(event);
 }
 
@@ -338,59 +321,48 @@ void MainWindow::msg(const QString &str)
     messageBox->message->append(str);
 }
 
-void MainWindow::fileMenuAction(QAction *action)
+void MainWindow::openFile()
 {
-    cout << action->text().toStdString() << endl;
-    if (action->text() == "&Open") {
-        QString default_path = QDir::homePath();
+    QString default_path = QDir::homePath();
 
-        QString path = QFileDialog::getOpenFileName(this, "", default_path, "");
-        if (path.length() > 0) {
-            co->input_filename = av_strdup(path.toLatin1().data());
-            mainPanel->controlPanel->play();
-        }
-
-    }
-    else if (action->text() == "E&xit") {
-        close();
-    }
-}
-
-void MainWindow::mediaMenuAction(QAction *action)
-{
-    cout << action->text().toStdString() << endl;
-    if (action->text() == "&Play/Pause")
+    QString path = QFileDialog::getOpenFileName(this, "", default_path, "");
+    if (path.length() > 0) {
+        co->input_filename = av_strdup(path.toLatin1().data());
         mainPanel->controlPanel->play();
-    else if (action->text() == "&Rewind")
+    }
+}
+
+void MainWindow::menuAction(QAction *action)
+{
+    cout << "action text: " << action->text().toStdString() << endl;
+
+    if (action->text() == "&Open" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_O))
+        openFile();
+    else if (action->text() == "E&xit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_X))
+        close();
+    else if (action->text() == "&Play/Pause" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_P))
+        mainPanel->controlPanel->play();
+    else if (action->text() == "&Rewind" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_R))
         mainPanel->controlPanel->rewind();
-    else if (action->text() == "Fas&t Forward")
+    else if (action->text() == "Fas&t Forward" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_T))
         mainPanel->controlPanel->fastforward();
-    else if (action->text() == "Pre&vious")
+    else if (action->text() == "Pre&vious" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_V))
         mainPanel->controlPanel->previous();
-    else if (action->text() == "&Next")
+    else if (action->text() == "&Next" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_N))
         mainPanel->controlPanel->next();
-    else if (action->text() == "&Quit")
+    else if (action->text() == "&Quit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_Q))
         mainPanel->controlPanel->quit();
-    else if (action->text() == "&Mute")
+    else if (action->text() == "&Mute" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_M))
         mainPanel->controlPanel->mute();
-}
-
-void MainWindow::toolsMenuAction(QAction *action)
-{
-    cout << action->text().toStdString() << endl;
-    if (action->text() == "&Filters")
+    else if (action->text() == "&Filters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_F))
         filterDialog->show();
-    else if (action->text() == "&Engage")
+    else if (action->text() == "&Engage" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_E))
         filterDialog->panel->engageFilter->setChecked(!filterDialog->panel->engageFilter->isChecked());
-    else if (action->text() == "&Set Parameters")
+    else if (action->text() == "&Set Parameters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_S))
         parameterDialog->show();
-    else if (action->text() == "&Messages")
+    else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))
         messageBox->show();
-}
-
-void MainWindow::helpMenuAction(QAction *action)
-{
-    if (action->text() == "&Options")
+    else if (action->text() == "&Options")
         optionDialog->show();
 }
 
@@ -401,11 +373,13 @@ void MainWindow::showHelp(const QString &str)
 
 void MainWindow::ping(const vector<bbox_t>* arg)
 {
+    /*
     cout << "ping: " << arg->size() << endl;
     for (const bbox_t detection : *arg) {
         cout << " "  << detection.track_id;
     }
     cout << endl;
+    */
 }
 
 void MainWindow::test()

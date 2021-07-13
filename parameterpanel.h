@@ -22,7 +22,7 @@ public:
     bool keyInput = false;
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    //void keyPressEvent(QKeyEvent *event);
     void mousePressEvent(QMouseEvent *event);
 };
 
@@ -40,7 +40,7 @@ class SavedCmdLines : public QListWidget
 public:
     SavedCmdLines(QMainWindow *parent);
     QMainWindow *mainWindow;
-    void keyPressEvent(QKeyEvent *event) override;
+    //void keyPressEvent(QKeyEvent *event) override;
 
 };
 
@@ -68,6 +68,7 @@ public:
 public slots:
     void set();
     void clear();
+    void apply();
     void optionChanged(int);
     void parameterEntered();
     void saveCmdLine();
@@ -83,7 +84,7 @@ public:
     ParameterDialog(QMainWindow *parent);
     int getDefaultHeight() override;
     int getDefaultWidth() override;
-    const QString getSettingsKey() override;
+    QString getSettingsKey() const override;
     void show();
 
     QMainWindow *mainWindow;

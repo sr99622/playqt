@@ -25,54 +25,18 @@
 PanelDialog::PanelDialog(QMainWindow *parent) : QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint)
 {
     mainWindow = parent;
+
 }
 
 void PanelDialog::keyPressEvent(QKeyEvent *event)
 {
     if (event->modifiers() & Qt::ControlModifier) {
-        switch (event->key()) {
-        case Qt::Key_O:
-            break;
-        case Qt::Key_X:
-            MW->close();
-            break;
-        case Qt::Key_P:
-            MW->mainPanel->controlPanel->play();
-            break;
-        case Qt::Key_R:
-            MW->mainPanel->controlPanel->rewind();
-            break;
-        case Qt::Key_T:
-            MW->mainPanel->controlPanel->fastforward();
-            break;
-        case Qt::Key_V:
-            MW->mainPanel->controlPanel->previous();
-            break;
-        case Qt::Key_N:
-            MW->mainPanel->controlPanel->next();
-            break;
-        case Qt::Key_M:
-            MW->mainPanel->controlPanel->mute();
-            break;
-        case Qt::Key_Q:
-            MW->mainPanel->controlPanel->quit();
-            break;
-        case Qt::Key_E:
-            MW->filterDialog->panel->engageFilter->setChecked(!MW->filterDialog->panel->engageFilter->isChecked());
-            break;
-        case Qt::Key_S:
-            MW->parameterDialog->show();
-            break;
-        }
+        QAction action(getSettingsKey());
+        action.setShortcut(QKeySequence(Qt::CTRL | event->key()));
+        MW->menuAction(&action);
     }
 
-    /*
-    if (isCtrl && event->key() == Qt::Key_P)
-        MW->mainPanel->controlPanel->play();
-    */
-
     QDialog::keyPressEvent(event);
-    //MW->getKeyEvent(event);
 }
 
 void PanelDialog::showEvent(QShowEvent *event)
@@ -80,24 +44,34 @@ void PanelDialog::showEvent(QShowEvent *event)
     shown = true;
 
     if (gm.width() == 0) {
-
         int w = getDefaultWidth();
         int h = getDefaultHeight();
-        if (getSettingsKey().length() > 0) {
-            if (MW->settings->contains(getSettingsKey())) {
-                QSize size = MW->settings->value(getSettingsKey()).toSize();
-                w = size.width();
-                h = size.height();
-            }
-        }
-
         int x = MW->geometry().center().x() - w/2;
         int y = MW->geometry().center().y() - h/2;
+
+        cout << "getSettingsKey: " << getSettingsKey().toStdString() << endl;
+
+        if (getSettingsKey().length() > 0) {
+            if (MW->settings->contains(getSettingsKey())) {
+                cout << "Mainwindow contains settings key" << endl;
+                QRect rect = MW->settings->value(getSettingsKey()).toRect();
+                w = rect.width();
+                h = rect.height();
+                x = rect.x();
+                y = rect.y();
+                cout << "x: " << x << " y: " << y << " w: " << w << " h: " << h << endl;
+            }
+        }
         gm = QRect(x, y, w, h);
+        setGeometry(gm);
     }
 
-    setGeometry(gm);
     QDialog::showEvent(event);
+}
+
+void PanelDialog::resizeEvent(QResizeEvent *event)
+{
+    QDialog::resizeEvent(event);
 }
 
 void PanelDialog::moveEvent(QMoveEvent *event)
@@ -107,12 +81,11 @@ void PanelDialog::moveEvent(QMoveEvent *event)
 
 void PanelDialog::closeEvent(QCloseEvent *event)
 {
-    if (shown)
-        gm = geometry();
+    cout << "PanelDialog::closeEvent" << endl;
 
     if (getSettingsKey().length() > 0) {
-        QSize size(gm.width(), gm.height());
-        MW->settings->setValue(getSettingsKey(), size);
+        cout << "settings key: " << getSettingsKey().toStdString() << endl;
+        MW->settings->setValue(getSettingsKey(), geometry());
     }
 
     QDialog::closeEvent(event);
@@ -128,7 +101,7 @@ int PanelDialog::getDefaultHeight()
     return defaultHeight;
 }
 
-const QString PanelDialog::getSettingsKey()
+QString PanelDialog::getSettingsKey() const
 {
     return settingsKey;
 }

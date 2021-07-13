@@ -9,14 +9,15 @@ Darknet::Darknet(QMainWindow *parent)
 
     names = new FileSetter(mainWindow, "Names", "Names(*.names)");
     names->trimHeight();
-    cfg = new FileSetter(mainWindow, "Config", "Config(*.cfg)");
-    cfg->trimHeight();
+    names->setPath(MW->settings->value(namesKey, "").toString());
+
     weights = new FileSetter(mainWindow, "Weight", "Weights(*.weights)");
     weights->trimHeight();
-    initOnStartup = new QCheckBox("Initialize Model On Startup");
-    QPushButton *loadModel = new QPushButton("Load Model");
-    QPushButton *clearModel = new QPushButton("Clear Model");
-    QPushButton *clearSettings = new QPushButton("Clear Settings");
+    weights->setPath(MW->settings->value(weightsKey, "").toString());
+
+    cfg = new FileSetter(mainWindow, "Config", "Config(*.cfg)");
+    cfg->trimHeight();
+    cfg->setPath(MW->settings->value(cfgKey, "").toString());
 
     modelWidth = new NumberTextBox();
     modelWidth->setMaximumWidth(modelWidth->fontMetrics().boundingRect("00000").width() * 1.5);
@@ -24,7 +25,15 @@ Darknet::Darknet(QMainWindow *parent)
     modelHeight = new NumberTextBox();
     modelHeight->setMaximumWidth(modelHeight->fontMetrics().boundingRect("00000").width() * 1.5);
     QLabel *lbl01 = new QLabel("Height");
+
+    QSize dims = getModelDimensions();
+    if (dims != QSize(0,0)) {
+        modelWidth->setIntValue(dims.width());
+        modelHeight->setIntValue(dims.height());
+    }
+
     setDims = new QPushButton("Set");
+    setDims->setEnabled(false);
     QGroupBox *resolution = new QGroupBox("Model Resolution");
     QGridLayout *rl = new QGridLayout();
     rl->addWidget(lbl00,                    0, 0, 1, 1, Qt::AlignRight);
@@ -34,12 +43,24 @@ Darknet::Darknet(QMainWindow *parent)
     rl->addWidget(setDims,                  0, 5, 1, 1, Qt::AlignRight);
     resolution->setLayout(rl);
 
+    threshold = MW->settings->value(thresholdKey, 0.2f).toFloat();
+    sldrThreshold = new QSlider(Qt::Horizontal, mainWindow);
+    sldrThreshold->setValue(threshold * 100);
+    QLabel *lbl02 = new QLabel("Threshold");
+    lblThreshold = new QLabel(QString::number(sldrThreshold->value()));
+
+    QPushButton *loadModel = new QPushButton("Load Model");
+    QPushButton *clearModel = new QPushButton("Clear Model");
+    QPushButton *clearSettings = new QPushButton("Clear Settings");
+
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(names,                1, 0, 1, 6);
     layout->addWidget(weights,              2, 0, 1, 6);
     layout->addWidget(cfg,                  3, 0, 1, 6);
     layout->addWidget(resolution,           4, 0, 1, 6);
-    layout->addWidget(initOnStartup,        6, 0, 1, 2);
+    layout->addWidget(lbl02,                5, 0, 1, 1, Qt::AlignRight);
+    layout->addWidget(sldrThreshold,        5, 1, 1, 4);
+    layout->addWidget(lblThreshold,         5, 5, 1, 1);
     layout->addWidget(loadModel,            7, 0, 1, 1);
     layout->addWidget(clearModel,           7, 1, 1, 1);
     layout->addWidget(clearSettings,        7, 3, 1, 1);
@@ -49,10 +70,10 @@ Darknet::Darknet(QMainWindow *parent)
     connect(names, SIGNAL(fileSet(const QString&)), this, SLOT(setNames(const QString&)));
     connect(cfg, SIGNAL(fileSet(const QString&)), this, SLOT(setCfg(const QString&)));
     connect(weights, SIGNAL(fileSet(const QString&)), this, SLOT(setWeights(const QString&)));
-    connect(initOnStartup, SIGNAL(stateChanged(int)), this, SLOT(setInitOnStartup(int)));
     connect(modelWidth, SIGNAL(textEdited(const QString&)), this, SLOT(cfgEdited(const QString&)));
     connect(modelHeight, SIGNAL(textEdited(const QString&)), this, SLOT(cfgEdited(const QString&)));
     connect(setDims, SIGNAL(clicked()), this, SLOT(setModelDimensions()));
+    connect(sldrThreshold, SIGNAL(valueChanged(int)), this, SLOT(setThreshold(int)));
     connect(loadModel, SIGNAL(clicked()), this, SLOT(loadModel()));
     connect(clearModel, SIGNAL(clicked()), this, SLOT(clearModel()));
     connect(clearSettings, SIGNAL(clicked()), this, SLOT(clearSettings()));
@@ -70,7 +91,7 @@ void Darknet::filter(Frame *vp)
 
     if (!loading) {
         int people_count = 0;
-        result = model->infer(vp, 0.2);
+        result = model->infer(vp, threshold);
         emit ping(&result);
         for (size_t i = 0; i < result.size(); i++) {
             QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
@@ -83,6 +104,28 @@ void Darknet::filter(Frame *vp)
         QTextStream(&str) << "Number of people detected: " << people_count;
         MW->status->showMessage(str);
     }
+}
+
+void Darknet::setThreshold(int arg)
+{
+    lblThreshold->setText(QString::number(arg));
+    threshold = arg / (float)100;
+
+    if (sliderMonitor == nullptr) {
+        sliderMonitor = new GuiChangeMonitor();
+        connect(sliderMonitor, SIGNAL(done()), this, SLOT(saveThreshold()));
+    }
+
+    if (!sliderMonitor->running)
+        QThreadPool::globalInstance()->tryStart(sliderMonitor);
+    else
+        sliderMonitor->setCountdown(10);
+}
+
+void Darknet::saveThreshold()
+{
+    cout << "Darknet::saveThreshold" << endl;
+    MW->settings->setValue(thresholdKey, threshold);
 }
 
 void Darknet::clearModel()
@@ -190,7 +233,7 @@ void Darknet::initialize()
 
 void Darknet::setNames(const QString &path)
 {
-    MW->settings->setValue("DarknetModel/names", path);
+    MW->settings->setValue(namesKey, path);
 }
 
 void Darknet::cfgEdited(const QString &text)
@@ -211,33 +254,28 @@ void Darknet::setCfg(const QString &path)
         modelHeight->setIntValue(dims.height());
     }
     setDims->setEnabled(false);
-    MW->settings->setValue("DarknetModel/cfg", path);
+    MW->settings->setValue(cfgKey, path);
 }
 
 void Darknet::setWeights(const QString &path)
 {
-    MW->settings->setValue("DarknetModel/weights", path);
-}
-
-void Darknet::setInitOnStartup(int arg)
-{
-    MW->settings->setValue("DarknetModel/initOnStartup", initOnStartup->isChecked());
+    MW->settings->setValue(weightsKey, path);
 }
 
 void Darknet::saveSettings(QSettings *settings)
 {
-    settings->setValue("DarknetModel/cfg", cfg->filename);
-    settings->setValue("DarknetModel/weights", weights->filename);
-    settings->setValue("DarknetModel/names", names->filename);
-    settings->setValue("DarknetModel/initOnStartup", initOnStartup->isChecked());
+    settings->setValue(cfgKey, cfg->filename);
+    settings->setValue(weightsKey, weights->filename);
+    settings->setValue(namesKey, names->filename);
+    settings->setValue(thresholdKey, threshold);
 }
 
 void Darknet::restoreSettings(QSettings *settings)
 {
-    cfg->setPath(settings->value("DarknetModel/cfg", "").toString());
-    weights->setPath(settings->value("DarknetModel/weights", "").toString());
-    names->setPath(settings->value("DarknetModel/names", "").toString());
-    initOnStartup->setChecked(settings->value("DarknetModel/initOnStartup", false).toBool());
+    cfg->setPath(settings->value(cfgKey, "").toString());
+    weights->setPath(settings->value(weightsKey, "").toString());
+    names->setPath(settings->value(namesKey, "").toString());
+    threshold = settings->value(thresholdKey, 0.2f).toFloat();
 
     QSize dims = getModelDimensions();
     if (dims != QSize(0, 0)) {
@@ -391,4 +429,3 @@ void DarknetModel::show_console_result(vector<bbox_t> const result_vec, vector<s
 
     }
 }
-

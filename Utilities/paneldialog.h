@@ -25,6 +25,8 @@
 #include <QDialog>
 #include <QMainWindow>
 
+#include "guichangemonitor.h"
+
 class PanelDialog : public QDialog
 {
     Q_OBJECT
@@ -34,12 +36,14 @@ public:
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     virtual int getDefaultWidth();
     virtual int getDefaultHeight();
-    virtual const QString getSettingsKey();
+    virtual QString getSettingsKey() const;
 
     QMainWindow *mainWindow;
+    GuiChangeMonitor *monitor = nullptr;
     QRect gm;
     bool shown = false;
 

@@ -67,11 +67,5 @@ void EventHandler::feed()
     else if (event.type == FF_QUIT_EVENT) {
         cout << "QUIT EVENT" << endl;
         looping = false;
-        /*
-        dc->slider->setValue(0);
-        dc->elapsed->setText("");
-        dc->total->setText("");
-        MW->repaint();
-        */
     }
 }

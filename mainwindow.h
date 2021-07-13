@@ -43,18 +43,15 @@
 #include "Utilities/messagebox.h"
 #include "Filters/filterpanel.h"
 #include "Filters/filterchain.h"
+#include "Cameras/camerapanel.h"
 #include "mainpanel.h"
 #include "optionpanel.h"
-#include "Cameras/camerapanel.h"
 #include "streampanel.h"
 #include "viewer.h"
 
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
     SLIDER_POSITION_UPDATE,
-    REWIND,
-    FASTFORWARD,
-    PAUSE,
     FLUSH
 };
 
@@ -109,7 +106,7 @@ public:
     void paintEvent(QPaintEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void initializeSDL();
-    void getKeyEvent(QKeyEvent *event);
+    void openFile();
 
     QString filename;
 
@@ -157,10 +154,7 @@ public:
 public slots:
     void runLoop();
     void poll();
-    void fileMenuAction(QAction*);
-    void mediaMenuAction(QAction*);
-    void toolsMenuAction(QAction*);
-    void helpMenuAction(QAction*);
+    void menuAction(QAction*);
     void showHelp(const QString&);
     void msg(const QString&);
     void test();

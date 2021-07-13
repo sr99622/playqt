@@ -84,13 +84,13 @@ public:
     void keyReleaseEvent(QKeyEvent *event) override;
     int getDefaultWidth() override;
     int getDefaultHeight() override;
-    const QString getSettingsKey() override;
+    QString getSettingsKey() const override;
     FilterPanel *panel;
     QMainWindow *mainWindow;
 
     const int defaultWidth = 520;
-    const int defaultHeight = 720;
-    const QString settingsKey = "FilterPanel/size";
+    const int defaultHeight = 800;
+    const QString settingsKey = "FilterPanel/geometry";
 
 };
 

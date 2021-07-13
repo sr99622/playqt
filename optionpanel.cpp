@@ -36,11 +36,7 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     QPushButton *clear = new QPushButton("clear");
     QPushButton *close = new QPushButton("close");
     QPushButton *decoders = new QPushButton("decoders");
-    QPushButton *decoder_set = new QPushButton("...");
-    decoder_set->setMaximumWidth(30);
     QPushButton *filters = new QPushButton("filters");
-    QPushButton *filter_set = new QPushButton("...");
-    filter_set->setMaximumWidth(30);
     QPushButton *bsfs = new QPushButton("bsfs");
     QPushButton *pix_fmts = new QPushButton("pix_fmts");
     QPushButton *formats = new QPushButton("formats");
@@ -68,9 +64,7 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     layout->addWidget(filterEdit,     0,  3,  1,  5, Qt::AlignLeft);
     layout->addWidget(helpDisplay,    1,  2,  14, 6);
     layout->addWidget(currentOption,  0,  1,  1,  1, Qt::AlignLeft);
-    layout->addWidget(decoder_set,    1,  0,  1,  1, Qt::AlignCenter);
     layout->addWidget(decoders,       1,  1,  1,  1, Qt::AlignCenter);
-    layout->addWidget(filter_set,     2,  0,  1,  1, Qt::AlignCenter);
     layout->addWidget(filters,        2,  1,  1,  1, Qt::AlignCenter);
     layout->addWidget(bsfs,           3,  1,  1,  1, Qt::AlignCenter);
     layout->addWidget(pix_fmts,       4,  1,  1,  1, Qt::AlignCenter);
@@ -111,7 +105,6 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     connect(help, SIGNAL(clicked()), this, SLOT(help()));
     connect(details, SIGNAL(clicked()), this, SLOT(details()));
     connect(config, SIGNAL(clicked()), this, SLOT(config()));
-    connect(filter_set, SIGNAL(clicked()), this, SLOT(showParameterDialog()));
 
     parameterDialog = new ParameterDialog(mainWindow);
 }
@@ -814,10 +807,5 @@ const QString OptionPanel::show_help_options(const OptionDef *options, const cha
     }
     QTextStream(&str) << "\n";
     return str;
-}
-
-void OptionPanel::showParameterDialog()
-{
-    parameterDialog->show();
 }
 

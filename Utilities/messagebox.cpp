@@ -70,7 +70,7 @@ int MessageBox::getDefaultHeight()
     return defaultHeight;
 }
 
-const QString MessageBox::getSettingsKey()
+QString MessageBox::getSettingsKey() const
 {
     return settingsKey;
 }
