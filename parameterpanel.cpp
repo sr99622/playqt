@@ -87,11 +87,15 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 {
     mainWindow = parent;
 
-    options = new OptionBox(mainWindow);
+    options = new QComboBox();
+    options->setFocusPolicy(Qt::NoFocus);
+
+    //options = new OptionBox(mainWindow);
     for (int i = 0; i < NUM_OPTIONS; i++) {
         if (!(MW->co->options[i].flags & OPT_EXIT || MW->co->options[i].flags & OPT_NO_GUI))
             options->addItem(MW->co->options[i].help, QVariant(i));
     }
+
     parameter = new QLineEdit();
     QLabel *lbl00 = new QLabel("Command Line Equivalent: ");
     cmdLineEquiv = new QLabel();
@@ -156,6 +160,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     connect(saveCmdLine, SIGNAL(clicked()), this, SLOT(saveCmdLine()));
     connect(savedCmdLines, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
     //connect(clearSavedCmdLines, SIGNAL(clicked()), this, SLOT(clearSavedCmdLines()));
+
 }
 
 void ParameterPanel::apply()
@@ -439,8 +444,8 @@ void ParameterPanel::parameterEntered()
 void ParameterPanel::optionChanged(int index)
 {
     parameter->setText("");
-    if (!options->keyInput)
-        parameter->setFocus();
+    //if (!options->keyInput)
+    //    parameter->setFocus();
 }
 
 void ParameterPanel::set()

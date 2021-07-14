@@ -31,7 +31,8 @@ public:
     QMainWindow *mainWindow;
     DirectorySetter *directorySetter;
     QFileSystemModel *model;
-    FileTree *tree;
+    //FileTree *tree;
+    QTreeView *tree;
     QMenu *menu;
     AVExceptionHandler av;
 

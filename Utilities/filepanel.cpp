@@ -71,6 +71,7 @@ FilePanel::FilePanel(QMainWindow *parent) : QWidget(parent)
     menu->addAction(play);
     tree->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(tree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
+    connect(tree, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(doubleClicked(const QModelIndex&)));
 }
 
 void FilePanel::setDirectory(const QString& path)
@@ -83,7 +84,14 @@ void FilePanel::setDirectory(const QString& path)
 void FilePanel::doubleClicked(const QModelIndex& index)
 {
     if (index.isValid()) {
-        MW->mainPanel->controlPanel->play();
+        QFileInfo info = model->fileInfo(index);
+        if (info.isDir()) {
+            bool expanded = tree->isExpanded(index);
+            tree->setExpanded(index, !expanded);
+        }
+        else {
+            MW->mainPanel->controlPanel->play();
+        }
     }
 }
 
@@ -113,8 +121,9 @@ void FilePanel::remove()
 
 void FilePanel::rename()
 {
-    QKeyEvent *event = new QKeyEvent(QEvent::KeyPress, Qt::Key_F2, Qt::NoModifier, QString("F2"));
-    tree->keyPressEvent(event);
+    QModelIndex index = tree->currentIndex();
+    if (index.isValid())
+        tree->edit(index);
 }
 void FilePanel::info()
 {
@@ -246,6 +255,7 @@ void FilePanel::info()
     if (fmt_ctx != nullptr)
         avformat_close_input(&fmt_ctx);
 }
+
 void FilePanel::play()
 {
     doubleClicked(tree->currentIndex());

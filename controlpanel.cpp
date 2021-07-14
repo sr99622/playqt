@@ -9,37 +9,33 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
 {
     mainWindow = parent;
 
-    //setStyleSheet("QPushButton { width: 32; height: 32 }");
+    btnPlay = new QPushButton();
+    btnPlay->setStyleSheet(getButtonStyle("play"));
 
-    icnPlay = QIcon(":play.png");
-    icnPause = QIcon(":pause.png");
-    btnPlay = new QPushButton(icnPlay, "");
+    btnStop = new QPushButton();
+    btnStop->setStyleSheet(getButtonStyle("stop"));
 
-    icnStop = QIcon(":stop.png");
-    btnStop = new QPushButton(icnStop, "");
+    btnRewind = new QPushButton();
+    btnRewind->setStyleSheet(getButtonStyle("rewind"));
 
-    icnRewind = QIcon(":rewind.png");
-    btnRewind = new QPushButton(icnRewind, "");
+    btnFastForward = new QPushButton();
+    btnFastForward->setStyleSheet(getButtonStyle("fast-forward"));
 
-    icnFastForward = QIcon(":fast-forward.png");
-    btnFastForward = new QPushButton(icnFastForward, "");
+    btnNext = new QPushButton();
+    btnNext->setStyleSheet(getButtonStyle("next"));
 
-    icnNext = QIcon(":next.png");
-    btnNext = new QPushButton(icnNext, "");
-
-    icnPrevious = QIcon(":previous.png");
-    btnPrevious = new QPushButton(icnPrevious, "");
+    btnPrevious = new QPushButton();
+    btnPrevious->setStyleSheet(getButtonStyle("previous"));
 
     //QPushButton *test = new QPushButton("Test");
 
-    engageFilter = new QCheckBox("Engage Filter");
+    //engageFilter = new QCheckBox("Engage Filter");
     volumeSlider = new QSlider(Qt::Horizontal, mainWindow);
     volumeSlider->setRange(0, 128);
     volumeSlider->setValue(100);
 
-    icnAudioOn = QIcon(":audio.png");
-    icnAudioOff = QIcon(":mute.png");
-    btnMute = new QPushButton(icnAudioOn, "");
+    btnMute = new QPushButton();
+    btnMute->setStyleSheet(getButtonStyle("audio"));
 
     QWidget *volumePanel = new QWidget;
     QHBoxLayout *volumeLayout = new QHBoxLayout;
@@ -47,7 +43,7 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     volumeLayout->addWidget(btnMute);
     volumeLayout->addWidget(volumeSlider);
     volumePanel->setLayout(volumeLayout);
-    volumePanel->setMaximumHeight(40);
+    //volumePanel->setMaximumHeight(40);
 
     QGridLayout *layout = new QGridLayout();
     layout->setContentsMargins(11, 0, 11, 0);
@@ -57,14 +53,14 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     layout->addWidget(btnFastForward,  1,  3, 1, 1);
     layout->addWidget(btnPrevious,     1,  4, 1, 1);
     layout->addWidget(btnNext,         1,  5, 1, 1);
-    layout->addWidget(engageFilter,    1,  6, 1, 1);
-    layout->addWidget(new QLabel,      1,  7, 1, 1);
-    layout->addWidget(volumePanel,     1,  8, 1, 1);
+    //layout->addWidget(engageFilter,    1,  6, 1, 1);
+    layout->addWidget(new QLabel,      1,  6, 1, 1);
+    layout->addWidget(volumePanel,     1,  7, 1, 1);
     //layout->addWidget(test,            1,  7, 1, 1);
-    layout->setColumnStretch(7, 10);
+    layout->setColumnStretch(6, 10);
     setLayout(layout);
 
-    setMaximumHeight(32);
+    //setMaximumHeight(40);
 
     connect(btnPlay, SIGNAL(clicked()), this, SLOT(play()));
     connect(btnStop, SIGNAL(clicked()), this, SLOT(quit()));
@@ -77,6 +73,11 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
     //connect(test, SIGNAL(clicked()), this, SLOT(test()));
 
+}
+
+QString ControlPanel::getButtonStyle(const QString& name) const
+{
+    return QString("QPushButton {image:url(:%1.png);} QPushButton:hover {image:url(:%1_hi.png);} QPushButton:pressed {image:url(:%1.png);}").arg(name);
 }
 
 void ControlPanel::sliderMoved(int arg)
@@ -108,7 +109,13 @@ void ControlPanel::play()
         FilePanel *filePanel = (FilePanel*)MW->tabWidget->currentWidget();
         QModelIndex index = filePanel->tree->currentIndex();
         if (index.isValid()) {
-            selected_filename = filePanel->model->filePath(index);
+            QFileInfo info = filePanel->model->fileInfo(index);
+            if (!info.isDir()) {
+                selected_filename = filePanel->model->filePath(index);
+            }
+            else {
+                return;
+            }
         }
     }
 
@@ -132,7 +139,8 @@ void ControlPanel::play()
         }
         stopped = false;
         paused = false;
-        btnPlay->setIcon(icnPause);
+        //btnPlay->setIcon(icnPause);
+        btnPlay->setStyleSheet(getButtonStyle("pause"));
         MW->runLoop();
     }
     else if (paused) {
@@ -146,7 +154,8 @@ void ControlPanel::play()
             MW->is->toggle_pause();
         }
         paused = false;
-        btnPlay->setIcon(icnPause);
+        //btnPlay->setIcon(icnPause);
+        btnPlay->setStyleSheet(getButtonStyle("pause"));
     }
     else {
         if (selected_filename.length() > 0 && selected_filename != MW->co->input_filename) {
@@ -158,12 +167,13 @@ void ControlPanel::play()
         else {
             MW->is->toggle_pause();
             paused = true;
-            btnPlay->setIcon(icnPlay);
+            //btnPlay->setIcon(icnPlay);
+            btnPlay->setStyleSheet(getButtonStyle("play"));
         }
     }
 }
 
-bool ControlPanel::checkCodec(QString filename)
+bool ControlPanel::checkCodec(const QString& filename)
 {
     if (MW->co->video_codec_name && filename != MW->co->input_filename) {
 
@@ -321,13 +331,15 @@ void ControlPanel::mute()
         if (MW->is)
             MW->is->audio_volume = 0;
         volumeSlider->setEnabled(false);
-        btnMute->setIcon(icnAudioOff);
+        //btnMute->setIcon(icnAudioOff);
+        btnMute->setStyleSheet(getButtonStyle("mute"));
     }
     else {
         if (MW->is)
             MW->is->audio_volume = volumeSlider->value();
         volumeSlider->setEnabled(true);
-        btnMute->setIcon(icnAudioOn);
+        //btnMute->setIcon(icnAudioOn);
+        btnMute->setStyleSheet(getButtonStyle("audio"));
     }
 
 }

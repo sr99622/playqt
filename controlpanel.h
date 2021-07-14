@@ -19,7 +19,8 @@ class ControlPanel : public QWidget
 public:
     ControlPanel(QMainWindow *parent);
     void resizeEvent(QResizeEvent *event) override;
-    bool checkCodec(QString filename);
+    bool checkCodec(const QString& filename);
+    QString getButtonStyle(const QString& name) const;
 
     QMainWindow *mainWindow;
     QCheckBox *engageFilter;

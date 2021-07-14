@@ -58,7 +58,8 @@ public:
     void set(int option_index, char * arg);
 
     QMainWindow *mainWindow;
-    OptionBox *options;
+    //OptionBox *options;
+    QComboBox *options;
     QLineEdit *parameter;
     QLabel *cmdLineEquiv;
     QLineEdit *cmdLineName;

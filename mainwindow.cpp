@@ -128,25 +128,25 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     fileMenu->addAction(actExit);
 
     QMenu *mediaMenu = menuBar()->addMenu(tr("&Media"));
-    QAction *actPlay = new QAction(tr("&Play/Pause"));
+    QAction *actPlay = new QAction(QIcon(":play.png"), tr("&Play/Pause"));
     actPlay->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_P));
     mediaMenu->addAction(actPlay);
-    QAction *actRewind = new QAction(tr("&Rewind"));
+    QAction *actRewind = new QAction(QIcon(":rewind"), tr("&Rewind"));
     actRewind->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
     mediaMenu->addAction(actRewind);
-    QAction *actFastForward = new QAction(tr("Fas&t Forward"));
+    QAction *actFastForward = new QAction(QIcon(":fast-forward"), tr("Fas&t Forward"));
     actFastForward->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_T));
     mediaMenu->addAction(actFastForward);
-    QAction *actPrevious = new QAction(tr("Pre&vious"));
+    QAction *actPrevious = new QAction(QIcon(":previous"), tr("Pre&vious"));
     actPrevious->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_V));
     mediaMenu->addAction(actPrevious);
-    QAction *actNext = new QAction(tr("&Next"));
+    QAction *actNext = new QAction(QIcon(":next"), tr("&Next"));
     actNext->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_N));
     mediaMenu->addAction(actNext);
-    QAction *actMute = new QAction(tr("&Mute"));
+    QAction *actMute = new QAction(QIcon(":mute"), tr("&Mute"));
     actMute->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_M));
     mediaMenu->addAction(actMute);
-    QAction *actQuit = new QAction(tr("&Quit"));
+    QAction *actQuit = new QAction(QIcon(":stop"), tr("&Quit"));
     actQuit->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
     mediaMenu->addAction(actQuit);
 
