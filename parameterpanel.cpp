@@ -29,26 +29,7 @@ QString ParameterDialog::getSettingsKey() const
 void ParameterDialog::show()
 {
     panel->setCmdLine();
-    QDialog::show();
-}
-
-OptionBox::OptionBox(QWidget *parent) : QComboBox(parent)
-{
-
-}
-
-/*
-void OptionBox::keyPressEvent(QKeyEvent *event)
-{
-    keyInput = true;
-    QComboBox::keyPressEvent(event);
-}
-*/
-
-void OptionBox::mousePressEvent(QMouseEvent *event)
-{
-    keyInput = false;
-    QComboBox::mousePressEvent(event);
+    PanelDialog::show();
 }
 
 StoredOption::StoredOption(const QString& text) : QListWidgetItem(text)
@@ -61,27 +42,26 @@ SavedCmdLines::SavedCmdLines(QMainWindow *parent) : QListWidget(parent)
     mainWindow = parent;
 }
 
-/*
 void SavedCmdLines::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Delete) {
-        int row = currentRow();
-        QListWidgetItem *item = takeItem(row);
-        delete item;
+        QString msg = QString("You are about to delete the command '%1'\nAre you sure you want to continue?").arg(currentItem()->text());
+        QMessageBox::StandardButton result = QMessageBox::question(this, "PlayQt", msg);
+        if (result == QMessageBox::Yes) {
+            int row = currentRow();
+            QListWidgetItem *item = takeItem(row);
+            delete item;
 
-        QString tag = "ParameterPanel/savedCmdLine_" + QString::number(row);
-        if (MW->settings->contains(tag)) {
-            cout << tag.toStdString() << endl;
-            MW->settings->remove(tag);
+            QString tag = "ParameterPanel/savedCmdLine_" + QString::number(row);
+            if (MW->settings->contains(tag)) {
+                cout << tag.toStdString() << endl;
+                MW->settings->remove(tag);
+            }
         }
     }
-    else if (event->key() == Qt::Key_Return) {
-        QListWidgetItem *item = currentItem();
-        MW->parameterDialog->panel->itemDoubleClicked(item);
-    }
+
     QListWidget::keyPressEvent(event);
 }
-*/
 
 ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
 {
@@ -90,7 +70,6 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     options = new QComboBox();
     options->setFocusPolicy(Qt::NoFocus);
 
-    //options = new OptionBox(mainWindow);
     for (int i = 0; i < NUM_OPTIONS; i++) {
         if (!(MW->co->options[i].flags & OPT_EXIT || MW->co->options[i].flags & OPT_NO_GUI))
             options->addItem(MW->co->options[i].help, QVariant(i));
@@ -130,7 +109,6 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     QFontMetrics fm = saveCmdLine->fontMetrics();
     saveCmdLine->setMaximumWidth(fm.boundingRect("Save").width() * 1.6);
     savedCmdLines = new SavedCmdLines(mainWindow);
-    //QPushButton *clearSavedCmdLines = new QPushButton("Clear");
 
     QWidget *storagePanel = new QWidget(this);
     QGridLayout *spLayout = new QGridLayout();
@@ -139,7 +117,6 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     spLayout->addWidget(cmdLineName,        1, 0, 1, 4);
     spLayout->addWidget(saveCmdLine,        1, 4, 1, 1);
     spLayout->addWidget(savedCmdLines,      2, 0, 1, 5);
-    //spLayout->addWidget(clearSavedCmdLines, 3, 2, 1, 1);
     spGroup->setLayout(spLayout);
     QHBoxLayout *sLayout = new QHBoxLayout();
     sLayout->addWidget(spGroup);
@@ -159,33 +136,12 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     connect(parameter, SIGNAL(returnPressed()), this, SLOT(parameterEntered()));
     connect(saveCmdLine, SIGNAL(clicked()), this, SLOT(saveCmdLine()));
     connect(savedCmdLines, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
-    //connect(clearSavedCmdLines, SIGNAL(clicked()), this, SLOT(clearSavedCmdLines()));
 
 }
 
 void ParameterPanel::apply()
 {
     MW->runLoop();
-}
-
-void ParameterPanel::clearSavedCmdLines()
-{
-    cout << "clearSavedCmdLines" << endl;
-    bool reading = true;
-    int i = 0;
-    while (reading) {
-        QString tag = "ParameterPanel/savedCmdLine_" + QString::number(i);
-        if (MW->settings->contains(tag)) {
-            cout << tag.toStdString() << endl;
-            MW->settings->remove(tag);
-            i++;
-        }
-        else {
-            reading = false;
-        }
-    }
-
-    savedCmdLines->clear();
 }
 
 const QString StoredOption::toString()

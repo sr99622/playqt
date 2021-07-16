@@ -52,6 +52,7 @@ SOURCES += \
     Utilities/waitbox.cpp \
     Utilities/yuvcolor.cpp \
     controlpanel.cpp \
+    countpanel.cpp \
     main.cpp \
     mainpanel.cpp \
     mainwindow.cpp \
@@ -110,6 +111,7 @@ HEADERS += \
     Utilities/waitbox.h \
     Utilities/yuvcolor.h \
     controlpanel.h \
+    countpanel.h \
     mainpanel.h \
     mainwindow.h \
     optionpanel.h \

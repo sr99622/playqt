@@ -118,6 +118,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     parameterDialog = new ParameterDialog(this);
     parameterDialog->panel->restoreSettings(settings);
     filterChain = new FilterChain(this);
+    countDialog = new CountDialog(this);
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     QAction *actOpen = new QAction(tr("&Open"));
@@ -163,6 +164,9 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     QAction *actMessages = new QAction(tr("Messa&ges"));
     actMessages->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_G));
     toolsMenu->addAction(actMessages);
+    QAction *actCount = new QAction(tr("&Count"));
+    actCount->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
+    toolsMenu->addAction(actCount);
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&Options"));
@@ -192,7 +196,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         connect(launcher, SIGNAL(done()), mainPanel->controlPanel, SLOT(play()));
         QThreadPool::globalInstance()->tryStart(launcher);
     }
-
 
 }
 
@@ -364,6 +367,8 @@ void MainWindow::menuAction(QAction *action)
         if (parameterDialog->isVisible()) parameterDialog->hide(); else parameterDialog->show();
     else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))
         if (messageBox->isVisible()) messageBox->hide(); else messageBox->show();
+    else if (action->text() == "&Count" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_C))
+        if (countDialog->isVisible()) countDialog->hide(); else countDialog->show();
     else if (action->text() == "&Options")
         optionDialog->show();
 }
@@ -373,15 +378,13 @@ void MainWindow::showHelp(const QString &str)
     cout << str.toStdString() << endl;
 }
 
-void MainWindow::ping(const vector<bbox_t>* arg)
+void MainWindow::ping(vector<bbox_t>* arg)
 {
-    /*
     cout << "ping: " << arg->size() << endl;
     for (const bbox_t detection : *arg) {
         cout << " "  << detection.track_id;
     }
     cout << endl;
-    */
 }
 
 void MainWindow::test()

@@ -48,6 +48,7 @@
 #include "optionpanel.h"
 #include "streampanel.h"
 #include "viewer.h"
+#include "countpanel.h"
 
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
@@ -133,6 +134,7 @@ public:
     FilterChain *filterChain;
     OptionDialog *optionDialog;
 
+    CountDialog *countDialog;
     ViewerDialog *viewerDialog;
     Quitter *quitter = nullptr;
     Launcher *launcher;
@@ -158,7 +160,7 @@ public slots:
     void showHelp(const QString&);
     void msg(const QString&);
     void test();
-    void ping(const vector<bbox_t>*);
+    void ping(vector<bbox_t>*);
     void guiUpdate(int);
     void start();
 

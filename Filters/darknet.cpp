@@ -77,7 +77,7 @@ Darknet::Darknet(QMainWindow *parent)
     connect(loadModel, SIGNAL(clicked()), this, SLOT(loadModel()));
     connect(clearModel, SIGNAL(clicked()), this, SLOT(clearModel()));
     connect(clearSettings, SIGNAL(clicked()), this, SLOT(clearSettings()));
-    connect(this, SIGNAL(ping(const vector<bbox_t>*)), mainWindow, SLOT(ping(const vector<bbox_t>*)));
+    //connect(this, SIGNAL(ping(vector<bbox_t>*)), mainWindow, SLOT(ping(vector<bbox_t>*)));
 }
 
 void Darknet::filter(Frame *vp)

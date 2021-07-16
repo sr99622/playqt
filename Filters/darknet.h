@@ -94,7 +94,7 @@ public:
     const QString thresholdKey = "DarknetModel/threshold";
 
 signals:
-    void ping(const vector<bbox_t>*);
+    void ping(vector<bbox_t>*);
 
 public slots:
     void setNames(const QString&);

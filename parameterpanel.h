@@ -15,17 +15,6 @@
 
 using namespace std;
 
-class OptionBox : public QComboBox
-{
-public:
-    OptionBox(QWidget *parent = nullptr);
-    bool keyInput = false;
-
-protected:
-    //void keyPressEvent(QKeyEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-};
-
 class StoredOption : public QListWidgetItem
 {
 public:
@@ -40,7 +29,7 @@ class SavedCmdLines : public QListWidget
 public:
     SavedCmdLines(QMainWindow *parent);
     QMainWindow *mainWindow;
-    //void keyPressEvent(QKeyEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
 };
 
@@ -58,7 +47,6 @@ public:
     void set(int option_index, char * arg);
 
     QMainWindow *mainWindow;
-    //OptionBox *options;
     QComboBox *options;
     QLineEdit *parameter;
     QLabel *cmdLineEquiv;
@@ -74,7 +62,7 @@ public slots:
     void parameterEntered();
     void saveCmdLine();
     void itemDoubleClicked(QListWidgetItem*);
-    void clearSavedCmdLines();
+
 };
 
 class ParameterDialog : public PanelDialog

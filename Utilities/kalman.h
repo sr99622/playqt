@@ -22,7 +22,7 @@ public:
     void measure(float measurement, float time_interval);
     void initialize(float position, float velocity, float alpha, float beta);
     void clear();
-    //void estimate();
+
 };
 
 #endif // KALMAN_H
