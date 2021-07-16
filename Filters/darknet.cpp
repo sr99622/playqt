@@ -94,11 +94,12 @@ void Darknet::filter(Frame *vp)
         result = model->infer(vp, threshold);
         emit ping(&result);
         for (size_t i = 0; i < result.size(); i++) {
-            QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
-            YUVColor green(Qt::green);
-            vp->drawBox(rect, 1, green);
-            if (result[i].obj_id == 0)
+            if (result[i].obj_id == 0) {
+                QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
+                YUVColor green(Qt::green);
+                vp->drawBox(rect, 1, green);
                 people_count++;
+            }
         }
         QString str;
         QTextStream(&str) << "Number of people detected: " << people_count;

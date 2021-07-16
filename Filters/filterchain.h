@@ -26,6 +26,7 @@
 
 #include "filter.h"
 #include "filterpanel.h"
+#include "Utilities/kalman.h"
 
 class FilterChain : public QObject
 {
@@ -40,8 +41,9 @@ public:
 
     QMainWindow *mainWindow;
     FilterPanel *panel;
-    int size = -1;
-    bool active = true;
+    //int size = -1;
+    //bool active = true;
+    Kalman k;
 
 public slots:
     void process(Frame *vp);

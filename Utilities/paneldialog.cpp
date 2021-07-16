@@ -43,28 +43,26 @@ void PanelDialog::showEvent(QShowEvent *event)
 {
     shown = true;
 
-    if (gm.width() == 0) {
-        int w = getDefaultWidth();
-        int h = getDefaultHeight();
-        int x = MW->geometry().center().x() - w/2;
-        int y = MW->geometry().center().y() - h/2;
+    int w = getDefaultWidth();
+    int h = getDefaultHeight();
+    int x = MW->geometry().center().x() - w/2;
+    int y = MW->geometry().center().y() - h/2;
 
-        cout << "getSettingsKey: " << getSettingsKey().toStdString() << endl;
+    cout << "getSettingsKey: " << getSettingsKey().toStdString() << endl;
 
-        if (getSettingsKey().length() > 0) {
-            if (MW->settings->contains(getSettingsKey())) {
-                cout << "Mainwindow contains settings key" << endl;
-                QRect rect = MW->settings->value(getSettingsKey()).toRect();
-                w = rect.width();
-                h = rect.height();
-                x = rect.x();
-                y = rect.y();
-                cout << "x: " << x << " y: " << y << " w: " << w << " h: " << h << endl;
-            }
+    if (getSettingsKey().length() > 0) {
+        if (MW->settings->contains(getSettingsKey())) {
+            cout << "Mainwindow contains settings key" << endl;
+            QRect rect = MW->settings->value(getSettingsKey()).toRect();
+            w = rect.width();
+            h = rect.height();
+            x = rect.x();
+            y = rect.y();
+            cout << "x: " << x << " y: " << y << " w: " << w << " h: " << h << endl;
         }
-        gm = QRect(x, y, w, h);
-        setGeometry(gm);
     }
+
+    setGeometry(QRect(x, y, w, h));
 
     QDialog::showEvent(event);
 }
@@ -83,7 +81,7 @@ void PanelDialog::closeEvent(QCloseEvent *event)
 {
     cout << "PanelDialog::closeEvent" << endl;
 
-    if (getSettingsKey().length() > 0) {
+    if (shown && getSettingsKey().length() > 0) {
         cout << "settings key: " << getSettingsKey().toStdString() << endl;
         MW->settings->setValue(getSettingsKey(), geometry());
     }

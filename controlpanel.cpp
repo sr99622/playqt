@@ -351,7 +351,8 @@ void ControlPanel::quit()
 
     stopped = true;
     paused = false;
-    btnPlay->setIcon(icnPlay);
+    //btnPlay->setIcon(icnPlay);
+    btnPlay->setStyleSheet(getButtonStyle("play"));
     MW->co->input_filename = nullptr;
 
     SDL_Event event;

@@ -30,6 +30,7 @@
 #include <QPushButton>
 #include <QMainWindow>
 #include <QCheckBox>
+#include <QLabel>
 
 class FilterPanel : public QWidget
 {
@@ -38,7 +39,6 @@ class FilterPanel : public QWidget
 public:
     FilterPanel(QMainWindow *parent);
     ~FilterPanel() override;
-    void addFilters();
     void idle();
     void saveSettings(QSettings *settings);
     void restoreSettings(QSettings *settings);
@@ -47,6 +47,7 @@ public:
     Filter *getFilterByName(QString filter_name);
     Filter *getCurrentFilter();
 
+    QMainWindow *mainWindow;
     FilterListView *leftView;
     FilterListModel *leftModel;
     FilterListView *rightView;
@@ -55,11 +56,10 @@ public:
     QPushButton *moveRightButton;
     QPushButton *moveUpButton;
     QPushButton *moveDownButton;
-
     QTabWidget *tabWidget;
-    QWidget *bottomPanel;
-    QMainWindow *mainWindow;
+    //QWidget *bottomPanel;
     QCheckBox *engageFilter;
+    QLabel *filterTime;
 
     QVector<Filter*> filters;
 
@@ -69,8 +69,9 @@ public slots:
     void moveUp();
     void moveDown();
     void initializeFilters();
-    void panelShow(int index);
-    void panelHide(int index);
+    void panelShow(int);
+    void tabChanged(int);
+    //void panelHide(int index);
 
 };
 
@@ -82,6 +83,7 @@ public:
     FilterDialog(QMainWindow *parent);
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
     int getDefaultWidth() override;
     int getDefaultHeight() override;
     QString getSettingsKey() const override;
@@ -89,7 +91,7 @@ public:
     QMainWindow *mainWindow;
 
     const int defaultWidth = 520;
-    const int defaultHeight = 800;
+    const int defaultHeight = 600;
     const QString settingsKey = "FilterPanel/geometry";
 
 };

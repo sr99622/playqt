@@ -45,6 +45,7 @@ SOURCES += \
     Utilities/filepanel.cpp \
     Utilities/filesetter.cpp \
     Utilities/guichangemonitor.cpp \
+    Utilities/kalman.cpp \
     Utilities/messagebox.cpp \
     Utilities/numbertextbox.cpp \
     Utilities/paneldialog.cpp \
@@ -102,6 +103,7 @@ HEADERS += \
     Utilities/filepanel.h \
     Utilities/filesetter.h \
     Utilities/guichangemonitor.h \
+    Utilities/kalman.h \
     Utilities/messagebox.h \
     Utilities/numbertextbox.h \
     Utilities/paneldialog.h \

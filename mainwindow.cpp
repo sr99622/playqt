@@ -113,7 +113,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     messageBox = new MessageBox(this);
     filterDialog = new FilterDialog(this);
-    filterDialog->panel->restoreSettings(settings);
+    //filterDialog->panel->restoreSettings(settings);
     optionDialog = new OptionDialog(this);
     parameterDialog = new ParameterDialog(this);
     parameterDialog->panel->restoreSettings(settings);
@@ -304,8 +304,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings->setValue(videoPanelDirKey, videoPanel->directorySetter->directory);
     settings->setValue(picturePanelHeaderKey, picturePanel->tree->header()->saveState());
     settings->setValue(picturePanelDirKey, picturePanel->directorySetter->directory);
-    filterDialog->panel->saveSettings(settings);
+    //filterDialog->panel->saveSettings(settings);
     parameterDialog->panel->saveSettings(settings);
+
+    filterDialog->closeEvent(event);
 
     SDL_Event sdl_event;
     sdl_event.type = FF_QUIT_EVENT;
@@ -355,20 +357,20 @@ void MainWindow::menuAction(QAction *action)
     else if (action->text() == "&Mute" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_M))
         mainPanel->controlPanel->mute();
     else if (action->text() == "&Filters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_F))
-        filterDialog->show();
+        if (filterDialog->isVisible()) filterDialog->hide(); else filterDialog->show();
     else if (action->text() == "&Engage" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_E))
         filterDialog->panel->engageFilter->setChecked(!filterDialog->panel->engageFilter->isChecked());
     else if (action->text() == "&Set Parameters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_S))
-        parameterDialog->show();
+        if (parameterDialog->isVisible()) parameterDialog->hide(); else parameterDialog->show();
     else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))
-        messageBox->show();
+        if (messageBox->isVisible()) messageBox->hide(); else messageBox->show();
     else if (action->text() == "&Options")
         optionDialog->show();
 }
 
 void MainWindow::showHelp(const QString &str)
 {
-    cout << str.toStdString();
+    cout << str.toStdString() << endl;
 }
 
 void MainWindow::ping(const vector<bbox_t>* arg)

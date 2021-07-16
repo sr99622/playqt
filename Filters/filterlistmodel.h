@@ -43,11 +43,11 @@ public:
     QModelIndex setSelectedIndex(int row);
     QVector<Filter*> filters;
     int current_index = -1;
-    bool enablePanels = false;
+    //bool enablePanels = false;
 
 signals:
     void panelShow(int index);
-    void panelHide(int index);
+    //void panelHide(int index);
 
 public slots:
     void onSelectedItemsChanged(QItemSelection selected, QItemSelection deselected);

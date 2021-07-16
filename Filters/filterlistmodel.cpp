@@ -71,19 +71,10 @@ void FilterListModel::onSelectedItemsChanged(QItemSelection selected, QItemSelec
 {
     if (!selected.empty()) {
         current_index = selected.first().indexes().first().row();
-        if (enablePanels) {
-            emit panelShow(current_index);
-        }
+        emit panelShow(current_index);
     }
     else {
         current_index = -1;
-    }
-
-    if (!deselected.empty()) {
-        int last_index = deselected.first().indexes().first().row();
-        if (enablePanels) {
-            emit panelHide(last_index);
-        }
     }
 }
 

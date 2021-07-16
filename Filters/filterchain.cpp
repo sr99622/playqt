@@ -37,7 +37,7 @@ FilterChain::~FilterChain()
 
 void FilterChain::process(Frame *vp)
 {
-    //auto start = high_resolution_clock::now();
+    auto start = high_resolution_clock::now();
 
     if (!MW->is->paused) {
         fp.copy(vp);
@@ -52,13 +52,20 @@ void FilterChain::process(Frame *vp)
     }
 
     if (MW->filterDialog->panel->engageFilter->isChecked()) {
-        size = panel->leftModel->filters.size();
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < panel->leftModel->filters.size(); i++)
             panel->leftModel->filters[i]->filter(vp);
-        }
     }
 
-    //auto stop = high_resolution_clock::now();
-    //auto duration = duration_cast<microseconds>(stop - start);
+    auto stop = high_resolution_clock::now();
+    long msec = duration_cast<milliseconds>(stop - start).count();
+
+    if (!k.initialized)
+        k.initialize(msec, 0, 0.2f, 0.1f);
+    else
+        k.measure(msec, 1);
+
+    char buf[64];
+    sprintf(buf, "%0.0f", max(k.xh00, 0.0f));
+    MW->filterDialog->panel->filterTime->setText(buf);
 }
 

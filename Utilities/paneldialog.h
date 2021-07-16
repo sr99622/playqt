@@ -43,13 +43,14 @@ public:
     virtual QString getSettingsKey() const;
 
     QMainWindow *mainWindow;
-    GuiChangeMonitor *monitor = nullptr;
-    QRect gm;
     bool shown = false;
 
     const int defaultWidth = 320;
     const int defaultHeight = 240;
     const QString settingsKey = "";
+
+signals:
+    void closing();
 
 };
 
