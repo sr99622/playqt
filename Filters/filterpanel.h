@@ -69,6 +69,7 @@ public slots:
     void moveUp();
     void moveDown();
     void initializeFilters();
+    void engage(int);
     void panelShow(int);
     void tabChanged(int);
     //void panelHide(int index);

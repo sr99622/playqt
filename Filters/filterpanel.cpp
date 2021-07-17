@@ -81,6 +81,7 @@ FilterPanel::FilterPanel(QMainWindow *parent)
     connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
     engageFilter = new QCheckBox("Engage Filter");
+    connect(engageFilter, SIGNAL(stateChanged(int)), this, SLOT(engage(int)));
     QLabel *lbl00 = new QLabel("time (ms): ");
     filterTime = new QLabel();
 
@@ -282,6 +283,11 @@ void FilterPanel::tabChanged(int index)
         }
     }
     */
+}
+
+void FilterPanel::engage(int state)
+{
+    MW->mainPanel->controlPanel->engageFilter->setChecked(state);
 }
 
 bool FilterPanel::isFilterActive(Filter *filter) {

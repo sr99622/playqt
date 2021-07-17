@@ -27,9 +27,9 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     btnPrevious = new QPushButton();
     btnPrevious->setStyleSheet(getButtonStyle("previous"));
 
-    //QPushButton *test = new QPushButton("Test");
+    QLabel *spacer = new QLabel("     ");
+    engageFilter = new QCheckBox("Engage Filter");
 
-    //engageFilter = new QCheckBox("Engage Filter");
     volumeSlider = new QSlider(Qt::Horizontal, mainWindow);
     volumeSlider->setRange(0, 128);
     volumeSlider->setValue(100);
@@ -43,7 +43,6 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     volumeLayout->addWidget(btnMute);
     volumeLayout->addWidget(volumeSlider);
     volumePanel->setLayout(volumeLayout);
-    //volumePanel->setMaximumHeight(40);
 
     QGridLayout *layout = new QGridLayout();
     layout->setContentsMargins(11, 0, 11, 0);
@@ -53,14 +52,12 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     layout->addWidget(btnFastForward,  1,  3, 1, 1);
     layout->addWidget(btnPrevious,     1,  4, 1, 1);
     layout->addWidget(btnNext,         1,  5, 1, 1);
-    //layout->addWidget(engageFilter,    1,  6, 1, 1);
-    layout->addWidget(new QLabel,      1,  6, 1, 1);
-    layout->addWidget(volumePanel,     1,  7, 1, 1);
-    //layout->addWidget(test,            1,  7, 1, 1);
-    layout->setColumnStretch(6, 10);
+    layout->addWidget(spacer,          1,  6, 1, 1);
+    layout->addWidget(engageFilter,    1,  7, 1, 1);
+    layout->addWidget(new QLabel,      1,  8, 1, 1);
+    layout->addWidget(volumePanel,     1,  9, 1, 1);
+    layout->setColumnStretch(8, 10);
     setLayout(layout);
-
-    //setMaximumHeight(40);
 
     connect(btnPlay, SIGNAL(clicked()), this, SLOT(play()));
     connect(btnStop, SIGNAL(clicked()), this, SLOT(quit()));
@@ -69,9 +66,9 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     connect(btnPrevious, SIGNAL(clicked()), this, SLOT(previous()));
     connect(btnNext, SIGNAL(clicked()), this, SLOT(next()));
     connect(btnMute, SIGNAL(clicked()), this, SLOT(mute()));
+    connect(engageFilter, SIGNAL(stateChanged(int)), this, SLOT(engage(int)));
     connect(volumeSlider, SIGNAL(sliderMoved(int)), this, SLOT(sliderMoved(int)));
     connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
-    //connect(test, SIGNAL(clicked()), this, SLOT(test()));
 
 }
 
@@ -139,7 +136,6 @@ void ControlPanel::play()
         }
         stopped = false;
         paused = false;
-        //btnPlay->setIcon(icnPause);
         btnPlay->setStyleSheet(getButtonStyle("pause"));
         MW->runLoop();
     }
@@ -154,7 +150,6 @@ void ControlPanel::play()
             MW->is->toggle_pause();
         }
         paused = false;
-        //btnPlay->setIcon(icnPause);
         btnPlay->setStyleSheet(getButtonStyle("pause"));
     }
     else {
@@ -167,7 +162,6 @@ void ControlPanel::play()
         else {
             MW->is->toggle_pause();
             paused = true;
-            //btnPlay->setIcon(icnPlay);
             btnPlay->setStyleSheet(getButtonStyle("play"));
         }
     }
@@ -216,6 +210,11 @@ bool ControlPanel::checkCodec(const QString& filename)
     return true;
 }
 
+void ControlPanel::engage(int state)
+{
+    MW->filterDialog->panel->engageFilter->setChecked(state);
+}
+
 void ControlPanel::test()
 {
     cout << "ControlPanel::test" << endl;
@@ -247,28 +246,14 @@ void ControlPanel::voldn()
 
 void ControlPanel::rewind()
 {
-    //SDL_Event event;
-    //SDL_memset(&event, 0, sizeof(event));
-    //event.type = MW->sdlCustomEventType;
-    //event.user.code = REWIND;
-    //SDL_PushEvent(&event);
-
     if (MW->is)
         MW->is->rewind();
-
 }
 
 void ControlPanel::fastforward()
 {
-    //SDL_Event event;
-    //SDL_memset(&event, 0, sizeof(event));
-    //event.type = MW->sdlCustomEventType;
-    //event.user.code = FASTFORWARD;
-    //SDL_PushEvent(&event);
-
     if (MW->is)
         MW->is->fastforward();
-
 }
 
 void ControlPanel::previous()
@@ -314,11 +299,6 @@ void ControlPanel::next()
 
 void ControlPanel::pause()
 {
-    //SDL_Event event;
-    //SDL_memset(&event, 0, sizeof(event));
-    //event.type = MW->sdlCustomEventType;
-    //event.user.code = PAUSE;
-    //SDL_PushEvent(&event);
     if (MW->is)
         MW->is->toggle_pause();
 }
@@ -331,17 +311,14 @@ void ControlPanel::mute()
         if (MW->is)
             MW->is->audio_volume = 0;
         volumeSlider->setEnabled(false);
-        //btnMute->setIcon(icnAudioOff);
         btnMute->setStyleSheet(getButtonStyle("mute"));
     }
     else {
         if (MW->is)
             MW->is->audio_volume = volumeSlider->value();
         volumeSlider->setEnabled(true);
-        //btnMute->setIcon(icnAudioOn);
         btnMute->setStyleSheet(getButtonStyle("audio"));
     }
-
 }
 
 void ControlPanel::quit()
@@ -351,7 +328,6 @@ void ControlPanel::quit()
 
     stopped = true;
     paused = false;
-    //btnPlay->setIcon(icnPlay);
     btnPlay->setStyleSheet(getButtonStyle("play"));
     MW->co->input_filename = nullptr;
 
@@ -359,8 +335,5 @@ void ControlPanel::quit()
     event.type = FF_QUIT_EVENT;
     event.user.data1 = this;
     SDL_PushEvent(&event);
-
-    //MW->e->looping = false;
-    //MW->timer->stop();
 }
 

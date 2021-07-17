@@ -64,6 +64,7 @@ public slots:
     void previous();
     void next();
     void singlestep();
+    void engage(int);
     void sliderMoved(int);
 
 };
