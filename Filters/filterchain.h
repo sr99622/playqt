@@ -38,6 +38,7 @@ public:
     ~FilterChain();
 
     Frame fp;
+    Frame *vp;
 
     QMainWindow *mainWindow;
     FilterPanel *panel;

@@ -7,6 +7,30 @@
 #include "Utilities/paneldialog.h"
 #include "Filters/darknet.h"
 
+class ObjDrawer : public QWidget
+{
+    Q_OBJECT
+
+public:
+    ObjDrawer(QMainWindow *parent, int obj_id);
+    QString getButtonStyle() const;
+
+    QMainWindow *mainWindow;
+    QCheckBox *checkBox;
+    QPushButton *button;
+    int obj_id;
+    QColor color;
+
+signals:
+    void shown(int, const YUVColor&);
+    void colored(int, const YUVColor&);
+
+public slots:
+    void stateChanged(int);
+    void buttonPressed();
+
+};
+
 class CountPanel : public QWidget
 {
     Q_OBJECT
@@ -15,17 +39,21 @@ public:
     CountPanel(QMainWindow *parent);
     int indexOf(int obj_id);
     int rowOf(int obj_id);
+    int idFromName(const QString& name);
 
     QMainWindow *mainWindow;
     QStringList names;
     QListWidget *list;
     QTableWidget *table;
+    Darknet *darknet;
 
     vector<pair<int, int>> sums;
+    vector<pair<int, QCheckBox*>> showObjs;
 
 public slots:
     void itemDoubleClicked(QListWidgetItem*);
     void itemChanged(QListWidgetItem*);
+    void itemClicked(QListWidgetItem*);
     void ping(vector<bbox_t>*);
 
 };

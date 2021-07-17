@@ -22,6 +22,7 @@
 #include <QShortcut>
 #include <QToolTip>
 #include <QFileDialog>
+#include <QColorDialog>
 
 #include <iostream>
 #include <string>

@@ -33,7 +33,7 @@ signals:
 };
 
 
-class DarknetModel : QObject
+class DarknetModel : public QObject
 {
     Q_OBJECT
 
@@ -51,10 +51,12 @@ public:
     DarknetLoader *loader;
     WaitBox *waitBox;
     vector<string> obj_names;
+    vector<YUVColor> obj_drawn;
     CudaExceptionHandler eh;
 
 signals:
     void msg(const QString&);
+
 };
 
 
@@ -87,6 +89,7 @@ public:
     float threshold = 0.2f;
 
     vector<bbox_t> result;
+    vector<int> showableObjIDs;
 
     const QString cfgKey       = "DarknetModel/cfg";
     const QString weightsKey   = "DarknetModel/weights";
@@ -107,6 +110,7 @@ public slots:
     void clearSettings();
     void setThreshold(int);
     void saveThreshold();
+    void draw(int, const YUVColor&);
 
 };
 

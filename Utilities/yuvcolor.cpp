@@ -5,11 +5,32 @@ YUVColor::YUVColor()
 
 }
 
+bool YUVColor::isValid()
+{
+    return valid;
+}
+
+YUVColor::YUVColor(const QColor& color)
+{
+    QRgb rgb = color.rgb();
+
+    int R = qRed(rgb);
+    int B = qBlue(rgb);
+    int G = qGreen(rgb);
+
+    y = (0.257 * R) + (0.504 * G) + (0.098 * B) + 16;
+    v = (0.439 * R) - (0.368 * G) - (0.071 * B) + 128;
+    u = -(0.148 * R) - (0.291 * G) + (0.439 * B) + 128;
+
+    valid = true;
+}
+
 YUVColor::YUVColor(uint8_t y, uint8_t u, uint8_t v)
 {
     this->y = y;
     this->u = u;
     this->v = v;
+    valid = true;
 }
 
 YUVColor::YUVColor(enum Qt::GlobalColor color)
@@ -19,6 +40,7 @@ YUVColor::YUVColor(enum Qt::GlobalColor color)
 
 void YUVColor::set(enum Qt::GlobalColor color)
 {
+    valid = true;
     switch (color) {
     case Qt::white:
         y = 235;
@@ -100,7 +122,9 @@ void YUVColor::set(enum Qt::GlobalColor color)
         u = 128;
         v = 128;
         break;
-
+    default:
+        valid = false;
+        break;
     }
 
 }

@@ -77,7 +77,6 @@ Darknet::Darknet(QMainWindow *parent)
     connect(loadModel, SIGNAL(clicked()), this, SLOT(loadModel()));
     connect(clearModel, SIGNAL(clicked()), this, SLOT(clearModel()));
     connect(clearSettings, SIGNAL(clicked()), this, SLOT(clearSettings()));
-    //connect(this, SIGNAL(ping(vector<bbox_t>*)), mainWindow, SLOT(ping(vector<bbox_t>*)));
 }
 
 void Darknet::filter(Frame *vp)
@@ -90,20 +89,18 @@ void Darknet::filter(Frame *vp)
     }
 
     if (!loading) {
-        int people_count = 0;
+        //int people_count = 0;
         result = model->infer(vp, threshold);
-        emit ping(&result);
+        vector<bbox_t> pinger = result;
+        emit ping(&pinger);
+
         for (size_t i = 0; i < result.size(); i++) {
-            if (result[i].obj_id == 0) {
+            if (model->obj_drawn[result[i].obj_id].isValid()) {
                 QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
-                YUVColor green(Qt::green);
-                vp->drawBox(rect, 1, green);
-                people_count++;
+                //YUVColor green((Qt::GlobalColor)model->obj_drawn[result[i].obj_id]);
+                vp->drawBox(rect, 1, model->obj_drawn[result[i].obj_id]);
             }
         }
-        QString str;
-        QTextStream(&str) << "Number of people detected: " << people_count;
-        MW->status->showMessage(str);
     }
 }
 
@@ -307,6 +304,46 @@ DarknetModel::DarknetModel(QMainWindow *parent) : QObject(parent)
     connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
 }
 
+void DarknetModel::initialize(QString cfg_file, QString weights_file, QString names_file, int gpu_id)
+{
+    if (detector != nullptr)
+        detector->~Detector();
+
+    if (!QFile::exists(cfg_file)) {
+        QString str;
+        QTextStream(&str) << "Unable to load config file: " << cfg_file;
+        QMessageBox::critical(MW, "Model Config Load Error", str);
+        return;
+    }
+
+    if (!QFile::exists(weights_file)) {
+        QString str;
+        QTextStream(&str) << "Unable to load weights file: " << weights_file;
+        QMessageBox::critical(MW, "Model Weights Load Error", str);
+        return;
+    }
+
+    ifstream file(names_file.toLatin1().data());
+    if (!file.is_open()) {
+        QString str;
+        QTextStream(&str) << "Unable to load model names file: " << names_file;
+        QMessageBox::critical(MW, "Model Names Load Error", str);
+        return;
+    }
+
+    obj_names.clear();
+    for (string line; getline(file, line);) {
+        obj_names.push_back(line);
+        obj_drawn.push_back(YUVColor());
+    }
+
+    loader->cfg_file = cfg_file.toStdString();
+    loader->weights_file = weights_file.toStdString();
+    loader->gpu_id = gpu_id;
+    QThreadPool::globalInstance()->tryStart(loader);
+    waitBox->exec();
+}
+
 vector<bbox_t> DarknetModel::infer(Frame *vp, float detection_threshold)
 {
     vector<bbox_t> result;
@@ -380,42 +417,13 @@ const QString DarknetModel::getName(int obj_id)
     return obj_names[obj_id].c_str();
 }
 
-void DarknetModel::initialize(QString cfg_file, QString weights_file, QString names_file, int gpu_id)
+void Darknet::draw(int obj_id, const YUVColor& color)
 {
-    if (detector != nullptr)
-        detector->~Detector();
-
-    if (!QFile::exists(cfg_file)) {
-        QString str;
-        QTextStream(&str) << "Unable to load config file: " << cfg_file;
-        QMessageBox::critical(MW, "Model Config Load Error", str);
-        return;
+    cout << "DarknetModel::draw" << endl;
+    if (model) {
+        if (model->obj_drawn.size() > obj_id)
+            model->obj_drawn[obj_id] = color;
     }
-
-    if (!QFile::exists(weights_file)) {
-        QString str;
-        QTextStream(&str) << "Unable to load weights file: " << weights_file;
-        QMessageBox::critical(MW, "Model Weights Load Error", str);
-        return;
-    }
-
-    ifstream file(names_file.toLatin1().data());
-    if (!file.is_open()) {
-        QString str;
-        QTextStream(&str) << "Unable to load model names file: " << names_file;
-        QMessageBox::critical(MW, "Model Names Load Error", str);
-        return;
-    }
-
-    obj_names.clear();
-    for (string line; getline(file, line);)
-        obj_names.push_back(line);
-
-    loader->cfg_file = cfg_file.toStdString();
-    loader->weights_file = weights_file.toStdString();
-    loader->gpu_id = gpu_id;
-    QThreadPool::globalInstance()->tryStart(loader);
-    waitBox->exec();
 }
 
 void DarknetModel::show_console_result(vector<bbox_t> const result_vec, vector<string> const obj_names, int frame_id)

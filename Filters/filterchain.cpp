@@ -39,6 +39,8 @@ void FilterChain::process(Frame *vp)
 {
     auto start = high_resolution_clock::now();
 
+    this->vp = vp;
+
     if (!MW->is->paused) {
         fp.copy(vp);
     }

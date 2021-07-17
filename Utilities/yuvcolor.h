@@ -2,19 +2,23 @@
 #define YUVCOLOR_H
 
 #include <stdint.h>
-#include <Qt>
+#include <QColor>
 
 class YUVColor
 {
 
 public:
     YUVColor();
+    YUVColor(const QColor& color);
     YUVColor(enum Qt::GlobalColor color);
     YUVColor(uint8_t y, uint8_t u, uint8_t v);
+    bool isValid();
 
     uint8_t y;
     uint8_t u;
     uint8_t v;
+
+    bool valid = false;
 
     void set(enum Qt::GlobalColor color);
 
