@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QListWidget>
 #include <QTableWidget>
+#include <QSplitter>
 #include "Utilities/paneldialog.h"
 #include "Filters/darknet.h"
 
@@ -31,29 +32,33 @@ public slots:
 
 };
 
-class CountPanel : public QWidget
+class CountPanel : public Panel
 {
     Q_OBJECT
 
 public:
     CountPanel(QMainWindow *parent);
-    int indexOf(int obj_id);
+    void saveSettings() override;
+    int indexForSums(int obj_id);
     int rowOf(int obj_id);
     int idFromName(const QString& name);
 
-    QMainWindow *mainWindow;
     QStringList names;
     QListWidget *list;
     QTableWidget *table;
+    QSplitter *hSplit;
+    QString hSplitKey = "CountPanel/hSplit";
     Darknet *darknet;
 
     vector<pair<int, int>> sums;
     vector<pair<int, QCheckBox*>> showObjs;
+    vector<pair<int, vector<int>>> sizes;
 
 public slots:
     void itemDoubleClicked(QListWidgetItem*);
     void itemChanged(QListWidgetItem*);
     void itemClicked(QListWidgetItem*);
+    void hSplitMoved(int, int);
     void ping(vector<bbox_t>*);
 
 };
@@ -65,16 +70,7 @@ class CountDialog : public PanelDialog
 public:
     CountDialog(QMainWindow *parent);
 
-    QMainWindow *mainWindow;
-    CountPanel *panel;
-
-    int getDefaultWidth() override;
-    int getDefaultHeight() override;
-    QString getSettingsKey() const override;
-
-    const int defaultWidth = 520;
-    const int defaultHeight = 600;
-    const QString settingsKey = "CountDialog/geometry";
+    //CountPanel *panel;
 
 };
 

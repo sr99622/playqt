@@ -13,6 +13,9 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     screen = QApplication::primaryScreen();
     settings = new QSettings("PlayQt", "Program Settings");
+    saveSettingsTimer = new QTimer(this);
+    connect(saveSettingsTimer, SIGNAL(timeout()), this, SLOT(saveSettings()));
+    saveSettingsTimer->start(10000);
 
     QRect screenSize = screen->geometry();
     int w = min(APP_DEFAULT_WIDTH, screenSize.width());
@@ -67,7 +70,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
 
     tabWidget = new QTabWidget(this);
-    tabWidget->setTabPosition(QTabWidget::East);
+    //tabWidget->setTabPosition(QTabWidget::East);
     tabWidget->setMinimumWidth(100);
 
     videoPanel = new FilePanel(this);
@@ -100,7 +103,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     tabWidget->addTab(picturePanel, tr("Pictures"));
     tabWidget->addTab(audioPanel, tr("Audio"));
     tabWidget->addTab(cameraPanel, tr("Cameras"));
-    tabWidget->addTab(streamPanel, tr("Streams"));
+    //tabWidget->addTab(streamPanel, tr("Streams"));
     mainPanel = new MainPanel(this);
 
     splitter = new QSplitter(Qt::Orientation::Horizontal, this);
@@ -108,6 +111,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     splitter->addWidget(tabWidget);
     if (settings->contains(splitterKey))
         splitter->restoreState(settings->value(splitterKey).toByteArray());
+    connect(splitter, SIGNAL(splitterMoved(int, int)), this, SLOT(splitterMoved(int, int)));
 
     setCentralWidget(splitter);
 
@@ -286,11 +290,15 @@ void MainWindow::paintEvent(QPaintEvent *event)
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     //cout << QTime::currentTime().toString("hh:mm:ss.zzz").toStdString() << endl;
+    if (isVisible())
+        changed = true;
     QMainWindow::resizeEvent(event);
 }
 
 void MainWindow::moveEvent(QMoveEvent *event)
 {
+    if (isVisible())
+        changed = true;
     QMainWindow::moveEvent(event);
 }
 
@@ -299,18 +307,40 @@ void MainWindow::showEvent(QShowEvent *event)
     QMainWindow::showEvent(event);
 }
 
+void MainWindow::splitterMoved(int pos, int index)
+{
+    if (isVisible())
+        changed = true;
+}
+
+void MainWindow::saveSettings()
+{
+    /*
+    if (first_save_settings_pass) {
+        first_save_settings_pass = false;
+        return;
+    }
+    */
+
+    if (changed) {
+        cout << "MainWindow::saveSettings" << endl;
+        settings->setValue(geometryKey, saveGeometry());
+        settings->setValue(splitterKey, splitter->saveState());
+        changed = false;
+    }
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    settings->setValue(geometryKey, saveGeometry());
-    settings->setValue(splitterKey, splitter->saveState());
     settings->setValue(videoPanelHeaderKey, videoPanel->tree->header()->saveState());
     settings->setValue(videoPanelDirKey, videoPanel->directorySetter->directory);
     settings->setValue(picturePanelHeaderKey, picturePanel->tree->header()->saveState());
     settings->setValue(picturePanelDirKey, picturePanel->directorySetter->directory);
     //filterDialog->panel->saveSettings(settings);
-    parameterDialog->panel->saveSettings(settings);
+    //parameterDialog->panel->saveSettings(settings);
 
-    filterDialog->closeEvent(event);
+    //filterDialog->closeEvent(event);
+    filterDialog->panel->engageFilter->setChecked(false);
 
     SDL_Event sdl_event;
     sdl_event.type = FF_QUIT_EVENT;

@@ -24,7 +24,9 @@
 
 #include <QDialog>
 #include <QMainWindow>
+#include <QTimer>
 
+#include "panel.h"
 #include "guichangemonitor.h"
 
 class PanelDialog : public QDialog
@@ -42,15 +44,23 @@ public:
     virtual int getDefaultHeight();
     virtual QString getSettingsKey() const;
 
-    QMainWindow *mainWindow;
-    bool shown = false;
+    void saveSettings();
 
-    const int defaultWidth = 320;
-    const int defaultHeight = 240;
-    const QString settingsKey = "";
+    QMainWindow *mainWindow;
+    Panel *panel = nullptr;
+    bool shown = false;
+    bool changed = false;
+
+    QTimer *timer;
+    int defaultWidth = 320;
+    int defaultHeight = 240;
+    QString settingsKey = "";
 
 signals:
     void closing();
+
+public slots:
+    void savePanelSettings();
 
 };
 

@@ -85,7 +85,7 @@ void ControlPanel::sliderMoved(int arg)
 }
 
 void ControlPanel::resizeEvent(QResizeEvent *event) {
-    cout << "ControlPanel width: " << event->size().width() << " height: " << event->size().height() << endl;
+    //cout << "ControlPanel width: " << event->size().width() << " height: " << event->size().height() << endl;
 }
 
 void ControlPanel::play()

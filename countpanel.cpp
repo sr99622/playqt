@@ -1,9 +1,9 @@
 #include "countpanel.h"
 #include "mainwindow.h"
 
-CountPanel::CountPanel(QMainWindow *parent)
+CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
 {
-    mainWindow = parent;
+    //mainWindow = parent;
     darknet = (Darknet*)MW->filterDialog->panel->getFilterByName("Darknet");
     ifstream file(darknet->names->filename.toLatin1().data());
     if (file.is_open()) {
@@ -20,25 +20,46 @@ CountPanel::CountPanel(QMainWindow *parent)
 
     table = new QTableWidget(0, 3);
     QStringList headers;
-    headers << tr("Name") << tr("Value") << tr("Show");
+    headers << tr("Name") << tr("Count") << tr("Show");
     table->setHorizontalHeaderLabels(headers);
     table->verticalHeader()->setVisible(false);
     table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     table->setColumnWidth(1, 60);
     table->setColumnWidth(0, 140);
 
+    hSplit = new QSplitter(this);
+    hSplit->addWidget(list);
+    hSplit->addWidget(table);
+    if (MW->settings->contains(hSplitKey))
+        hSplit->restoreState(MW->settings->value(hSplitKey).toByteArray());
+
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(list,    0, 0, 1, 1);
-    layout->addWidget(table,   0, 1, 1, 1);
+    layout->addWidget(hSplit,  0, 0, 1, 1);
     setLayout(layout);
 
+    connect(hSplit, SIGNAL(splitterMoved(int, int)), this, SLOT(hSplitMoved(int, int)));
     connect(list, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(itemClicked(QListWidgetItem*)));
     connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
     connect(list, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*)));
     connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
+
 }
 
-int CountPanel::indexOf(int obj_id)
+void CountPanel::saveSettings()
+{
+    if (changed) {
+        cout << "CountPanel::saveSettings" << endl;
+        MW->settings->setValue(hSplitKey, hSplit->saveState());
+        changed = false;
+    }
+}
+
+void CountPanel::hSplitMoved(int pos, int index)
+{
+    changed = true;
+}
+
+int CountPanel::indexForSums(int obj_id)
 {
     int result = -1;
     for (int i = 0; i < sums.size(); i++) {
@@ -68,8 +89,7 @@ int CountPanel::rowOf(int obj_id)
 {
     int result = -1;
     for (int i = 0; i < table->rowCount(); i++) {
-        QTableWidgetItem *item = table->item(i, 0);
-        if (item->text() == names[obj_id]) {
+        if (table->item(i, 0)->text() == names[obj_id]) {
             result = i;
             break;
         }
@@ -83,13 +103,14 @@ void CountPanel::ping(vector<bbox_t> *detections)
     for (const bbox_t detection : *detections) {
         int obj_id = detection.obj_id;
 
-        int index = indexOf(obj_id);
-        if (index < 0) {
+        int indexSum = indexForSums(obj_id);
+        if (indexSum < 0) {
             sums.push_back(make_pair(obj_id, 1));
         }
         else {
-            sums[index].second++;
+            sums[indexSum].second++;
         }
+
     }
 
     for (const pair<int, int>& sum : sums) {
@@ -105,8 +126,6 @@ void CountPanel::itemChanged(QListWidgetItem *item)
 {
     QString name = item->text();
     int obj_id = idFromName(name);
-
-    cout << "itemChanged name: " << name.toStdString() << " obj_id: " << obj_id << endl;
 
     if (item->checkState()) {
         table->setRowCount(table->rowCount() + 1);
@@ -131,7 +150,6 @@ void CountPanel::itemDoubleClicked(QListWidgetItem *item)
             item->setCheckState(Qt::Unchecked);
     else
         item->setCheckState(Qt::Checked);
-    cout << "itemDoubleClicked " << item->text().toStdString() << endl;
 }
 
 void CountPanel::itemClicked(QListWidgetItem *item)
@@ -151,7 +169,9 @@ ObjDrawer::ObjDrawer(QMainWindow *parent, int obj_id)
     checkBox = new QCheckBox("show");
     button = new QPushButton();
     button->setStyleSheet(getButtonStyle());
-    button->setMaximumWidth(button->fontMetrics().boundingRect("XXX").width() * 1.5);
+    button->setMaximumWidth(button->fontMetrics().boundingRect("XXX").width());
+    button->setMaximumHeight(button->fontMetrics().boundingRect("XXX").width());
+    button->setCursor(Qt::PointingHandCursor);
     QHBoxLayout *layout = new QHBoxLayout();
     layout->addWidget(checkBox);
     layout->addWidget(button);
@@ -169,8 +189,6 @@ QString ObjDrawer::getButtonStyle() const
 
 void ObjDrawer::stateChanged(int state)
 {
-    cout << "ObjDrawer::stateChanged: " << obj_id << endl;
-
     if (state)
         emit shown(obj_id, YUVColor(color));
     else
@@ -179,8 +197,6 @@ void ObjDrawer::stateChanged(int state)
 
 void ObjDrawer::buttonPressed()
 {
-    cout << "ObjDrawer::buttonPressed: " << obj_id << endl;
-
     color = QColorDialog::getColor(color, MW->countDialog, "PlayQt");
     button->setStyleSheet(getButtonStyle());
 
@@ -189,25 +205,35 @@ void ObjDrawer::buttonPressed()
 
 CountDialog::CountDialog(QMainWindow *parent) : PanelDialog(parent)
 {
-    mainWindow = parent;
     setWindowTitle("Counter");
     panel = new CountPanel(mainWindow);
     QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(panel);
     setLayout(layout);
+
+    defaultWidth = 600;
+    defaultHeight = 400;
+    settingsKey = "CountDialog/geometry";
 }
 
-int CountDialog::getDefaultWidth()
-{
-    return defaultWidth;
+/*
+for (const pair<int, vector<int>>& size : sizes) {
+    int row = rowOf(size.first);
+    if (row > -1) {
+        int count = size.second.size();
+        QTableWidgetItem *item = new QTableWidgetItem(QString::number(count));
+        table->setItem(row, 1, item);
+        double sum = accumulate(begin(size.second), end(size.second), 0.0);
+        double mean = sum / count;
+        double accum = 0.0;
+        for_each(begin(size.second), end(size.second), [&](const double d) {
+            accum += (d - mean) * (d - mean);
+        });
+        double stdev = sqrt(accum / (count - 1));
+        QTableWidgetItem *avgItem = new QTableWidgetItem(QString::number(mean));
+        table->setItem(row, 2, avgItem);
+        QTableWidgetItem *stdItem = new QTableWidgetItem(QString::number(stdev));
+        table->setItem(row, 3, stdItem);
+    }
 }
-
-int CountDialog::getDefaultHeight()
-{
-    return defaultHeight;
-}
-
-QString CountDialog::getSettingsKey() const
-{
-    return settingsKey;
-}
+*/

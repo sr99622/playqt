@@ -25,5 +25,11 @@
         <file>play_hi.png</file>
         <file>audio_hi.png</file>
         <file>mute_hi.png</file>
+        <file>unchecked.png</file>
+        <file>checked.png</file>
+        <file>checked_hi.png</file>
+        <file>unchecked_hi.png</file>
+        <file>unchecked_lo.png</file>
+        <file>checked_lo.png</file>
     </qresource>
 </RCC>

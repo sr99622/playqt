@@ -48,6 +48,7 @@ SOURCES += \
     Utilities/kalman.cpp \
     Utilities/messagebox.cpp \
     Utilities/numbertextbox.cpp \
+    Utilities/panel.cpp \
     Utilities/paneldialog.cpp \
     Utilities/waitbox.cpp \
     Utilities/yuvcolor.cpp \
@@ -107,6 +108,7 @@ HEADERS += \
     Utilities/kalman.h \
     Utilities/messagebox.h \
     Utilities/numbertextbox.h \
+    Utilities/panel.h \
     Utilities/paneldialog.h \
     Utilities/waitbox.h \
     Utilities/yuvcolor.h \

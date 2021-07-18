@@ -25,7 +25,9 @@
 PanelDialog::PanelDialog(QMainWindow *parent) : QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint)
 {
     mainWindow = parent;
-
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(savePanelSettings()));
+    timer->start(10000);
 }
 
 void PanelDialog::keyPressEvent(QKeyEvent *event)
@@ -67,24 +69,39 @@ void PanelDialog::showEvent(QShowEvent *event)
     QDialog::showEvent(event);
 }
 
+void PanelDialog::savePanelSettings()
+{
+    if (panel)
+        panel->saveSettings();
+
+    saveSettings();
+}
+
+void PanelDialog::saveSettings()
+{
+    if (changed && shown && getSettingsKey().length() > 0) {
+        cout << "settings key: " << getSettingsKey().toStdString() << endl;
+        MW->settings->setValue(getSettingsKey(), geometry());
+        changed = false;
+    }
+}
+
 void PanelDialog::resizeEvent(QResizeEvent *event)
 {
+    changed = true;
     QDialog::resizeEvent(event);
 }
 
 void PanelDialog::moveEvent(QMoveEvent *event)
 {
+    changed = true;
     QDialog::moveEvent(event);
 }
 
 void PanelDialog::closeEvent(QCloseEvent *event)
 {
     cout << "PanelDialog::closeEvent" << endl;
-
-    if (shown && getSettingsKey().length() > 0) {
-        cout << "settings key: " << getSettingsKey().toStdString() << endl;
-        MW->settings->setValue(getSettingsKey(), geometry());
-    }
+    saveSettings();
 
     QDialog::closeEvent(event);
 }

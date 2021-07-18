@@ -143,8 +143,11 @@ public:
 
     Uint32 sdlCustomEventType;
     QTimer *timer;
+    QTimer *saveSettingsTimer;
+    bool first_save_settings_pass = true;
     QScreen *screen;
 
+    bool changed = false;
     const QString geometryKey           = "MainWindow/geometry";
     const QString splitterKey           = "MainWindow/splitter";
     const QString videoPanelHeaderKey   = "MainWindow/VideoPanel/header";
@@ -164,6 +167,8 @@ public slots:
     void ping(vector<bbox_t>*);
     void guiUpdate(int);
     void start();
+    void splitterMoved(int, int);
+    void saveSettings();
 
 };
 #endif // MAINWINDOW_H
