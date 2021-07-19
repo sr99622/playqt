@@ -1,51 +1,17 @@
 #include "filepanel.h"
 #include "mainwindow.h"
 
-FileTree::FileTree(QWidget *parent) : QTreeView(parent)
-{
-    panel = parent;
-}
-
-void FileTree::mouseDoubleClickEvent(QMouseEvent *event)
-{
-    ((FilePanel*)panel)->doubleClicked(indexAt(event->pos()));
-}
-
-void FileTree::keyPressEvent(QKeyEvent *event)
-{
-    /*
-    switch(event->key()) {
-    case Qt::Key_Return:
-        ((FilePanel*)panel)->doubleClicked(currentIndex());
-        break;
-    case Qt::Key_Escape:
-        SDL_Event sdl_event;
-        sdl_event.type = FF_QUIT_EVENT;
-        SDL_PushEvent(&sdl_event);
-        break;
-    case Qt::Key_Space:
-        SDL_Event sdl_event_space;
-        sdl_event_space.type = SDL_KEYDOWN;
-        sdl_event_space.key.keysym.sym = SDLK_SPACE;
-        SDL_PushEvent(&sdl_event_space);
-        break;
-    default:
-        QTreeView::keyPressEvent(event);
-        break;
-    }
-    */
-    QTreeView::keyPressEvent(event);
-}
-
-FilePanel::FilePanel(QMainWindow *parent) : QWidget(parent)
+FilePanel::FilePanel(QMainWindow *parent, const QString& name, const QString& defaultPath) : QWidget(parent)
 {
     mainWindow = parent;
+    this->name = name;
+    this->defaultPath = defaultPath;
 
     directorySetter = new DirectorySetter(mainWindow, "");
     directorySetter->trimHeight();
     model = new QFileSystemModel();
     model->setReadOnly(false);
-    tree = new FileTree(this);
+    tree = new QTreeView(this);
     tree->setModel(model);
 
     QGridLayout *layout = new QGridLayout();
@@ -53,8 +19,19 @@ FilePanel::FilePanel(QMainWindow *parent) : QWidget(parent)
     layout->addWidget(tree,                 1, 0, 1, 1);
     setLayout(layout);
 
+    QString path = MW->settings->contains(getDirKey()) ? MW->settings->value(getDirKey()).toString() : defaultPath;
+    directorySetter->setPath(path);
+    model->setRootPath(path);
+    tree->setRootIndex(model->index(path));
     connect(directorySetter, SIGNAL(directorySet(const QString&)), this, SLOT(setDirectory(const QString&)));
-    connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
+
+    if (MW->settings->contains(getHeaderKey()))
+        tree->header()->restoreState(MW->settings->value(getHeaderKey()).toByteArray());
+    tree->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(tree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
+    connect(tree, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(doubleClicked(const QModelIndex&)));
+    connect(tree->header(), SIGNAL(sectionResized(int, int, int)), this, SLOT(headerChanged(int, int, int)));
+    connect(tree->header(), SIGNAL(sectionMoved(int, int, int)), this, SLOT(headerChanged(int, int, int)));
 
     menu = new QMenu("Context Menu", this);
     QAction *remove = new QAction("Delete", this);
@@ -69,9 +46,18 @@ FilePanel::FilePanel(QMainWindow *parent) : QWidget(parent)
     menu->addAction(rename);
     menu->addAction(info);
     menu->addAction(play);
-    tree->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(tree, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
-    connect(tree, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(doubleClicked(const QModelIndex&)));
+
+    connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
+}
+
+QString FilePanel::getDirKey() const
+{
+    return name + "/dir";
+}
+
+QString FilePanel::getHeaderKey() const
+{
+    return name + "/header";
 }
 
 void FilePanel::setDirectory(const QString& path)
@@ -79,6 +65,16 @@ void FilePanel::setDirectory(const QString& path)
     directorySetter->setPath(path);
     model->setRootPath(path);
     tree->setRootIndex(model->index(path));
+    MW->settings->setValue(getDirKey(), path);
+}
+
+void FilePanel::autoSave()
+{
+    if (changed) {
+        cout << getHeaderKey().toStdString() << " written to settings" << endl;
+        MW->settings->setValue(getHeaderKey(), tree->header()->saveState());
+        changed = false;
+    }
 }
 
 void FilePanel::doubleClicked(const QModelIndex& index)
@@ -93,6 +89,17 @@ void FilePanel::doubleClicked(const QModelIndex& index)
             MW->mainPanel->controlPanel->play();
         }
     }
+}
+
+void FilePanel::play()
+{
+    doubleClicked(tree->currentIndex());
+}
+
+void FilePanel::headerChanged(int arg1, int arg2, int arg3)
+{
+    if (isVisible())
+        changed = true;
 }
 
 void FilePanel::showContextMenu(const QPoint &pos)
@@ -254,9 +261,4 @@ void FilePanel::info()
 
     if (fmt_ctx != nullptr)
         avformat_close_input(&fmt_ctx);
-}
-
-void FilePanel::play()
-{
-    doubleClicked(tree->currentIndex());
 }

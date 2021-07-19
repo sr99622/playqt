@@ -10,7 +10,7 @@ class Panel : public QWidget
 public:
     Panel(QMainWindow *parent);
 
-    virtual void saveSettings();
+    virtual void autoSave();
     bool changed = false;
 
     QMainWindow *mainWindow;

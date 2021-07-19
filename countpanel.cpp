@@ -24,8 +24,15 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     table->setHorizontalHeaderLabels(headers);
     table->verticalHeader()->setVisible(false);
     table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    table->setColumnWidth(1, 60);
-    table->setColumnWidth(0, 140);
+
+    if (MW->settings->contains(headerKey)) {
+        table->horizontalHeader()->restoreState(MW->settings->value(headerKey).toByteArray());
+    }
+    else {
+        table->setColumnWidth(0, 60);
+        table->setColumnWidth(1, 60);
+        table->setColumnWidth(2, 60);
+    }
 
     hSplit = new QSplitter(this);
     hSplit->addWidget(list);
@@ -42,21 +49,31 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
     connect(list, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*)));
     connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
+    connect(table->horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this, SLOT(headerChanged(int, int, int)));
+    connect(table->horizontalHeader(), SIGNAL(sectionMoved(int, int, int)), this, SLOT(headerChanged(int, int, int)));
 
 }
 
-void CountPanel::saveSettings()
+void CountPanel::autoSave()
 {
     if (changed) {
         cout << "CountPanel::saveSettings" << endl;
         MW->settings->setValue(hSplitKey, hSplit->saveState());
+        MW->settings->setValue(headerKey, table->horizontalHeader()->saveState());
         changed = false;
     }
 }
 
+void CountPanel::headerChanged(int arg1, int arg2, int arg3)
+{
+    if (isVisible())
+        changed = true;
+}
+
 void CountPanel::hSplitMoved(int pos, int index)
 {
-    changed = true;
+    if (isVisible())
+        changed = true;
 }
 
 int CountPanel::indexForSums(int obj_id)

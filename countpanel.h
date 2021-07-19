@@ -38,7 +38,7 @@ class CountPanel : public Panel
 
 public:
     CountPanel(QMainWindow *parent);
-    void saveSettings() override;
+    void autoSave() override;
     int indexForSums(int obj_id);
     int rowOf(int obj_id);
     int idFromName(const QString& name);
@@ -47,8 +47,10 @@ public:
     QListWidget *list;
     QTableWidget *table;
     QSplitter *hSplit;
-    QString hSplitKey = "CountPanel/hSplit";
     Darknet *darknet;
+
+    QString headerKey = "CountPanel/header";
+    QString hSplitKey = "CountPanel/hSplit";
 
     vector<pair<int, int>> sums;
     vector<pair<int, QCheckBox*>> showObjs;
@@ -60,6 +62,7 @@ public slots:
     void itemClicked(QListWidgetItem*);
     void hSplitMoved(int, int);
     void ping(vector<bbox_t>*);
+    void headerChanged(int, int, int);
 
 };
 

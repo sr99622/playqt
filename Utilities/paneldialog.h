@@ -44,7 +44,7 @@ public:
     virtual int getDefaultHeight();
     virtual QString getSettingsKey() const;
 
-    void saveSettings();
+    //void saveSettings();
 
     QMainWindow *mainWindow;
     Panel *panel = nullptr;
@@ -60,7 +60,7 @@ signals:
     void closing();
 
 public slots:
-    void savePanelSettings();
+    void autoSave();
 
 };
 

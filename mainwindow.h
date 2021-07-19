@@ -143,19 +143,12 @@ public:
 
     Uint32 sdlCustomEventType;
     QTimer *timer;
-    QTimer *saveSettingsTimer;
-    bool first_save_settings_pass = true;
+    QTimer *autoSaveTimer;
     QScreen *screen;
 
     bool changed = false;
-    const QString geometryKey           = "MainWindow/geometry";
-    const QString splitterKey           = "MainWindow/splitter";
-    const QString videoPanelHeaderKey   = "MainWindow/VideoPanel/header";
-    const QString videoPanelDirKey      = "MainWindow/VideoPanel/dir";
-    const QString picturePanelHeaderKey = "MainWindow/PicturePanel/header";
-    const QString picturePanelDirKey    = "MainWindow/PicturePanel/dir";
-    const QString audioPanelHeaderKey   = "MainWindow/AudioPanel/header";
-    const QString audioPanelDirKey      = "MainWindow/AudioPanel/dir";
+    const QString geometryKey = "MainWindow/geometry";
+    const QString splitterKey = "MainWindow/splitter";
 
 public slots:
     void runLoop();
@@ -168,7 +161,7 @@ public slots:
     void guiUpdate(int);
     void start();
     void splitterMoved(int, int);
-    void saveSettings();
+    void autoSave();
 
 };
 #endif // MAINWINDOW_H

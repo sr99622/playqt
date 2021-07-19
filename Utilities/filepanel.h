@@ -4,37 +4,31 @@
 #include <QMainWindow>
 #include <QFileSystemModel>
 #include <QTreeView>
+#include <QHeaderView>
 #include <QSettings>
 
 #include "Utilities/directorysetter.h"
 #include "Utilities/avexception.h"
-
-class FileTree : public QTreeView
-{
-    Q_OBJECT
-
-public:
-    FileTree(QWidget *parent);
-    void mouseDoubleClickEvent(QMouseEvent *event) override;
-    void keyPressEvent(QKeyEvent *event) override;
-
-    QWidget *panel;
-};
 
 class FilePanel : public QWidget
 {
     Q_OBJECT
 
 public:
-    FilePanel(QMainWindow *mainWindow);
+    FilePanel(QMainWindow *mainWindow, const QString& name, const QString& defaultPath);
+    QString getDirKey() const;
+    QString getHeaderKey() const;
+    void autoSave();
 
     QMainWindow *mainWindow;
     DirectorySetter *directorySetter;
     QFileSystemModel *model;
-    //FileTree *tree;
     QTreeView *tree;
     QMenu *menu;
     AVExceptionHandler av;
+    QString name;
+    QString defaultPath;
+    bool changed = false;
 
 signals:
     void msg(const QString&);
@@ -47,6 +41,8 @@ public slots:
     void rename();
     void info();
     void play();
+    void headerChanged(int, int, int);
+
 };
 
 #endif // FILEPANEL_H

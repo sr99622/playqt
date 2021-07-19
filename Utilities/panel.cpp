@@ -5,7 +5,7 @@ Panel::Panel(QMainWindow *parent)
     mainWindow = parent;
 }
 
-void Panel::saveSettings()
+void Panel::autoSave()
 {
 
 }

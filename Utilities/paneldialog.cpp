@@ -25,8 +25,25 @@
 PanelDialog::PanelDialog(QMainWindow *parent) : QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint)
 {
     mainWindow = parent;
+
+    /*
+    QRect gm;
+
+    if (MW->settings->contains(getSettingsKey())) {
+        gm = MW->settings->value(getSettingsKey()).toRect();
+    }
+    else {
+        int w = getDefaultWidth();
+        int h = getDefaultHeight();
+        int x = MW->geometry().center().x() - w/2;
+        int y = MW->geometry().center().y() - h/2;
+        gm = QRect(x, y, w, h);
+    }
+    setGeometry(gm);
+    */
+
     timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(savePanelSettings()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(autoSave()));
     timer->start(10000);
 }
 
@@ -69,40 +86,37 @@ void PanelDialog::showEvent(QShowEvent *event)
     QDialog::showEvent(event);
 }
 
-void PanelDialog::savePanelSettings()
-{
-    if (panel)
-        panel->saveSettings();
-
-    saveSettings();
-}
-
-void PanelDialog::saveSettings()
+void PanelDialog::autoSave()
 {
     if (changed && shown && getSettingsKey().length() > 0) {
         cout << "settings key: " << getSettingsKey().toStdString() << endl;
         MW->settings->setValue(getSettingsKey(), geometry());
         changed = false;
     }
+
+    if (panel)
+        panel->autoSave();
+
 }
 
 void PanelDialog::resizeEvent(QResizeEvent *event)
 {
-    changed = true;
+    if (isVisible())
+        changed = true;
     QDialog::resizeEvent(event);
 }
 
 void PanelDialog::moveEvent(QMoveEvent *event)
 {
-    changed = true;
+    if (isVisible())
+        changed = true;
     QDialog::moveEvent(event);
 }
 
 void PanelDialog::closeEvent(QCloseEvent *event)
 {
-    cout << "PanelDialog::closeEvent" << endl;
-    saveSettings();
-
+    //cout << "PanelDialog::closeEvent" << endl;
+    autoSave();
     QDialog::closeEvent(event);
 }
 

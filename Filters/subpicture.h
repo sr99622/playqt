@@ -81,12 +81,13 @@ public:
 
     QRect presets[5] = {QRect(0,0,0,0)};
     QCheckBox *checkPreset;
+    QString presetKey = "SubPicture_preset_";
 
     int codec_width = 0, codec_height = 0;
 
-    const char * buttonStyle =  "QPushButton{                 \
-                                background-color:lightGrey;   \
-                                }";
+    //const char * buttonStyle =  "QPushButton{                 \
+    //                            background-color:lightGrey;   \
+    //                            }";
 
 signals:
     void msg(const QString&);

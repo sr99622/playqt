@@ -13,9 +13,9 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     screen = QApplication::primaryScreen();
     settings = new QSettings("PlayQt", "Program Settings");
-    saveSettingsTimer = new QTimer(this);
-    connect(saveSettingsTimer, SIGNAL(timeout()), this, SLOT(saveSettings()));
-    saveSettingsTimer->start(10000);
+    autoSaveTimer = new QTimer(this);
+    connect(autoSaveTimer, SIGNAL(timeout()), this, SLOT(autoSave()));
+    autoSaveTimer->start(10000);
 
     QRect screenSize = screen->geometry();
     int w = min(APP_DEFAULT_WIDTH, screenSize.width());
@@ -73,29 +73,9 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     //tabWidget->setTabPosition(QTabWidget::East);
     tabWidget->setMinimumWidth(100);
 
-    videoPanel = new FilePanel(this);
-    if (settings->contains(videoPanelHeaderKey))
-        videoPanel->tree->header()->restoreState(settings->value(videoPanelHeaderKey).toByteArray());
-    if (settings->contains(videoPanelDirKey))
-        videoPanel->setDirectory(settings->value(videoPanelDirKey).toString());
-    else
-        videoPanel->setDirectory(QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
-
-    picturePanel = new FilePanel(this);
-    if (settings->contains(picturePanelHeaderKey))
-        picturePanel->tree->header()->restoreState(settings->value(picturePanelHeaderKey).toByteArray());
-    if (settings->contains(picturePanelDirKey))
-        picturePanel->setDirectory(settings->value(picturePanelDirKey).toString());
-    else
-        picturePanel->setDirectory(QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
-
-    audioPanel = new FilePanel(this);
-    if (settings->contains(audioPanelHeaderKey))
-        audioPanel->tree->header()->restoreState(settings->value(audioPanelHeaderKey).toByteArray());
-    if (settings->contains(audioPanelDirKey))
-        audioPanel->setDirectory(settings->value(audioPanelDirKey).toString());
-    else
-        audioPanel->setDirectory(QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
+    videoPanel = new FilePanel(this, "Videos", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
+    picturePanel = new FilePanel(this, "Pictures", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
+    audioPanel = new FilePanel(this, "Audio", QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
 
     cameraPanel = new CameraPanel(this);
     streamPanel = new StreamPanel(this);
@@ -201,6 +181,20 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         QThreadPool::globalInstance()->tryStart(launcher);
     }
 
+}
+
+void MainWindow::autoSave()
+{
+    if (changed) {
+        cout << "MainWindow::saveSettings" << endl;
+        settings->setValue(geometryKey, saveGeometry());
+        settings->setValue(splitterKey, splitter->saveState());
+        changed = false;
+    }
+
+    videoPanel->autoSave();
+    picturePanel->autoSave();
+    audioPanel->autoSave();
 }
 
 MainWindow::~MainWindow()
@@ -313,33 +307,14 @@ void MainWindow::splitterMoved(int pos, int index)
         changed = true;
 }
 
-void MainWindow::saveSettings()
-{
-    /*
-    if (first_save_settings_pass) {
-        first_save_settings_pass = false;
-        return;
-    }
-    */
-
-    if (changed) {
-        cout << "MainWindow::saveSettings" << endl;
-        settings->setValue(geometryKey, saveGeometry());
-        settings->setValue(splitterKey, splitter->saveState());
-        changed = false;
-    }
-}
-
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    settings->setValue(videoPanelHeaderKey, videoPanel->tree->header()->saveState());
-    settings->setValue(videoPanelDirKey, videoPanel->directorySetter->directory);
-    settings->setValue(picturePanelHeaderKey, picturePanel->tree->header()->saveState());
-    settings->setValue(picturePanelDirKey, picturePanel->directorySetter->directory);
     //filterDialog->panel->saveSettings(settings);
     //parameterDialog->panel->saveSettings(settings);
 
     //filterDialog->closeEvent(event);
+
+    autoSave();
     filterDialog->panel->engageFilter->setChecked(false);
 
     SDL_Event sdl_event;

@@ -158,6 +158,12 @@ SubPicture::SubPicture(QMainWindow *parent)
     connect(buttonApply, SIGNAL(clicked()), this, SLOT(apply()));
     connect(buttonReset, SIGNAL(clicked()), this, SLOT(reset()));
 
+    for (int i = 0; i < 5; i++) {
+        if (MW->settings->contains(presetKey + QString::number(i))) {
+            presets[i] = MW->settings->value(presetKey + QString::number(i)).toRect();
+        }
+    }
+
     moving = false;
     scale = 1.0;
     denominator = ZOOM_FACTOR;
@@ -325,10 +331,9 @@ void SubPicture::stop()
 
 void SubPicture::preset(int arg) {
     if (checkPreset->isChecked()) {
-        presets[arg].setX(x);
-        presets[arg].setY(y);
-        presets[arg].setWidth(w);
-        presets[arg].setHeight(h);
+        QRect rect(x, y, w, h);
+        presets[arg] = rect;
+        MW->settings->setValue(presetKey + QString::number(arg), rect);
         checkPreset->setChecked(false);
     }
     else {
