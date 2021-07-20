@@ -15,12 +15,18 @@ class ObjDrawer : public QWidget
 public:
     ObjDrawer(QMainWindow *parent, int obj_id);
     QString getButtonStyle() const;
+    QString getSettingsKey() const;
+    QString saveState() const;
+    void restoreState(const QString& arg);
 
     QMainWindow *mainWindow;
     QCheckBox *checkBox;
     QPushButton *button;
     int obj_id;
     QColor color;
+    bool show;
+
+    const QString seperator = "\n";
 
 signals:
     void shown(int, const YUVColor&);
@@ -57,7 +63,6 @@ public:
     vector<pair<int, vector<int>>> sizes;
 
 public slots:
-    void itemDoubleClicked(QListWidgetItem*);
     void itemChanged(QListWidgetItem*);
     void itemClicked(QListWidgetItem*);
     void hSplitMoved(int, int);
@@ -72,8 +77,6 @@ class CountDialog : public PanelDialog
 
 public:
     CountDialog(QMainWindow *parent);
-
-    //CountPanel *panel;
 
 };
 

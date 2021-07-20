@@ -3,14 +3,21 @@
 
 CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
 {
-    //mainWindow = parent;
     darknet = (Darknet*)MW->filterDialog->panel->getFilterByName("Darknet");
+    /*
     ifstream file(darknet->names->filename.toLatin1().data());
     if (file.is_open()) {
         names.clear();
         for (string line; getline(file, line);)
             names.push_back(line.c_str());
     }
+    */
+
+    for (int i = 0; i < darknet->obj_names.size(); i++)
+        names.push_back(darknet->obj_names[i].c_str());
+
+    cout << "CountPanel::CountPanel" << endl;
+
     list = new QListWidget();
     list->addItems(names);
     for (int i = 0; i < list->count(); i++) {
@@ -34,6 +41,23 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
         table->setColumnWidth(2, 60);
     }
 
+    for (int i = 0; i < names.size(); i++) {
+        ObjDrawer *objDrawer = new ObjDrawer(mainWindow, i);
+        cout << "settingsKey: " << objDrawer->getSettingsKey().toStdString() << endl;
+        if (MW->settings->contains(objDrawer->getSettingsKey())) {
+            cout << "contains key: " << objDrawer->obj_id << endl;
+
+            table->setRowCount(table->rowCount() + 1);
+            table->setItem(table->rowCount()-1, 0, new QTableWidgetItem(names[objDrawer->obj_id], 0));
+            objDrawer->restoreState(MW->settings->value(objDrawer->getSettingsKey()).toString());
+            list->item(objDrawer->obj_id)->setCheckState(Qt::Checked);
+            connect(objDrawer, SIGNAL(shown(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
+            connect(objDrawer, SIGNAL(colored(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
+            table->setCellWidget(table->rowCount()-1, 2, objDrawer);
+            darknet->obj_drawn[objDrawer->obj_id] = objDrawer->color;
+        }
+    }
+
     hSplit = new QSplitter(this);
     hSplit->addWidget(list);
     hSplit->addWidget(table);
@@ -46,7 +70,6 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
 
     connect(hSplit, SIGNAL(splitterMoved(int, int)), this, SLOT(hSplitMoved(int, int)));
     connect(list, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(itemClicked(QListWidgetItem*)));
-    connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(itemDoubleClicked(QListWidgetItem*)));
     connect(list, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*)));
     connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
     connect(table->horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this, SLOT(headerChanged(int, int, int)));
@@ -127,7 +150,6 @@ void CountPanel::ping(vector<bbox_t> *detections)
         else {
             sums[indexSum].second++;
         }
-
     }
 
     for (const pair<int, int>& sum : sums) {
@@ -141,6 +163,7 @@ void CountPanel::ping(vector<bbox_t> *detections)
 
 void CountPanel::itemChanged(QListWidgetItem *item)
 {
+    cout << "CountPanel::itemChanged" << endl;
     QString name = item->text();
     int obj_id = idFromName(name);
 
@@ -151,22 +174,16 @@ void CountPanel::itemChanged(QListWidgetItem *item)
         connect(objDrawer, SIGNAL(shown(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
         connect(objDrawer, SIGNAL(colored(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
         table->setCellWidget(table->rowCount()-1, 2, objDrawer);
+        MW->settings->setValue(objDrawer->getSettingsKey(), objDrawer->saveState());
     }
     else {
         int index = rowOf(obj_id);
         ObjDrawer *objDrawer = (ObjDrawer*)table->cellWidget(index, 2);
         objDrawer->emit shown(obj_id, YUVColor());
+        MW->settings->remove(objDrawer->getSettingsKey());
         table->removeCellWidget(index, 2);
         table->removeRow(index);
     }
-}
-
-void CountPanel::itemDoubleClicked(QListWidgetItem *item)
-{
-    if (item->checkState())
-            item->setCheckState(Qt::Unchecked);
-    else
-        item->setCheckState(Qt::Checked);
 }
 
 void CountPanel::itemClicked(QListWidgetItem *item)
@@ -199,6 +216,40 @@ ObjDrawer::ObjDrawer(QMainWindow *parent, int obj_id)
     connect(button, SIGNAL(clicked()), this, SLOT(buttonPressed()));
 }
 
+QString ObjDrawer::saveState() const
+{
+    QStringList result;
+    result << QString::number(obj_id) << color.name() << QString::number(show);
+    QString str = result.join(seperator);
+    cout << "ObjDrawer::saveState: " << str.toStdString() << endl;
+    return str;
+}
+
+void ObjDrawer::restoreState(const QString& arg)
+{
+    cout << "ObjDrawer::restoreSate: " << arg.toStdString() << endl;
+
+    QStringList result = arg.split(seperator);
+
+    for (int i = 0; i < result.size(); i++)
+        cout << "result[" << i << "]: " << result[i].toStdString() << endl;
+
+    obj_id = result[0].toInt();
+    color = QColor(result[1]);
+    if (result[2].toInt())
+        show = true;
+    else
+        show = false;
+
+    checkBox->setChecked(show);
+    button->setStyleSheet(getButtonStyle());
+}
+
+QString ObjDrawer::getSettingsKey() const
+{
+    return QString("ObjDrawer_%1").arg(obj_id);
+}
+
 QString ObjDrawer::getButtonStyle() const
 {
     return QString("QPushButton {background-color: %1;}").arg(color.name());
@@ -206,6 +257,9 @@ QString ObjDrawer::getButtonStyle() const
 
 void ObjDrawer::stateChanged(int state)
 {
+    show = (bool)state;
+    MW->settings->setValue(getSettingsKey(), saveState());
+
     if (state)
         emit shown(obj_id, YUVColor(color));
     else
@@ -216,8 +270,10 @@ void ObjDrawer::buttonPressed()
 {
     color = QColorDialog::getColor(color, MW->countDialog, "PlayQt");
     button->setStyleSheet(getButtonStyle());
+    MW->settings->setValue(getSettingsKey(), saveState());
 
-    emit colored(obj_id, YUVColor(color));
+    if (show)
+        emit colored(obj_id, YUVColor(color));
 }
 
 CountDialog::CountDialog(QMainWindow *parent) : PanelDialog(parent)

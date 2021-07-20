@@ -44,14 +44,11 @@ public:
     image_t hw_get_image(Frame *vp);
     void show_console_result(vector<bbox_t> const result_vec, vector<string> const obj_names, int frame_id = -1);
     vector<bbox_t> infer(Frame *vp, float detection_threshold = 0.2f);
-    const QString getName(int obj_id);
 
     QMainWindow *mainWindow;
     Detector *detector = nullptr;
     DarknetLoader *loader;
     WaitBox *waitBox;
-    vector<string> obj_names;
-    vector<YUVColor> obj_drawn;
     CudaExceptionHandler eh;
 
 signals:
@@ -71,6 +68,7 @@ public:
     void saveSettings(QSettings *settings) override;
     void restoreSettings(QSettings *settings) override;
 
+    QString getName(int obj_id) const;
     QSize getModelDimensions();
     DarknetModel *model = nullptr;
     bool loading = false;
@@ -90,6 +88,8 @@ public:
 
     vector<bbox_t> result;
     vector<int> showableObjIDs;
+    vector<string> obj_names;
+    vector<YUVColor> obj_drawn;
 
     const QString cfgKey       = "DarknetModel/cfg";
     const QString weightsKey   = "DarknetModel/weights";

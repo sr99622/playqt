@@ -10,6 +10,7 @@ Darknet::Darknet(QMainWindow *parent)
     names = new FileSetter(mainWindow, "Names", "Names(*.names)");
     names->trimHeight();
     names->setPath(MW->settings->value(namesKey, "").toString());
+    setNames(names->filename);
 
     weights = new FileSetter(mainWindow, "Weight", "Weights(*.weights)");
     weights->trimHeight();
@@ -89,16 +90,14 @@ void Darknet::filter(Frame *vp)
     }
 
     if (!loading) {
-        //int people_count = 0;
         result = model->infer(vp, threshold);
         vector<bbox_t> pinger = result;
         emit ping(&pinger);
 
         for (size_t i = 0; i < result.size(); i++) {
-            if (model->obj_drawn[result[i].obj_id].isValid()) {
+            if (obj_drawn[result[i].obj_id].isValid()) {
                 QRect rect(result[i].x, result[i].y, result[i].w, result[i].h);
-                //YUVColor green((Qt::GlobalColor)model->obj_drawn[result[i].obj_id]);
-                vp->drawBox(rect, 1, model->obj_drawn[result[i].obj_id]);
+                vp->drawBox(rect, 1, obj_drawn[result[i].obj_id]);
             }
         }
     }
@@ -232,6 +231,22 @@ void Darknet::initialize()
 void Darknet::setNames(const QString &path)
 {
     MW->settings->setValue(namesKey, path);
+
+    ifstream file(path.toStdString());
+    if (!file.is_open()) {
+        QString str;
+        QTextStream(&str) << "Unable to load model names file: " << path;
+        MW->msg(str);
+        return;
+    }
+
+    obj_names.clear();
+    obj_drawn.clear();
+    for (string line; getline(file, line);) {
+        obj_names.push_back(line);
+        obj_drawn.push_back(YUVColor());
+    }
+    cout << "Darknet::setNames" << endl;
 }
 
 void Darknet::cfgEdited(const QString &text)
@@ -331,11 +346,14 @@ void DarknetModel::initialize(QString cfg_file, QString weights_file, QString na
         return;
     }
 
+    /*
     obj_names.clear();
+    obj_drawn.clear();
     for (string line; getline(file, line);) {
         obj_names.push_back(line);
         obj_drawn.push_back(YUVColor());
     }
+    */
 
     loader->cfg_file = cfg_file.toStdString();
     loader->weights_file = weights_file.toStdString();
@@ -412,18 +430,21 @@ image_t DarknetModel::hw_get_image(Frame *vp)
     return img;
 }
 
-const QString DarknetModel::getName(int obj_id)
+QString Darknet::getName(int obj_id) const
 {
-    return obj_names[obj_id].c_str();
+    QString result;
+    if (obj_names.size() > obj_id)
+        result = obj_names[obj_id].c_str();
+    return result;
 }
 
 void Darknet::draw(int obj_id, const YUVColor& color)
 {
     cout << "DarknetModel::draw" << endl;
-    if (model) {
-        if (model->obj_drawn.size() > obj_id)
-            model->obj_drawn[obj_id] = color;
-    }
+    //if (model) {
+        if (obj_drawn.size() > obj_id)
+            obj_drawn[obj_id] = color;
+    //}
 }
 
 void DarknetModel::show_console_result(vector<bbox_t> const result_vec, vector<string> const obj_names, int frame_id)
