@@ -45,7 +45,7 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     volumePanel->setLayout(volumeLayout);
 
     QGridLayout *layout = new QGridLayout();
-    layout->setContentsMargins(11, 0, 11, 0);
+    layout->setContentsMargins(11, 0, 11, 11);
     layout->addWidget(btnPlay,         1,  0, 1, 1);
     layout->addWidget(btnStop,         1,  1, 1, 1);
     layout->addWidget(btnRewind,       1,  2, 1, 1);
@@ -212,7 +212,7 @@ bool ControlPanel::checkCodec(const QString& filename)
 
 void ControlPanel::engage(int state)
 {
-    MW->filterDialog->panel->engageFilter->setChecked(state);
+    MW->filterDialog->getPanel()->engageFilter->setChecked(state);
 }
 
 void ControlPanel::test()

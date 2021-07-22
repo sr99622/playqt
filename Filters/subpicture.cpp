@@ -29,7 +29,7 @@
 SubPicture::SubPicture(QMainWindow *parent)
 {
     name = "Sub Picture";
-    panel = new QWidget;
+    panel = new Panel(mainWindow);
     mainWindow = parent;
     connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
 
@@ -194,11 +194,6 @@ void SubPicture::apply()
 {
     update(textX->text().toInt(), textY->text().toInt(), textW->text().toInt(), textH->text().toInt());
     denominator = ZOOM_FACTOR * codec_width / (float) w;
-}
-
-void SubPicture::initialize()
-{
-
 }
 
 void SubPicture::keyReleaseEvent(QKeyEvent *event)
@@ -403,6 +398,7 @@ void SubPicture::ptz()
     }
 }
 
+/*
 void SubPicture::saveSettings(QSettings *settings)
 {
     for (int i = 0; i < 5; i++) {
@@ -417,3 +413,4 @@ void SubPicture::restoreSettings(QSettings *settings)
         presets[i] = settings->value(name).toRect();
     }
 }
+*/

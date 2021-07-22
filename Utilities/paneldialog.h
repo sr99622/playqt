@@ -27,7 +27,6 @@
 #include <QTimer>
 
 #include "panel.h"
-#include "guichangemonitor.h"
 
 class PanelDialog : public QDialog
 {

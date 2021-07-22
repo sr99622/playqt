@@ -56,6 +56,7 @@ public:
     QPushButton *buttonZoomOut;
     QPushButton *buttonPreset;
     QLabel *labelZoom;
+    QLabel *labelSpeed;
 
     float speed[10];
 

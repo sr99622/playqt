@@ -5,26 +5,32 @@ Darknet::Darknet(QMainWindow *parent)
 {
     mainWindow = parent;
     name = "Darknet";
-    panel = new QWidget();
+    panel = new Panel(mainWindow);
 
     names = new FileSetter(mainWindow, "Names", "Names(*.names)");
     names->trimHeight();
     names->setPath(MW->settings->value(namesKey, "").toString());
     setNames(names->filename);
+    connect(names, SIGNAL(fileSet(const QString&)), this, SLOT(setNames(const QString&)));
 
     weights = new FileSetter(mainWindow, "Weight", "Weights(*.weights)");
     weights->trimHeight();
     weights->setPath(MW->settings->value(weightsKey, "").toString());
+    connect(weights, SIGNAL(fileSet(const QString&)), this, SLOT(setWeights(const QString&)));
 
     cfg = new FileSetter(mainWindow, "Config", "Config(*.cfg)");
     cfg->trimHeight();
     cfg->setPath(MW->settings->value(cfgKey, "").toString());
+    connect(cfg, SIGNAL(fileSet(const QString&)), this, SLOT(setCfg(const QString&)));
 
     modelWidth = new NumberTextBox();
     modelWidth->setMaximumWidth(modelWidth->fontMetrics().boundingRect("00000").width() * 1.5);
+    connect(modelWidth, SIGNAL(textEdited(const QString&)), this, SLOT(cfgEdited(const QString&)));
     QLabel *lbl00 = new QLabel("Width");
+
     modelHeight = new NumberTextBox();
     modelHeight->setMaximumWidth(modelHeight->fontMetrics().boundingRect("00000").width() * 1.5);
+    connect(modelHeight, SIGNAL(textEdited(const QString&)), this, SLOT(cfgEdited(const QString&)));
     QLabel *lbl01 = new QLabel("Height");
 
     QSize dims = getModelDimensions();
@@ -34,6 +40,7 @@ Darknet::Darknet(QMainWindow *parent)
     }
 
     setDims = new QPushButton("Set");
+    connect(setDims, SIGNAL(clicked()), this, SLOT(setModelDimensions()));
     setDims->setEnabled(false);
     QGroupBox *resolution = new QGroupBox("Model Resolution");
     QGridLayout *rl = new QGridLayout();
@@ -47,12 +54,16 @@ Darknet::Darknet(QMainWindow *parent)
     threshold = MW->settings->value(thresholdKey, 0.2f).toFloat();
     sldrThreshold = new QSlider(Qt::Horizontal, mainWindow);
     sldrThreshold->setValue(threshold * 100);
+    connect(sldrThreshold, SIGNAL(valueChanged(int)), this, SLOT(setThreshold(int)));
     QLabel *lbl02 = new QLabel("Threshold");
     lblThreshold = new QLabel(QString::number(sldrThreshold->value()));
 
     QPushButton *loadModel = new QPushButton("Load Model");
+    connect(loadModel, SIGNAL(clicked()), this, SLOT(loadModel()));
     QPushButton *clearModel = new QPushButton("Clear Model");
+    connect(clearModel, SIGNAL(clicked()), this, SLOT(clearModel()));
     QPushButton *clearSettings = new QPushButton("Clear Settings");
+    connect(clearSettings, SIGNAL(clicked()), this, SLOT(clearSettings()));
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(names,                1, 0, 1, 6);
@@ -67,17 +78,6 @@ Darknet::Darknet(QMainWindow *parent)
     layout->addWidget(clearSettings,        7, 3, 1, 1);
 
     panel->setLayout(layout);
-
-    connect(names, SIGNAL(fileSet(const QString&)), this, SLOT(setNames(const QString&)));
-    connect(cfg, SIGNAL(fileSet(const QString&)), this, SLOT(setCfg(const QString&)));
-    connect(weights, SIGNAL(fileSet(const QString&)), this, SLOT(setWeights(const QString&)));
-    connect(modelWidth, SIGNAL(textEdited(const QString&)), this, SLOT(cfgEdited(const QString&)));
-    connect(modelHeight, SIGNAL(textEdited(const QString&)), this, SLOT(cfgEdited(const QString&)));
-    connect(setDims, SIGNAL(clicked()), this, SLOT(setModelDimensions()));
-    connect(sldrThreshold, SIGNAL(valueChanged(int)), this, SLOT(setThreshold(int)));
-    connect(loadModel, SIGNAL(clicked()), this, SLOT(loadModel()));
-    connect(clearModel, SIGNAL(clicked()), this, SLOT(clearModel()));
-    connect(clearSettings, SIGNAL(clicked()), this, SLOT(clearSettings()));
 }
 
 void Darknet::filter(Frame *vp)
@@ -86,7 +86,6 @@ void Darknet::filter(Frame *vp)
         loading = true;
         model = new DarknetModel(mainWindow);
         model->initialize(cfg->filename, weights->filename, names->filename, 0);
-        //loading = false;
     }
 
     if (!loading) {
@@ -103,26 +102,20 @@ void Darknet::filter(Frame *vp)
     }
 }
 
+void Darknet::autoSave()
+{
+    if (changed) {
+        cout << "DarknetPanel::autoSave" << endl;
+        MW->settings->setValue(thresholdKey, threshold);
+        changed = false;
+    }
+}
+
 void Darknet::setThreshold(int arg)
 {
     lblThreshold->setText(QString::number(arg));
     threshold = arg / (float)100;
-
-    if (sliderMonitor == nullptr) {
-        sliderMonitor = new GuiChangeMonitor();
-        connect(sliderMonitor, SIGNAL(done()), this, SLOT(saveThreshold()));
-    }
-
-    if (!sliderMonitor->running)
-        QThreadPool::globalInstance()->tryStart(sliderMonitor);
-    else
-        sliderMonitor->setCountdown(10);
-}
-
-void Darknet::saveThreshold()
-{
-    cout << "Darknet::saveThreshold" << endl;
-    MW->settings->setValue(thresholdKey, threshold);
+    changed = true;
 }
 
 void Darknet::clearModel()
@@ -223,11 +216,6 @@ void Darknet::clearSettings()
     }
 }
 
-void Darknet::initialize()
-{
-
-}
-
 void Darknet::setNames(const QString &path)
 {
     MW->settings->setValue(namesKey, path);
@@ -246,7 +234,6 @@ void Darknet::setNames(const QString &path)
         obj_names.push_back(line);
         obj_drawn.push_back(YUVColor());
     }
-    cout << "Darknet::setNames" << endl;
 }
 
 void Darknet::cfgEdited(const QString &text)
@@ -256,7 +243,6 @@ void Darknet::cfgEdited(const QString &text)
 
 void Darknet::setCfg(const QString &path)
 {
-    //cfgFilename = path;
     QSize dims = getModelDimensions();
     if (dims == QSize(0, 0)) {
         modelWidth->setText("");
@@ -275,29 +261,6 @@ void Darknet::setWeights(const QString &path)
     MW->settings->setValue(weightsKey, path);
 }
 
-void Darknet::saveSettings(QSettings *settings)
-{
-    settings->setValue(cfgKey, cfg->filename);
-    settings->setValue(weightsKey, weights->filename);
-    settings->setValue(namesKey, names->filename);
-    settings->setValue(thresholdKey, threshold);
-}
-
-void Darknet::restoreSettings(QSettings *settings)
-{
-    cfg->setPath(settings->value(cfgKey, "").toString());
-    weights->setPath(settings->value(weightsKey, "").toString());
-    names->setPath(settings->value(namesKey, "").toString());
-    threshold = settings->value(thresholdKey, 0.2f).toFloat();
-
-    QSize dims = getModelDimensions();
-    if (dims != QSize(0, 0)) {
-        modelWidth->setIntValue(dims.width());
-        modelHeight->setIntValue(dims.height());
-    }
-    setDims->setEnabled(false);
-}
-
 DarknetLoader::DarknetLoader(QObject *model)
 {
     this->model = model;
@@ -307,7 +270,9 @@ void DarknetLoader::run()
 {
     ((DarknetModel*)model)->detector = new Detector(cfg_file, weights_file, gpu_id);
     emit done(0);
-    ((Darknet*)((MainWindow*)((DarknetModel*)model)->mainWindow)->filterDialog->panel->getFilterByName("Darknet"))->loading = false;
+    MainWindow *mainWindow = (MainWindow*)((DarknetModel*)model)->mainWindow;
+    FilterPanel *panel = mainWindow->filterDialog->getPanel();
+    ((Darknet*)panel->getFilterByName("Darknet"))->loading = false;
 }
 
 DarknetModel::DarknetModel(QMainWindow *parent) : QObject(parent)
@@ -345,15 +310,6 @@ void DarknetModel::initialize(QString cfg_file, QString weights_file, QString na
         QMessageBox::critical(MW, "Model Names Load Error", str);
         return;
     }
-
-    /*
-    obj_names.clear();
-    obj_drawn.clear();
-    for (string line; getline(file, line);) {
-        obj_names.push_back(line);
-        obj_drawn.push_back(YUVColor());
-    }
-    */
 
     loader->cfg_file = cfg_file.toStdString();
     loader->weights_file = weights_file.toStdString();
@@ -441,10 +397,8 @@ QString Darknet::getName(int obj_id) const
 void Darknet::draw(int obj_id, const YUVColor& color)
 {
     cout << "DarknetModel::draw" << endl;
-    //if (model) {
-        if (obj_drawn.size() > obj_id)
-            obj_drawn[obj_id] = color;
-    //}
+    if (obj_drawn.size() > obj_id)
+        obj_drawn[obj_id] = color;
 }
 
 void DarknetModel::show_console_result(vector<bbox_t> const result_vec, vector<string> const obj_names, int frame_id)

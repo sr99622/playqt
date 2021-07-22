@@ -33,7 +33,7 @@ PTZTab::PTZTab(QWidget *parent)
     for (int i = 0; i < 10; i++)
         speed[i] = 0.09 * (i+1);
 
-    QLabel *labelSpeed = new QLabel("PTZ speed");
+    labelSpeed = new QLabel("PTZ speed");
     labelSpeed->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
     comboSpeed = new QComboBox();
@@ -134,6 +134,7 @@ void PTZTab::setActive(bool active)
 {
     checkPreset->setEnabled(active);
     textPreset->setEnabled(active);
+    labelSpeed->setEnabled(active);
     comboSpeed->setEnabled(active);
     button1->setEnabled(active);
     button2->setEnabled(active);

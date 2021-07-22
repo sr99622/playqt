@@ -31,5 +31,11 @@
         <file>unchecked_hi.png</file>
         <file>unchecked_lo.png</file>
         <file>checked_lo.png</file>
+        <file>small_arrow_up.png</file>
+        <file>small_arrow_up_hi.png</file>
+        <file>small_arrow_left.png</file>
+        <file>small_arrow_left_hi.png</file>
+        <file>branch_open_lo.png</file>
+        <file>small_arrow_up_lo.png</file>
     </qresource>
 </RCC>

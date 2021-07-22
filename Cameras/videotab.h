@@ -27,6 +27,15 @@
 
 #include <QComboBox>
 #include <QSpinBox>
+#include <QLabel>
+
+class SpinBox : public QSpinBox
+{
+
+public:
+    SpinBox(QLineEdit *editor);
+
+};
 
 class VideoTab : public CameraDialogTab
 {
@@ -41,9 +50,13 @@ public:
 
     QWidget *cameraPanel;
     QComboBox *comboResolutions;
-    QSpinBox *spinFrameRate;
-    QSpinBox *spinGovLength;
-    QSpinBox *spinBitrate;
+    SpinBox *spinFrameRate;
+    SpinBox *spinGovLength;
+    SpinBox *spinBitrate;
+    QLabel *lblResolutions;
+    QLabel *lblFrameRate;
+    QLabel *lblGovLength;
+    QLabel *lblBitrate;
 
     VideoUpdater *updater;
     bool updating = false;

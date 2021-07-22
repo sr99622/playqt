@@ -31,33 +31,17 @@ void Filter::filter(Frame *vp)
 
 }
 
-void Filter::initialize()
-{
-
-}
-
-void Filter::deactivate()
-{
-
-}
-
-void Filter::saveSettings(QSettings *settings)
-{
-
-}
-
-void Filter::restoreSettings(QSettings *settings)
-{
-
-}
-
 void Filter::keyPressEvent(QKeyEvent *event)
 {
 
 }
 
-
 void Filter::keyReleaseEvent(QKeyEvent *event)
+{
+
+}
+
+void Filter::autoSave()
 {
 
 }

@@ -12,7 +12,6 @@
 #include "Utilities/waitbox.h"
 #include "Utilities/filesetter.h"
 #include "Utilities/numbertextbox.h"
-#include "Utilities/guichangemonitor.h"
 #include "yolo_v2_class.hpp"
 
 class DarknetLoader : public QObject, public QRunnable
@@ -56,7 +55,6 @@ signals:
 
 };
 
-
 class Darknet : public Filter
 {
     Q_OBJECT
@@ -64,9 +62,7 @@ class Darknet : public Filter
 public:
     Darknet(QMainWindow *parent);
     void filter(Frame *vp) override;
-    void initialize() override;
-    void saveSettings(QSettings *settings) override;
-    void restoreSettings(QSettings *settings) override;
+    void autoSave() override;
 
     QString getName(int obj_id) const;
     QSize getModelDimensions();
@@ -82,7 +78,6 @@ public:
     NumberTextBox *modelHeight;
     QPushButton *setDims;
     QSlider *sldrThreshold;
-    GuiChangeMonitor *sliderMonitor = nullptr;
     QLabel *lblThreshold;
     float threshold = 0.2f;
 
@@ -109,7 +104,6 @@ public slots:
     void clearModel();
     void clearSettings();
     void setThreshold(int);
-    void saveThreshold();
     void draw(int, const YUVColor&);
 
 };

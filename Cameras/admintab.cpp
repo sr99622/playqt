@@ -46,17 +46,21 @@ AdminTab::AdminTab(QWidget *parent)
     buttonHardReset->setEnabled(false);
     checkEnableReboot = new QCheckBox("Enable Reboot");
     checkEnableReset = new QCheckBox("Enable Reset");
+
+    lblCameraName = new QLabel("Camera Name");
+    lblAdminPassword = new QLabel("Admin Password");
+
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(new QLabel("Camera Name"),     0, 0, 1, 1);
-    layout->addWidget(textCameraName,                0, 1, 1, 2);
-    layout->addWidget(new QLabel("Admin Password"),  1, 0, 1, 1);
-    layout->addWidget(textAdminPassword,             1, 1, 1, 2);
-    layout->addWidget(buttonReboot,                  2, 0, 1, 1);
-    layout->addWidget(buttonSyncTime,                2, 1, 1, 1);
-    layout->addWidget(buttonHardReset,               2, 2, 1, 1);
-    layout->addWidget(checkEnableReboot,             3, 0, 1, 1);
-    layout->addWidget(buttonLaunchBrowser,           3, 1, 1, 1);
-    layout->addWidget(checkEnableReset,              3, 2, 1, 1);
+    layout->addWidget(lblCameraName,        0, 0, 1, 1);
+    layout->addWidget(textCameraName,       0, 1, 1, 2);
+    layout->addWidget(lblAdminPassword,     1, 0, 1, 1);
+    layout->addWidget(textAdminPassword,    1, 1, 1, 2);
+    layout->addWidget(buttonReboot,         2, 0, 1, 1);
+    layout->addWidget(buttonSyncTime,       2, 1, 1, 1);
+    layout->addWidget(buttonHardReset,      2, 2, 1, 1);
+    layout->addWidget(checkEnableReboot,    3, 0, 1, 1);
+    layout->addWidget(buttonLaunchBrowser,  3, 1, 1, 1);
+    layout->addWidget(checkEnableReset,     3, 2, 1, 1);
     setLayout(layout);
 
     connect(buttonLaunchBrowser, SIGNAL(clicked()), this, SLOT(launchBrowserClicked()));
@@ -94,6 +98,8 @@ void AdminTab::setActive(bool active)
     buttonSyncTime->setEnabled(active);
     checkEnableReboot->setEnabled(active);
     checkEnableReset->setEnabled(active);
+    lblCameraName->setEnabled(active);
+    lblAdminPassword->setEnabled(active);
 }
 
 bool AdminTab::hasBeenEdited()

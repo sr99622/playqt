@@ -38,16 +38,22 @@ NetworkTab::NetworkTab(QWidget *parent)
     textDefaultGateway->setMaximumWidth(150);
     textDNS = new QLineEdit();
     textDNS->setMaximumWidth(150);
+
+    lblIPAddress = new QLabel("IP Address");
+    lblSubnetMask = new QLabel("Subnet Mask");
+    lblDefaultGateway = new QLabel("Gateway");
+    lblDNS = new QLabel("Primary DNS");
+
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(checkDHCP, 0, 1, 1, 1);
-    layout->addWidget(new QLabel("IP Address"), 1, 0, 1, 1);
-    layout->addWidget(textIPAddress, 1, 1, 1, 1);
-    layout->addWidget(new QLabel("Subnet Mask"), 2, 0, 1, 1);
-    layout->addWidget(textSubnetMask, 2, 1, 1, 1);
-    layout->addWidget(new QLabel("Gateway"), 3, 0, 1, 1);
-    layout->addWidget(textDefaultGateway, 3, 1, 1, 1);
-    layout->addWidget(new QLabel("Primary DNS"), 4, 0, 1, 1);
-    layout->addWidget(textDNS, 4, 1, 1, 1);
+    layout->addWidget(checkDHCP,           0, 1, 1, 1);
+    layout->addWidget(lblIPAddress,        1, 0, 1, 1);
+    layout->addWidget(textIPAddress,       1, 1, 1, 1);
+    layout->addWidget(lblSubnetMask,       2, 0, 1, 1);
+    layout->addWidget(textSubnetMask,      2, 1, 1, 1);
+    layout->addWidget(lblDefaultGateway,   3, 0, 1, 1);
+    layout->addWidget(textDefaultGateway,  3, 1, 1, 1);
+    layout->addWidget(lblDNS,              4, 0, 1, 1);
+    layout->addWidget(textDNS,             4, 1, 1, 1);
     setLayout(layout);
 
     connect(checkDHCP, SIGNAL(clicked()), this, SLOT(dhcpChecked()));
@@ -79,6 +85,10 @@ void NetworkTab::setActive(bool active)
     textSubnetMask->setEnabled(active);
     textDefaultGateway->setEnabled(active);
     textDNS->setEnabled(active);
+    lblIPAddress->setEnabled(active);
+    lblSubnetMask->setEnabled(active);
+    lblDefaultGateway->setEnabled(active);
+    lblDNS->setEnabled(active);
 }
 
 bool NetworkTab::hasBeenEdited()

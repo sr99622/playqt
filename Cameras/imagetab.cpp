@@ -33,15 +33,21 @@ ImageTab::ImageTab(QWidget *parent)
     sliderSaturation = new QSlider(Qt::Horizontal);
     sliderContrast = new QSlider(Qt::Horizontal);
     sliderSharpness = new QSlider(Qt::Horizontal);
+
+    lblBrightness = new QLabel("Brightness");
+    lblSaturation = new QLabel("Saturation");
+    lblContrast = new QLabel("Contrast");
+    lblSharpness = new QLabel("Sharpness");
+
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(new QLabel("Brightness"), 0, 0, 1, 1);
-    layout->addWidget(sliderBrightness, 0, 1, 1, 1);
-    layout->addWidget(new QLabel("Saturation"), 1, 0, 1, 1);
-    layout->addWidget(sliderSaturation, 1, 1, 1, 1);
-    layout->addWidget(new QLabel("Contrast"), 2, 0, 1, 1);
-    layout->addWidget(sliderContrast, 2, 1, 1, 1);
-    layout->addWidget(new QLabel("Sharpness"), 3, 0, 1, 1);
-    layout->addWidget(sliderSharpness, 3, 1, 1, 1);
+    layout->addWidget(lblBrightness,     0, 0, 1, 1);
+    layout->addWidget(sliderBrightness,  0, 1, 1, 1);
+    layout->addWidget(lblSaturation,     1, 0, 1, 1);
+    layout->addWidget(sliderSaturation,  1, 1, 1, 1);
+    layout->addWidget(lblContrast,       2, 0, 1, 1);
+    layout->addWidget(sliderContrast,    2, 1, 1, 1);
+    layout->addWidget(lblSharpness,      3, 0, 1, 1);
+    layout->addWidget(sliderSharpness,   3, 1, 1, 1);
     setLayout(layout);
 
     connect(sliderBrightness, SIGNAL(valueChanged(int)), this, SLOT(onValueChanged(int)));
@@ -72,6 +78,10 @@ void ImageTab::setActive(bool active)
     sliderSaturation->setEnabled(active);
     sliderContrast->setEnabled(active);
     sliderSharpness->setEnabled(active);
+    lblBrightness->setEnabled(active);
+    lblSaturation->setEnabled(active);
+    lblContrast->setEnabled(active);
+    lblSharpness->setEnabled(active);
 }
 
 bool ImageTab::hasBeenEdited()

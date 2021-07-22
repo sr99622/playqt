@@ -41,8 +41,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     }
 
     setWindowTitle(title);
-    status = new QStatusBar(this);
-    setStatusBar(status);
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(poll()));
@@ -63,14 +61,13 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         style.replace("foreground_medium", "#9DADC2");
         style.replace("foreground_dark",   "#808D9E");
         style.replace("selection_light",   "#FFFFFF");
-        style.replace("selection_medium",  "#4A8391");
-        style.replace("selection_dark",    "#2C5059");
+        style.replace("selection_medium",  "#DDEEFF");
+        style.replace("selection_dark",    "#306294");
         setStyleSheet(style);
     }
 
 
     tabWidget = new QTabWidget(this);
-    //tabWidget->setTabPosition(QTabWidget::East);
     tabWidget->setMinimumWidth(100);
 
     videoPanel = new FilePanel(this, "Videos", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
@@ -83,7 +80,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     tabWidget->addTab(picturePanel, tr("Pictures"));
     tabWidget->addTab(audioPanel, tr("Audio"));
     tabWidget->addTab(cameraPanel, tr("Cameras"));
-    //tabWidget->addTab(streamPanel, tr("Streams"));
     mainPanel = new MainPanel(this);
 
     splitter = new QSplitter(Qt::Orientation::Horizontal, this);
@@ -93,11 +89,14 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         splitter->restoreState(settings->value(splitterKey).toByteArray());
     connect(splitter, SIGNAL(splitterMoved(int, int)), this, SLOT(splitterMoved(int, int)));
 
+    //tabWidget->tabBar()->setMinimumWidth(tabWidget->geometry().width());
+    //tabWidget->tabBar()->setDrawBase(true);
+
+
     setCentralWidget(splitter);
 
     messageBox = new MessageBox(this);
     filterDialog = new FilterDialog(this);
-    //filterDialog->panel->restoreSettings(settings);
     optionDialog = new OptionDialog(this);
     parameterDialog = new ParameterDialog(this);
     parameterDialog->panel->restoreSettings(settings);
@@ -166,8 +165,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     flush_pkt.data = (uint8_t*)&flush_pkt;
     e = new EventHandler(this);
     timer->start();
-
-    //viewerDialog = new ViewerDialog(this);
 
     int startup_volume = av_clip(co->startup_volume, 0, 128);
     if (startup_volume == 0)
@@ -315,7 +312,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     //filterDialog->closeEvent(event);
 
     autoSave();
-    filterDialog->panel->engageFilter->setChecked(false);
+    filterDialog->getPanel()->engageFilter->setChecked(false);
 
     SDL_Event sdl_event;
     sdl_event.type = FF_QUIT_EVENT;
@@ -367,7 +364,7 @@ void MainWindow::menuAction(QAction *action)
     else if (action->text() == "&Filters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_F))
         if (filterDialog->isVisible()) filterDialog->hide(); else filterDialog->show();
     else if (action->text() == "&Engage" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_E))
-        filterDialog->panel->engageFilter->setChecked(!filterDialog->panel->engageFilter->isChecked());
+        (filterDialog->getPanel()->engageFilter->setChecked(!filterDialog->getPanel()->engageFilter->isChecked()));
     else if (action->text() == "&Set Parameters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_S))
         if (parameterDialog->isVisible()) parameterDialog->hide(); else parameterDialog->show();
     else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))

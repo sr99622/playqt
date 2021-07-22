@@ -21,14 +21,11 @@
 
 #include "filterchain.h"
 #include "mainwindow.h"
-#include <chrono>
-
-using namespace std::chrono;
 
 FilterChain::FilterChain(QMainWindow *parent)
 {
     mainWindow = parent;
-    panel = MW->filterDialog->panel;
+    //panel = MW->filterDialog->panel;
 }
 
 FilterChain::~FilterChain()
@@ -38,6 +35,15 @@ FilterChain::~FilterChain()
 void FilterChain::process(Frame *vp)
 {
     auto start = high_resolution_clock::now();
+
+    if (!counting) {
+        t1 = start;
+        count = 0;
+        counting = true;
+    }
+    else {
+        count++;
+    }
 
     this->vp = vp;
 
@@ -53,7 +59,9 @@ void FilterChain::process(Frame *vp)
         }
     }
 
-    if (MW->filterDialog->panel->engageFilter->isChecked()) {
+    FilterPanel *panel = MW->filterDialog->getPanel();
+
+    if (panel->engageFilter->isChecked()) {
         for (int i = 0; i < panel->leftModel->filters.size(); i++)
             panel->leftModel->filters[i]->filter(vp);
     }
@@ -61,13 +69,26 @@ void FilterChain::process(Frame *vp)
     auto stop = high_resolution_clock::now();
     long msec = duration_cast<milliseconds>(stop - start).count();
 
-    if (!k.initialized)
-        k.initialize(msec, 0, 0.2f, 0.1f);
+    long interval = duration_cast<milliseconds>(stop - t1).count();
+    if (interval > 1000) {
+        counting = false;
+        float fps = 1000 * count / (float)interval;
+        if (!k_fps.initialized)
+            k_fps.initialize(fps, 0, 0.2f, 0.1f);
+        else
+            k_fps.measure(fps, interval);
+        char buf[64];
+        sprintf(buf, "%0.2f", max(k_fps.xh00, 0.0f));
+        panel->fps->setText(buf);
+    }
+
+    if (!k_time.initialized)
+        k_time.initialize(msec, 0, 0.2f, 0.1f);
     else
-        k.measure(msec, 1);
+        k_time.measure(msec, 1);
 
     char buf[64];
-    sprintf(buf, "%0.0f", max(k.xh00, 0.0f));
-    MW->filterDialog->panel->filterTime->setText(buf);
+    sprintf(buf, "%0.0f", max(k_time.xh00, 0.0f));
+    panel->filterTime->setText(buf);
 }
 

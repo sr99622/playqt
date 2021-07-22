@@ -32,13 +32,14 @@
 #include <QCheckBox>
 #include <QLabel>
 
-class FilterPanel : public QWidget
+class FilterPanel : public Panel
 {
     Q_OBJECT
 
 public:
     FilterPanel(QMainWindow *parent);
     ~FilterPanel() override;
+    void autoSave() override;
     void idle();
     void saveSettings(QSettings *settings);
     void restoreSettings(QSettings *settings);
@@ -57,9 +58,9 @@ public:
     QPushButton *moveUpButton;
     QPushButton *moveDownButton;
     QTabWidget *tabWidget;
-    //QWidget *bottomPanel;
     QCheckBox *engageFilter;
     QLabel *filterTime;
+    QLabel *fps;
 
     QVector<Filter*> filters;
 
@@ -68,11 +69,9 @@ public slots:
     void moveRight();
     void moveUp();
     void moveDown();
-    void initializeFilters();
     void engage(int);
     void panelShow(int);
     void tabChanged(int);
-    //void panelHide(int index);
 
 };
 
@@ -85,15 +84,9 @@ public:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
-    int getDefaultWidth() override;
-    int getDefaultHeight() override;
-    QString getSettingsKey() const override;
-    FilterPanel *panel;
-    QMainWindow *mainWindow;
+    FilterPanel *getPanel();
 
-    const int defaultWidth = 520;
-    const int defaultHeight = 600;
-    const QString settingsKey = "FilterPanel/geometry";
+    QMainWindow *mainWindow;
 
 };
 

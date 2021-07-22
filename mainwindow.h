@@ -23,6 +23,7 @@
 #include <QToolTip>
 #include <QFileDialog>
 #include <QColorDialog>
+#include <QScrollBar>
 
 #include <iostream>
 #include <string>
@@ -129,7 +130,6 @@ public:
     QTabWidget *tabWidget;
     MessageBox *messageBox;
     ParameterDialog *parameterDialog;
-    QStatusBar *status;
 
     FilterDialog *filterDialog;
     FilterChain *filterChain;

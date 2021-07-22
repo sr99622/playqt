@@ -28,6 +28,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QCheckBox>
+#include <QLabel>
 
 class AdminTab : public CameraDialogTab
 {
@@ -44,6 +45,9 @@ public:
     QPushButton *buttonSyncTime;
     QCheckBox *checkEnableReboot;
     QCheckBox *checkEnableReset;
+
+    QLabel *lblCameraName;
+    QLabel *lblAdminPassword;
 
     QWidget *cameraPanel;
 

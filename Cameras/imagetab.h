@@ -26,6 +26,7 @@
 #include "onvifmanager.h"
 
 #include <QSlider>
+#include <QLabel>
 
 class ImageTab : public CameraDialogTab
 {
@@ -38,6 +39,11 @@ public:
     QSlider *sliderSaturation;
     QSlider *sliderContrast;
     QSlider *sliderSharpness;
+
+    QLabel *lblBrightness;
+    QLabel *lblSaturation;
+    QLabel *lblContrast;
+    QLabel *lblSharpness;
 
     QWidget *cameraPanel;
 

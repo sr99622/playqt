@@ -27,6 +27,7 @@
 #include <QSettings>
 
 #include "Ffplay/Frame.h"
+#include "Utilities/panel.h"
 
 class Filter : public QObject
 {
@@ -36,15 +37,13 @@ public:
     Filter();
 
     virtual void filter(Frame *vp);
-    virtual void initialize();
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);
-    virtual void deactivate();
-    virtual void saveSettings(QSettings *settings);
-    virtual void restoreSettings(QSettings *settings);
+    virtual void autoSave();
 
     QString name;
-    QWidget *panel;
+    Panel *panel;
+    bool changed = false;
 };
 
 #endif // FILTER_H

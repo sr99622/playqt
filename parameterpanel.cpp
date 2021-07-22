@@ -68,6 +68,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     mainWindow = parent;
 
     options = new QComboBox();
+    options->setPlaceholderText("-");
     options->setFocusPolicy(Qt::NoFocus);
 
     for (int i = 0; i < NUM_OPTIONS; i++) {

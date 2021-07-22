@@ -27,6 +27,7 @@
 
 #include <QCheckBox>
 #include <QLineEdit>
+#include <QLabel>
 
 class NetworkTab : public CameraDialogTab
 {
@@ -40,6 +41,11 @@ public:
     QLineEdit *textSubnetMask;
     QLineEdit *textDefaultGateway;
     QLineEdit *textDNS;
+
+    QLabel *lblIPAddress;
+    QLabel *lblSubnetMask;
+    QLabel *lblDefaultGateway;
+    QLabel *lblDNS;
 
     QWidget *cameraPanel;
 

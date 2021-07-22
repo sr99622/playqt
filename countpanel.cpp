@@ -3,20 +3,11 @@
 
 CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
 {
-    darknet = (Darknet*)MW->filterDialog->panel->getFilterByName("Darknet");
-    /*
-    ifstream file(darknet->names->filename.toLatin1().data());
-    if (file.is_open()) {
-        names.clear();
-        for (string line; getline(file, line);)
-            names.push_back(line.c_str());
-    }
-    */
+    darknet = (Darknet*)MW->filterDialog->getPanel()->getFilterByName("Darknet");
+    connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
 
     for (int i = 0; i < darknet->obj_names.size(); i++)
         names.push_back(darknet->obj_names[i].c_str());
-
-    cout << "CountPanel::CountPanel" << endl;
 
     list = new QListWidget();
     list->addItems(names);
@@ -31,7 +22,6 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     table->setHorizontalHeaderLabels(headers);
     table->verticalHeader()->setVisible(false);
     table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
     if (MW->settings->contains(headerKey)) {
         table->horizontalHeader()->restoreState(MW->settings->value(headerKey).toByteArray());
     }
@@ -43,10 +33,7 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
 
     for (int i = 0; i < names.size(); i++) {
         ObjDrawer *objDrawer = new ObjDrawer(mainWindow, i);
-        cout << "settingsKey: " << objDrawer->getSettingsKey().toStdString() << endl;
         if (MW->settings->contains(objDrawer->getSettingsKey())) {
-            cout << "contains key: " << objDrawer->obj_id << endl;
-
             table->setRowCount(table->rowCount() + 1);
             table->setItem(table->rowCount()-1, 0, new QTableWidgetItem(names[objDrawer->obj_id], 0));
             objDrawer->restoreState(MW->settings->value(objDrawer->getSettingsKey()).toString());
@@ -58,23 +45,21 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
         }
     }
 
+    connect(table->horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this, SLOT(headerChanged(int, int, int)));
+    connect(table->horizontalHeader(), SIGNAL(sectionMoved(int, int, int)), this, SLOT(headerChanged(int, int, int)));
+    connect(list, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(itemClicked(QListWidgetItem*)));
+    connect(list, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*)));
+
     hSplit = new QSplitter(this);
     hSplit->addWidget(list);
     hSplit->addWidget(table);
     if (MW->settings->contains(hSplitKey))
         hSplit->restoreState(MW->settings->value(hSplitKey).toByteArray());
+    connect(hSplit, SIGNAL(splitterMoved(int, int)), this, SLOT(hSplitMoved(int, int)));
 
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(hSplit,  0, 0, 1, 1);
     setLayout(layout);
-
-    connect(hSplit, SIGNAL(splitterMoved(int, int)), this, SLOT(hSplitMoved(int, int)));
-    connect(list, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(itemClicked(QListWidgetItem*)));
-    connect(list, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*)));
-    connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
-    connect(table->horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this, SLOT(headerChanged(int, int, int)));
-    connect(table->horizontalHeader(), SIGNAL(sectionMoved(int, int, int)), this, SLOT(headerChanged(int, int, int)));
-
 }
 
 void CountPanel::autoSave()
@@ -221,18 +206,12 @@ QString ObjDrawer::saveState() const
     QStringList result;
     result << QString::number(obj_id) << color.name() << QString::number(show);
     QString str = result.join(seperator);
-    cout << "ObjDrawer::saveState: " << str.toStdString() << endl;
     return str;
 }
 
 void ObjDrawer::restoreState(const QString& arg)
 {
-    cout << "ObjDrawer::restoreSate: " << arg.toStdString() << endl;
-
     QStringList result = arg.split(seperator);
-
-    for (int i = 0; i < result.size(); i++)
-        cout << "result[" << i << "]: " << result[i].toStdString() << endl;
 
     obj_id = result[0].toInt();
     color = QColor(result[1]);

@@ -28,6 +28,10 @@
 #include "filterpanel.h"
 #include "Utilities/kalman.h"
 
+#include <chrono>
+
+using namespace std::chrono;
+
 class FilterChain : public QObject
 {
     Q_OBJECT
@@ -41,10 +45,11 @@ public:
     Frame *vp;
 
     QMainWindow *mainWindow;
-    FilterPanel *panel;
-    //int size = -1;
-    //bool active = true;
-    Kalman k;
+    Kalman k_time;
+    Kalman k_fps;
+    bool counting = false;
+    int count = 0;
+    high_resolution_clock::time_point t1;
 
 public slots:
     void process(Frame *vp);

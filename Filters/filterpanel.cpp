@@ -26,7 +26,7 @@
 #include "Filters/subpicture.h"
 #include "Filters/darknet.h"
 
-FilterPanel::FilterPanel(QMainWindow *parent)
+FilterPanel::FilterPanel(QMainWindow *parent) : Panel(parent)
 {
     mainWindow = parent;
 
@@ -82,15 +82,21 @@ FilterPanel::FilterPanel(QMainWindow *parent)
 
     engageFilter = new QCheckBox("Engage Filter");
     connect(engageFilter, SIGNAL(stateChanged(int)), this, SLOT(engage(int)));
+
+    QLabel *lbl01 = new QLabel("fps: ");
+    fps = new QLabel();
+
     QLabel *lbl00 = new QLabel("time (ms): ");
     filterTime = new QLabel();
 
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(viewPanel,        0, 0, 1, 4);
-    layout->addWidget(tabWidget,        1, 0, 1, 4);
+    layout->addWidget(viewPanel,        0, 0, 1, 8);
+    layout->addWidget(tabWidget,        1, 0, 1, 8);
     layout->addWidget(engageFilter,     2, 0, 1, 1);
-    layout->addWidget(lbl00,            2, 2, 1, 1, Qt::AlignRight);
-    layout->addWidget(filterTime,       2, 3, 1, 1, Qt::AlignRight);
+    layout->addWidget(lbl01,            2, 2, 1, 1);
+    layout->addWidget(fps,              2, 3, 1, 1);
+    layout->addWidget(lbl00,            2, 5, 1, 1, Qt::AlignRight);
+    layout->addWidget(filterTime,       2, 6, 1, 1, Qt::AlignRight);
     layout->setRowStretch(0, 10);
     setLayout(layout);
 
@@ -101,6 +107,13 @@ FilterPanel::~FilterPanel()
 {
     while (filters.size() > 0) {
         filters.pop_back();
+    }
+}
+
+void FilterPanel::autoSave()
+{
+    for (int i = 0; i < filters.size(); i++) {
+        filters[i]->autoSave();
     }
 }
 
@@ -144,13 +157,6 @@ void FilterPanel::restoreSettings(QSettings *settings)
                 break;
             }
         }
-    }
-}
-
-void FilterPanel::initializeFilters()
-{
-    for (int i = 0; i < filters.size(); i++) {
-        filters[i]->initialize();
     }
 }
 
@@ -334,19 +340,28 @@ FilterDialog::FilterDialog(QMainWindow *parent) : PanelDialog(parent)
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(panel);
     setLayout(layout);
+
+    defaultWidth = 520;
+    defaultHeight = 600;
+    settingsKey = "FilterDialog/geometry";
+}
+
+FilterPanel *FilterDialog::getPanel()
+{
+    return (FilterPanel*)panel;
 }
 
 void FilterDialog::closeEvent(QCloseEvent *event)
 {
-    panel->engageFilter->setChecked(false);
+    getPanel()->engageFilter->setChecked(false);
     PanelDialog::closeEvent(event);
 }
 
 void FilterDialog::keyPressEvent(QKeyEvent *event)
 {
-    Filter *filter = panel->getCurrentFilter();
+    Filter *filter = getPanel()->getCurrentFilter();
     if (filter) {
-        panel->getCurrentFilter()->keyPressEvent(event);
+        getPanel()->getCurrentFilter()->keyPressEvent(event);
     }
 
     PanelDialog::keyPressEvent(event);
@@ -354,25 +369,9 @@ void FilterDialog::keyPressEvent(QKeyEvent *event)
 
 void FilterDialog::keyReleaseEvent(QKeyEvent *event)
 {
-    Filter *filter = panel->getCurrentFilter();
+    Filter *filter = getPanel()->getCurrentFilter();
     if (filter) {
         filter->keyReleaseEvent(event);
     }
    PanelDialog::keyReleaseEvent(event);
 }
-
-int FilterDialog::getDefaultWidth()
-{
-    return defaultWidth;
-}
-
-int FilterDialog::getDefaultHeight()
-{
-    return defaultHeight;
-}
-
-QString FilterDialog::getSettingsKey() const
-{
-    return settingsKey;
-}
-

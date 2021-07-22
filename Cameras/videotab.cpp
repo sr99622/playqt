@@ -26,23 +26,44 @@
 #include <QGridLayout>
 #include <QThreadPool>
 
+SpinBox::SpinBox(QLineEdit *editor)
+{
+    setLineEdit(editor);
+}
+
 VideoTab::VideoTab(QWidget *parent)
 {
     cameraPanel = parent;
 
     comboResolutions = new QComboBox();
-    spinFrameRate = new QSpinBox();
-    spinGovLength = new QSpinBox();
-    spinBitrate = new QSpinBox();
+
+    QString style = ((MainWindow*)((CameraPanel*)cameraPanel)->mainWindow)->style;
+    QLineEdit *textBitrate = new QLineEdit();
+    textBitrate->setStyleSheet(style);
+    spinBitrate = new SpinBox(textBitrate);
+
+    QLineEdit *textFrameRate = new QLineEdit();
+    textFrameRate->setStyleSheet(style);
+    spinFrameRate = new SpinBox(textFrameRate);
+
+    QLineEdit *textGovLength = new QLineEdit();
+    textGovLength->setStyleSheet(style);
+    spinGovLength = new SpinBox(textGovLength);
+
+    lblResolutions = new QLabel("Resolution");
+    lblFrameRate = new QLabel("Frame Rate");
+    lblGovLength = new QLabel("Gov Length");
+    lblBitrate = new QLabel("Bitrate");
+
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(new QLabel("Resolution"), 0, 0, 1, 1);
-    layout->addWidget(comboResolutions,         0, 1, 1, 1);
-    layout->addWidget(new QLabel("Frame Rate"), 1, 0, 1, 1);
-    layout->addWidget(spinFrameRate,            1, 1, 1, 1);
-    layout->addWidget(new QLabel("Gov Length"), 2, 0, 1, 1);
-    layout->addWidget(spinGovLength,            2, 1, 1, 1);
-    layout->addWidget(new QLabel("Bitrate"),    3, 0, 1, 1);
-    layout->addWidget(spinBitrate,              3, 1, 1, 1);
+    layout->addWidget(lblResolutions,    0, 0, 1, 1);
+    layout->addWidget(comboResolutions,  0, 1, 1, 1);
+    layout->addWidget(lblFrameRate,      1, 0, 1, 1);
+    layout->addWidget(spinFrameRate,     1, 1, 1, 1);
+    layout->addWidget(lblGovLength,      2, 0, 1, 1);
+    layout->addWidget(spinGovLength,     2, 1, 1, 1);
+    layout->addWidget(lblBitrate,        3, 0, 1, 1);
+    layout->addWidget(spinBitrate,       3, 1, 1, 1);
     setLayout(layout);
 
     connect(comboResolutions, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
@@ -82,6 +103,10 @@ void VideoTab::setActive(bool active)
     spinFrameRate->setEnabled(active);
     spinGovLength->setEnabled(active);
     spinBitrate->setEnabled(active);
+    lblResolutions->setEnabled(active);
+    lblFrameRate->setEnabled(active);
+    lblGovLength->setEnabled(active);
+    lblBitrate->setEnabled(active);
 }
 
 void VideoTab::initialize()
