@@ -30,7 +30,7 @@ DirectorySetter::DirectorySetter(QMainWindow *parent, const QString& labelText)
     label = new QLabel(labelText);
     text = new QLineEdit();
     button = new QPushButton("...");
-    button->setMaximumWidth(40);
+    button->setMaximumWidth(30);
     connect(button, SIGNAL(clicked()), this, SLOT(selectDirectory()));
 
     QGridLayout *layout = new QGridLayout;
@@ -39,8 +39,9 @@ DirectorySetter::DirectorySetter(QMainWindow *parent, const QString& labelText)
         layout->addWidget(label,  0, 0, 1, 1);
     layout->addWidget(text,   0, 1, 1, 4);
     layout->addWidget(button, 0, 5, 1, 1);
-
+    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
+    setContentsMargins(0, 0, 0, 0);
 }
 
 void DirectorySetter::setPath(const QString& path)
@@ -60,7 +61,9 @@ void DirectorySetter::selectDirectory()
     }
 }
 
+/*
 void DirectorySetter::trimHeight()
 {
     setMaximumHeight(label->fontMetrics().boundingRect("Xy").height() * 4);
 }
+*/

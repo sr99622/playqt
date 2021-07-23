@@ -8,10 +8,9 @@ FilePanel::FilePanel(QMainWindow *parent, const QString& name, const QString& de
     this->defaultPath = defaultPath;
 
     directorySetter = new DirectorySetter(mainWindow, "");
-    directorySetter->trimHeight();
     model = new QFileSystemModel();
     model->setReadOnly(false);
-    tree = new QTreeView(this);
+    tree = new TreeView(this);
     tree->setModel(model);
 
     QGridLayout *layout = new QGridLayout();
@@ -261,4 +260,15 @@ void FilePanel::info()
 
     if (fmt_ctx != nullptr)
         avformat_close_input(&fmt_ctx);
+}
+
+TreeView::TreeView(QWidget *parent) : QTreeView(parent)
+{
+
+}
+
+
+void TreeView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    emit doubleClicked(indexAt(event->pos()));
 }

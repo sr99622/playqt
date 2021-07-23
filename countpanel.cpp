@@ -6,6 +6,9 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     darknet = (Darknet*)MW->filterDialog->getPanel()->getFilterByName("Darknet");
     connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
 
+    timer = new QTimer(this);
+    connect(this, SIGNAL(timeout()), this, SLOT(timeout()));
+
     for (int i = 0; i < darknet->obj_names.size(); i++)
         names.push_back(darknet->obj_names[i].c_str());
 
@@ -20,29 +23,26 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     QStringList headers;
     headers << tr("Name") << tr("Count") << tr("Show");
     table->setHorizontalHeaderLabels(headers);
+    //table->horizontalHeader()->setStretchLastSection(false);
+
     table->verticalHeader()->setVisible(false);
-    table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    //table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     if (MW->settings->contains(headerKey)) {
         table->horizontalHeader()->restoreState(MW->settings->value(headerKey).toByteArray());
     }
+    /*
     else {
         table->setColumnWidth(0, 60);
         table->setColumnWidth(1, 60);
         table->setColumnWidth(2, 60);
     }
+    */
 
     for (int i = 0; i < names.size(); i++) {
-        ObjDrawer *objDrawer = new ObjDrawer(mainWindow, i);
-        if (MW->settings->contains(objDrawer->getSettingsKey())) {
-            table->setRowCount(table->rowCount() + 1);
-            table->setItem(table->rowCount()-1, 0, new QTableWidgetItem(names[objDrawer->obj_id], 0));
-            objDrawer->restoreState(MW->settings->value(objDrawer->getSettingsKey()).toString());
-            list->item(objDrawer->obj_id)->setCheckState(Qt::Checked);
-            connect(objDrawer, SIGNAL(shown(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
-            connect(objDrawer, SIGNAL(colored(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
-            table->setCellWidget(table->rowCount()-1, 2, objDrawer);
-            darknet->obj_drawn[objDrawer->obj_id] = objDrawer->color;
-        }
+        ObjDrawer objDrawer(mainWindow, i);
+        if (MW->settings->contains(objDrawer.getSettingsKey()))
+            addNewLine(objDrawer.obj_id);
     }
 
     connect(table->horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this, SLOT(headerChanged(int, int, int)));
@@ -57,8 +57,39 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
         hSplit->restoreState(MW->settings->value(hSplitKey).toByteArray());
     connect(hSplit, SIGNAL(splitterMoved(int, int)), this, SLOT(hSplitMoved(int, int)));
 
+    dirSetter = new DirectorySetter(mainWindow, "Save Directory");
+    if (MW->settings->contains(dirKey))
+        dirSetter->setPath(MW->settings->value(dirKey).toString());
+    else
+        dirSetter->setPath(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+    connect(dirSetter, SIGNAL(directorySet(const QString&)), this, SLOT(setDir(const QString&)));
+
+    QGroupBox *groupBox = new QGroupBox("Set file save parameters");
+    saveEveryFrame = new QRadioButton("Save Every Frame");
+    saveOnInterval = new QRadioButton("Save on Interval");
+    saveOnInterval->setChecked(true);
+    txtInterval = new NumberTextBox();
+    QLabel *lbl01 = new QLabel("(seconds)");
+    QGridLayout *groupLayout = new QGridLayout();
+    groupLayout->addWidget(saveEveryFrame,  0, 0, 1, 1);
+    groupLayout->addWidget(saveOnInterval,  1, 0, 1, 1);
+    groupLayout->addWidget(txtInterval,     1, 1, 1, 1);
+    groupLayout->addWidget(lbl01,           1, 2, 1, 1);
+    groupBox->setLayout(groupLayout);
+
+    saveOn = new QCheckBox("Save On");
+    connect(saveOn, SIGNAL(stateChanged(int)), this, SLOT(saveOnChecked(int)));
+
+    QWidget *filePanel = new QWidget(this);
+    QGridLayout *fileLayout = new QGridLayout();
+    fileLayout->addWidget(dirSetter,   0, 0, 1, 1);
+    fileLayout->addWidget(groupBox,    1, 0, 1, 1);
+    fileLayout->addWidget(saveOn,      2, 0, 1, 1);
+    filePanel->setLayout(fileLayout);
+
     QGridLayout *layout = new QGridLayout();
-    layout->addWidget(hSplit,  0, 0, 1, 1);
+    layout->addWidget(hSplit,     0, 0, 1, 1);
+    layout->addWidget(filePanel,  1, 0, 1, 1);
     setLayout(layout);
 }
 
@@ -70,6 +101,53 @@ void CountPanel::autoSave()
         MW->settings->setValue(headerKey, table->horizontalHeader()->saveState());
         changed = false;
     }
+}
+
+void CountPanel::timeout()
+{
+    cout << "CountPanel::timeout" << endl;
+}
+
+void CountPanel::saveOnChecked(int arg)
+{
+    cout << "CountPanel::saveOnChecked" << endl;
+    if (arg) {
+        int interval = txtInterval->intValue();
+        if (interval == 0) {
+            QMessageBox::warning(this, "PlayQt", "Save on Interval must be set to continue");
+            saveOn->setChecked(false);
+            return;
+        }
+
+        file = new QFile(getTimestampFilename(), this);
+        if (!file->open(QFile::WriteOnly | QFile::Text)) {
+            QMessageBox::warning(this, "PlayQt", QString("Unable to open file:\n%1").arg(file->fileName()));
+            return;
+        }
+        QTextStream out(file);
+        for (int i = 0; i < table->rowCount(); i++) {
+            out << ", " << table->item(i, 0)->text() << ", total, avg, std dev";
+        }
+    }
+    else {
+        if (file) {
+            file->flush();
+            file->close();
+            file = nullptr;
+        }
+    }
+}
+
+void CountPanel::setDir(const QString& arg)
+{
+    cout << "CountPanel::setDir" << endl;
+    MW->settings->setValue(dirKey, arg);
+}
+
+QString CountPanel::getTimestampFilename() const
+{
+    QString result = dirSetter->directory;
+    return result.append("/").append(QDateTime::currentDateTime().toString("yyyyMMddhhmmss")).append(".txt");
 }
 
 void CountPanel::headerChanged(int arg1, int arg2, int arg3)
@@ -139,11 +217,36 @@ void CountPanel::ping(vector<bbox_t> *detections)
 
     for (const pair<int, int>& sum : sums) {
         int row = rowOf(sum.first);
-        if (row > -1) {
-            QTableWidgetItem *item = new QTableWidgetItem(QString::number(sum.second));
-            table->setItem(row, 1, item);
-        }
+        if (row > -1)
+            table->item(row, 1)->setText(QString::number(sum.second));
     }
+
+    for (int i = 0; i < table->rowCount(); i++) {
+        if (indexForSums(idFromName(table->item(i, 0)->text())) < 0)
+            table->item(i, 1)->setText("0");
+    }
+}
+
+void CountPanel::addNewLine(int obj_id)
+{
+    ObjDrawer *objDrawer = new ObjDrawer(mainWindow, obj_id);
+    table->setRowCount(table->rowCount() + 1);
+    table->setRowHeight(table->rowCount()-1, 17);
+    QTableWidgetItem *name = new QTableWidgetItem(names[objDrawer->obj_id]);
+    name->setFlags(name->flags() & ~Qt::ItemIsEditable);
+    table->setItem(table->rowCount()-1, 0, name);
+    QTableWidgetItem *sum = new QTableWidgetItem("0");
+    sum->setTextAlignment(Qt::AlignRight);
+    sum->setFlags(sum->flags() & ~Qt::ItemIsEditable);
+    table->setItem(table->rowCount()-1, 1, sum);
+    if (MW->settings->contains(objDrawer->getSettingsKey()))
+        objDrawer->restoreState(MW->settings->value(objDrawer->getSettingsKey()).toString());
+    list->item(objDrawer->obj_id)->setCheckState(Qt::Checked);
+    connect(objDrawer, SIGNAL(shown(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
+    connect(objDrawer, SIGNAL(colored(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
+    table->setCellWidget(table->rowCount()-1, 2, objDrawer);
+    if (objDrawer->show)
+        darknet->obj_drawn[objDrawer->obj_id] = objDrawer->color;
 }
 
 void CountPanel::itemChanged(QListWidgetItem *item)
@@ -153,13 +256,7 @@ void CountPanel::itemChanged(QListWidgetItem *item)
     int obj_id = idFromName(name);
 
     if (item->checkState()) {
-        table->setRowCount(table->rowCount() + 1);
-        table->setItem(table->rowCount()-1, 0, new QTableWidgetItem(name, 0));
-        ObjDrawer *objDrawer = new ObjDrawer(mainWindow, obj_id);
-        connect(objDrawer, SIGNAL(shown(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
-        connect(objDrawer, SIGNAL(colored(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
-        table->setCellWidget(table->rowCount()-1, 2, objDrawer);
-        MW->settings->setValue(objDrawer->getSettingsKey(), objDrawer->saveState());
+        addNewLine(obj_id);
     }
     else {
         int index = rowOf(obj_id);
@@ -185,20 +282,20 @@ ObjDrawer::ObjDrawer(QMainWindow *parent, int obj_id)
     this->obj_id = obj_id;
     color = Qt::green;
 
-    checkBox = new QCheckBox("show");
-    button = new QPushButton();
-    button->setStyleSheet(getButtonStyle());
-    button->setMaximumWidth(button->fontMetrics().boundingRect("XXX").width());
-    button->setMaximumHeight(button->fontMetrics().boundingRect("XXX").width());
-    button->setCursor(Qt::PointingHandCursor);
-    QHBoxLayout *layout = new QHBoxLayout();
-    layout->addWidget(checkBox);
-    layout->addWidget(button);
-    layout->setContentsMargins(0, 0, 0, 0);
+    chkShow = new QCheckBox();
+    btnColor = new QPushButton();
+    btnColor->setStyleSheet(getButtonStyle());
+    btnColor->setMaximumWidth(15);
+    btnColor->setMaximumHeight(15);
+    btnColor->setCursor(Qt::PointingHandCursor);
+    QGridLayout *layout = new QGridLayout();
+    layout->addWidget(chkShow, 0, 0, 1, 1, Qt::AlignRight);
+    layout->addWidget(btnColor,   0, 1, 1, 1, Qt::AlignRight);
+    layout->setContentsMargins(10, 0, 10, 0);
     setLayout(layout);
 
-    connect(checkBox, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
-    connect(button, SIGNAL(clicked()), this, SLOT(buttonPressed()));
+    connect(chkShow, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
+    connect(btnColor, SIGNAL(clicked()), this, SLOT(buttonPressed()));
 }
 
 QString ObjDrawer::saveState() const
@@ -220,8 +317,8 @@ void ObjDrawer::restoreState(const QString& arg)
     else
         show = false;
 
-    checkBox->setChecked(show);
-    button->setStyleSheet(getButtonStyle());
+    chkShow->setChecked(show);
+    btnColor->setStyleSheet(getButtonStyle());
 }
 
 QString ObjDrawer::getSettingsKey() const
@@ -248,7 +345,7 @@ void ObjDrawer::stateChanged(int state)
 void ObjDrawer::buttonPressed()
 {
     color = QColorDialog::getColor(color, MW->countDialog, "PlayQt");
-    button->setStyleSheet(getButtonStyle());
+    btnColor->setStyleSheet(getButtonStyle());
     MW->settings->setValue(getSettingsKey(), saveState());
 
     if (show)

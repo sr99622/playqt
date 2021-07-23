@@ -82,6 +82,10 @@ QHeaderView::section:first {
     border-left : 0;
 }
 
+QTableWidget::item {
+    selection-background-color : background_dark;
+}
+
 QPushButton { 
     background-color : background_light; 
     color : foreground_light;
@@ -180,8 +184,6 @@ QSpinBox::down-button:hover {
 QSpinBox::down-button:pressed {
     image : url(:branch_open.png);
 }
-
-
 
 QComboBox {
     border : 1px solid foreground_dark;

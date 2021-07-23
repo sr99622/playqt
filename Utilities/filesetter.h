@@ -16,7 +16,6 @@ public:
     FileSetter(QMainWindow *parent, const QString& labelText, const QString& filter);
     void setPath(const QString& path);
     void setPath();
-    void trimHeight();
 
     QLabel *label;
     QLineEdit *text;

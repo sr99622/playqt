@@ -35,7 +35,7 @@ class DirectorySetter : public QWidget
 public:
     DirectorySetter(QMainWindow *parent, const QString& labelText);
     void setPath(const QString& path);
-    void trimHeight();
+    //void trimHeight();
 
     QLabel *label;
     QLineEdit *text;

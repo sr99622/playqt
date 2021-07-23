@@ -8,18 +8,15 @@ Darknet::Darknet(QMainWindow *parent)
     panel = new Panel(mainWindow);
 
     names = new FileSetter(mainWindow, "Names", "Names(*.names)");
-    names->trimHeight();
     names->setPath(MW->settings->value(namesKey, "").toString());
     setNames(names->filename);
     connect(names, SIGNAL(fileSet(const QString&)), this, SLOT(setNames(const QString&)));
 
     weights = new FileSetter(mainWindow, "Weight", "Weights(*.weights)");
-    weights->trimHeight();
     weights->setPath(MW->settings->value(weightsKey, "").toString());
     connect(weights, SIGNAL(fileSet(const QString&)), this, SLOT(setWeights(const QString&)));
 
     cfg = new FileSetter(mainWindow, "Config", "Config(*.cfg)");
-    cfg->trimHeight();
     cfg->setPath(MW->settings->value(cfgKey, "").toString());
     connect(cfg, SIGNAL(fileSet(const QString&)), this, SLOT(setCfg(const QString&)));
 
@@ -40,6 +37,7 @@ Darknet::Darknet(QMainWindow *parent)
     }
 
     setDims = new QPushButton("Set");
+    setDims->setMaximumWidth(50);
     connect(setDims, SIGNAL(clicked()), this, SLOT(setModelDimensions()));
     setDims->setEnabled(false);
     QGroupBox *resolution = new QGroupBox("Model Resolution");

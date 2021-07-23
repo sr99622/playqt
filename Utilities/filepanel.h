@@ -10,6 +10,15 @@
 #include "Utilities/directorysetter.h"
 #include "Utilities/avexception.h"
 
+class TreeView : public QTreeView
+{
+
+public:
+    TreeView(QWidget *parent);
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+
+};
+
 class FilePanel : public QWidget
 {
     Q_OBJECT
@@ -23,7 +32,7 @@ public:
     QMainWindow *mainWindow;
     DirectorySetter *directorySetter;
     QFileSystemModel *model;
-    QTreeView *tree;
+    TreeView *tree;
     QMenu *menu;
     AVExceptionHandler av;
     QString name;

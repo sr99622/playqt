@@ -5,7 +5,12 @@
 #include <QListWidget>
 #include <QTableWidget>
 #include <QSplitter>
+#include <QRadioButton>
+#include <QTimer>
+#include <QFile>
 #include "Utilities/paneldialog.h"
+#include "Utilities/directorysetter.h"
+#include "Utilities/numbertextbox.h"
 #include "Filters/darknet.h"
 
 class ObjDrawer : public QWidget
@@ -20,11 +25,11 @@ public:
     void restoreState(const QString& arg);
 
     QMainWindow *mainWindow;
-    QCheckBox *checkBox;
-    QPushButton *button;
+    QCheckBox *chkShow;
+    QPushButton *btnColor;
     int obj_id;
     QColor color;
-    bool show;
+    bool show = false;
 
     const QString seperator = "\n";
 
@@ -48,15 +53,25 @@ public:
     int indexForSums(int obj_id);
     int rowOf(int obj_id);
     int idFromName(const QString& name);
+    void addNewLine(int obj_id);
+    QString getTimestampFilename() const;
 
     QStringList names;
     QListWidget *list;
     QTableWidget *table;
     QSplitter *hSplit;
+    DirectorySetter *dirSetter;
+    QRadioButton *saveEveryFrame;
+    QRadioButton *saveOnInterval;
+    NumberTextBox *txtInterval;
+    QCheckBox *saveOn;
+    QTimer *timer;
+    QFile *file = nullptr;
     Darknet *darknet;
 
     QString headerKey = "CountPanel/header";
     QString hSplitKey = "CountPanel/hSplit";
+    QString dirKey    = "CountPanel/dir";
 
     vector<pair<int, int>> sums;
     vector<pair<int, QCheckBox*>> showObjs;
@@ -68,6 +83,9 @@ public slots:
     void hSplitMoved(int, int);
     void ping(vector<bbox_t>*);
     void headerChanged(int, int, int);
+    void setDir(const QString&);
+    void saveOnChecked(int);
+    void timeout();
 
 };
 
