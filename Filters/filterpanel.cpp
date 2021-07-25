@@ -49,15 +49,19 @@ FilterPanel::FilterPanel(QMainWindow *parent) : Panel(parent)
     connect(rightView, SIGNAL(doubleClick(QMouseEvent*)), this, SLOT(moveLeft()));
     connect(rightView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), rightModel, SLOT(onSelectedItemsChanged(QItemSelection, QItemSelection)));
 
-    moveRightButton = new QPushButton(">");
-    moveLeftButton = new QPushButton("<");
-
     moveUpButton = new QPushButton("^");
-    moveUpButton->setMaximumWidth(30);
-    moveUpButton->setMinimumHeight(70);
+    //moveUpButton->setMaximumWidth(30);
+    moveUpButton->setMinimumHeight(40);
     moveDownButton = new QPushButton("v");
-    moveDownButton->setMaximumWidth(30);
-    moveDownButton->setMinimumHeight(70);
+    //moveDownButton->setMaximumWidth(30);
+    moveDownButton->setMinimumHeight(40);
+
+    moveRightButton = new QPushButton(">");
+    moveRightButton->setMinimumWidth(42);
+    moveRightButton->setMaximumHeight(17);
+    moveLeftButton = new QPushButton("<");
+    moveLeftButton->setMinimumWidth(42);
+    moveLeftButton->setMaximumHeight(17);
 
     connect(moveLeftButton, SIGNAL(clicked()), this, SLOT(moveLeft()));
     connect(moveRightButton, SIGNAL(clicked()), this, SLOT(moveRight()));
@@ -66,7 +70,7 @@ FilterPanel::FilterPanel(QMainWindow *parent) : Panel(parent)
 
     QGridLayout *viewLayout = new QGridLayout;
     viewLayout->setAlignment(Qt::AlignCenter);
-    QWidget *viewPanel = new QWidget;
+    viewLayout->setContentsMargins(0, 0, 0, 8);
     viewLayout->addWidget(moveRightButton,     0, 1, 1, 1, Qt::AlignCenter);
     viewLayout->addWidget(moveLeftButton,      0, 2, 1, 1, Qt::AlignCenter);
     viewLayout->addWidget(moveUpButton,        1, 0, 1, 1);
@@ -74,6 +78,8 @@ FilterPanel::FilterPanel(QMainWindow *parent) : Panel(parent)
     viewLayout->addWidget(leftView,            1, 1, 4, 1);
     viewLayout->addWidget(rightView,           1, 2, 4, 1);
     viewLayout->setRowStretch(3, 10);
+
+    QWidget *viewPanel = new QWidget;
     viewPanel->setLayout(viewLayout);
 
     tabWidget = new QTabWidget;

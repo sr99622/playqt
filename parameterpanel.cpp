@@ -85,6 +85,10 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     QPushButton *set = new QPushButton("Set");
     QPushButton *clear = new QPushButton("Clear");
     QPushButton *apply = new QPushButton("Apply");
+    int width = apply->fontMetrics().boundingRect("WWWWW").width();
+    set->setMinimumWidth(width);
+    clear->setMinimumWidth(width);
+    apply->setMinimumWidth(width);
     set->setFocusPolicy(Qt::NoFocus);
     clear->setFocusPolicy(Qt::NoFocus);
 

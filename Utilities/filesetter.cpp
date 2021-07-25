@@ -17,14 +17,13 @@ FileSetter::FileSetter(QMainWindow *parent, const QString& labelText, const QStr
     connect(button, SIGNAL(clicked()), this, SLOT(selectFile()));
 
     QGridLayout *layout = new QGridLayout;
-    layout->addWidget(label,  0, 0, 1, 1);
+    layout->setContentsMargins(0, 0, 0, 0);
+    if (label->text() != "")
+        layout->addWidget(label,  0, 0, 1, 1);
     layout->addWidget(text,   0, 1, 1, 1);
     layout->addWidget(button, 0, 2, 1, 1);
-
     layout->setContentsMargins(0, 0, 0, 0);
-
     setLayout(layout);
-
     setContentsMargins(0, 0, 0, 0);
 }
 
@@ -46,7 +45,6 @@ void FileSetter::selectFile()
         default_path = QDir::homePath();
 
     QString path = QFileDialog::getOpenFileName(mainWindow, label->text(), default_path, filter);
-    cout << "test 1" << endl;
     if (path.length() > 0) {
         filename = path;
         text->setText(filename);

@@ -69,9 +69,10 @@ public:
     QFile *file = nullptr;
     Darknet *darknet;
 
-    QString headerKey = "CountPanel/header";
-    QString hSplitKey = "CountPanel/hSplit";
-    QString dirKey    = "CountPanel/dir";
+    QString headerKey   = "CountPanel/header";
+    QString hSplitKey   = "CountPanel/hSplit";
+    QString dirKey      = "CountPanel/dir";
+    QString intervalKey = "CountPanel/interval";
 
     vector<pair<int, int>> sums;
     vector<pair<int, QCheckBox*>> showObjs;
@@ -85,6 +86,7 @@ public slots:
     void headerChanged(int, int, int);
     void setDir(const QString&);
     void saveOnChecked(int);
+    void intervalEdited();
     void timeout();
 
 };

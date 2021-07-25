@@ -37,5 +37,11 @@
         <file>small_arrow_left_hi.png</file>
         <file>branch_open_lo.png</file>
         <file>small_arrow_up_lo.png</file>
+        <file>radio-off.png</file>
+        <file>radio-off_hi.png</file>
+        <file>radio-off_lo.png</file>
+        <file>radio-on.png</file>
+        <file>radio-on_hi.png</file>
+        <file>radio-on_lo.png</file>
     </qresource>
 </RCC>

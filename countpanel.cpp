@@ -69,6 +69,8 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     saveOnInterval = new QRadioButton("Save on Interval");
     saveOnInterval->setChecked(true);
     txtInterval = new NumberTextBox();
+    txtInterval->setText(MW->settings->value(intervalKey, "60").toString());
+    connect(txtInterval, SIGNAL(editingFinished()), this, SLOT(intervalEdited()));
     QLabel *lbl01 = new QLabel("(seconds)");
     QGridLayout *groupLayout = new QGridLayout();
     groupLayout->addWidget(saveEveryFrame,  0, 0, 1, 1);
@@ -110,12 +112,12 @@ void CountPanel::timeout()
 
 void CountPanel::saveOnChecked(int arg)
 {
-    cout << "CountPanel::saveOnChecked" << endl;
+    cout << "CountPanel::saveOnChecked: " << arg << endl;
     if (arg) {
         int interval = txtInterval->intValue();
         if (interval == 0) {
             QMessageBox::warning(this, "PlayQt", "Save on Interval must be set to continue");
-            saveOn->setChecked(false);
+            saveOn->setCheckState(Qt::Unchecked);
             return;
         }
 
@@ -136,6 +138,11 @@ void CountPanel::saveOnChecked(int arg)
             file = nullptr;
         }
     }
+}
+
+void CountPanel::intervalEdited()
+{
+    MW->settings->setValue(intervalKey, txtInterval->text());
 }
 
 void CountPanel::setDir(const QString& arg)
@@ -247,6 +254,7 @@ void CountPanel::addNewLine(int obj_id)
     table->setCellWidget(table->rowCount()-1, 2, objDrawer);
     if (objDrawer->show)
         darknet->obj_drawn[objDrawer->obj_id] = objDrawer->color;
+    MW->settings->setValue(objDrawer->getSettingsKey(), objDrawer->saveState());
 }
 
 void CountPanel::itemChanged(QListWidgetItem *item)
