@@ -292,7 +292,7 @@ CommandOptions::CommandOptions()
     options[51].argname = "";
 
     options[52].name = "lowres";
-    options[52].flags = OPT_INT | HAS_ARG | OPT_EXPERT;
+    options[52].flags = OPT_INT | HAS_ARG | OPT_EXPERT | OPT_NO_GUI;
     options[52].u.dst_ptr = &lowres;
     options[52].help = "low resolution";
     options[52].argname = "";
@@ -553,7 +553,7 @@ int CommandOptions::opt_sync(void* optctx, const char* opt, const char* arg)
     else if (!strcmp(arg, "ext"))
         av_sync_type = AV_SYNC_EXTERNAL_CLOCK;
     else {
-        QString msg = "Invalid option for sync\nUse audio, video or ext";
+        QString msg = "Invalid option for sync.  Use audio, video or ext";
         QMessageBox::warning(MW->parameterDialog, "Invalid setting", msg);
         av_sync_type = AV_SYNC_AUDIO_MASTER;
         clock_sync = nullptr;
@@ -627,18 +627,21 @@ int CommandOptions::opt_add_vfilter(void* optctx, const char* opt, const char* a
     //const char *filter_string = av_strdup(arg);
 
     if (strlen(arg) == 0) {
-        for (int i = 0; i < nb_vfilters; i++) {
+        for (int i = nb_vfilters - 1; i > -1; i--) {
             cout << vfilters_list[i] << endl;
             av_free(&vfilters_list[i]);
         }
+
         if (vfilters_list)
             av_free(&vfilters_list);
+
         vfilters_list = NULL;
         nb_vfilters = 0;
     }
     else {
         if (nb_vfilters == 0)
             GROW_ARRAY(vfilters_list, nb_vfilters);
+
         vfilters_list[nb_vfilters - 1] = av_strdup(arg);
     }
 

@@ -41,7 +41,6 @@ void SimpleFilter::tricky(Frame *vp)
     QImage image((uchar*)mat.data, mat.cols, mat.rows, QImage::Format_RGB888);
     QPixmap pixmap;
     pixmap.convertFromImage(image);
-    MW->viewerDialog->viewer->displayContainer->display->setPixmap(pixmap);
 }
 
 void SimpleFilter::mat_example(Frame *vp)

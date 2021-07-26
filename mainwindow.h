@@ -48,8 +48,6 @@
 #include "Cameras/camerapanel.h"
 #include "mainpanel.h"
 #include "optionpanel.h"
-#include "streampanel.h"
-#include "viewer.h"
 #include "countpanel.h"
 
 enum CustomEventCode {
@@ -126,7 +124,6 @@ public:
     FilePanel *picturePanel;
     FilePanel *audioPanel;
     CameraPanel *cameraPanel;
-    StreamPanel *streamPanel;
     QTabWidget *tabWidget;
     MessageBox *messageBox;
     ParameterDialog *parameterDialog;
@@ -136,7 +133,6 @@ public:
     OptionDialog *optionDialog;
 
     CountDialog *countDialog;
-    ViewerDialog *viewerDialog;
     Quitter *quitter = nullptr;
     Launcher *launcher;
     QString style;

@@ -291,12 +291,24 @@ QListWidget::item:hover {
     color : selection_medium;
 }
 
+QListWidget::item:disabled {
+    color : foreground_dark;
+}
+
 QListWidget::indicator:checked {
     image : url(:checked.png);
 }
 
+QListWidget::indicator:checked:disabled {
+    image : url(:checked_lo.png);
+}
+
 QListWidget::indicator:unchecked {
     image : url(:unchecked.png);
+}
+
+QListWidget::indicator:unchecked:disabled {
+    image : url(:unchecked_lo.png);
 }
 
 QComboBox {
@@ -493,6 +505,10 @@ QLineEdit {
     selection-background-color : selection_dark;
 }
 
+QLineEdit:disabled {
+    color : foreground_dark;
+}
+
 QLineEdit:hover:enabled {
     color : selection_medium;
 }
@@ -510,6 +526,10 @@ QGroupBox {
 QGroupBox::title {
     subcontrol-origin : margin;
     left : 8px;
+}
+
+QGroupBox::title:disabled {
+    color : foreground_dark;
 }
 
 QSlider::groove:horizontal {

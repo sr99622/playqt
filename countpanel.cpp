@@ -7,7 +7,7 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
 
     timer = new QTimer(this);
-    connect(this, SIGNAL(timeout()), this, SLOT(timeout()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
     for (int i = 0; i < darknet->obj_names.size(); i++)
         names.push_back(darknet->obj_names[i].c_str());
@@ -64,35 +64,64 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
         dirSetter->setPath(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
     connect(dirSetter, SIGNAL(directorySet(const QString&)), this, SLOT(setDir(const QString&)));
 
-    QGroupBox *groupBox = new QGroupBox("Set file save parameters");
-    saveEveryFrame = new QRadioButton("Save Every Frame");
-    saveOnInterval = new QRadioButton("Save on Interval");
-    saveOnInterval->setChecked(true);
+    //groupBox = new QGroupBox("Set file save parameters");
+    //saveEveryFrame = new QRadioButton("Save Every Frame");
+    //saveOnInterval = new QRadioButton("Save on Interval");
+    //saveOnInterval->setChecked(true);
+
+    /*
+    if (MW->settings->contains(groupBoxKey)) {
+        int index = MW->settings->value(groupBoxKey).toInt();
+        if (index == 0)
+            saveEveryFrame->setChecked(true);
+        else
+            saveOnInterval->setChecked(true);
+    }
+    else {
+        saveOnInterval->setChecked(true);
+    }
+    */
+
+    //connect(saveEveryFrame, SIGNAL(clicked()), this, SLOT(radioChecked()));
+    //connect(saveOnInterval, SIGNAL(clicked()), this, SLOT(radioChecked()));
     txtInterval = new NumberTextBox();
+    txtInterval->setMaximumWidth(txtInterval->fontMetrics().boundingRect("0000000").width());
     txtInterval->setText(MW->settings->value(intervalKey, "60").toString());
     connect(txtInterval, SIGNAL(editingFinished()), this, SLOT(intervalEdited()));
+    QLabel *lbl00 = new QLabel("Set Save Interval");
     QLabel *lbl01 = new QLabel("(seconds)");
-    QGridLayout *groupLayout = new QGridLayout();
-    groupLayout->addWidget(saveEveryFrame,  0, 0, 1, 1);
-    groupLayout->addWidget(saveOnInterval,  1, 0, 1, 1);
-    groupLayout->addWidget(txtInterval,     1, 1, 1, 1);
-    groupLayout->addWidget(lbl01,           1, 2, 1, 1);
-    groupBox->setLayout(groupLayout);
+    QGridLayout *intervalLayout = new QGridLayout();
+    intervalLayout->addWidget(lbl00,         0, 0, 1, 1);
+    intervalLayout->addWidget(txtInterval,   0, 1, 1, 1);
+    intervalLayout->addWidget(lbl01,         0, 2, 1, 1);
+    intervalLayout->addWidget(new QLabel,    0, 3, 1, 1);
+    intervalLayout->setColumnStretch(3, 10);
+    intervalLayout->setContentsMargins(0, 0, 0, 0);
+    intervalPanel = new QWidget(this);
+    intervalPanel->setLayout(intervalLayout);
 
     saveOn = new QCheckBox("Save On");
     connect(saveOn, SIGNAL(stateChanged(int)), this, SLOT(saveOnChecked(int)));
 
     QWidget *filePanel = new QWidget(this);
     QGridLayout *fileLayout = new QGridLayout();
-    fileLayout->addWidget(dirSetter,   0, 0, 1, 1);
-    fileLayout->addWidget(groupBox,    1, 0, 1, 1);
-    fileLayout->addWidget(saveOn,      2, 0, 1, 1);
+    fileLayout->addWidget(dirSetter,      0, 0, 1, 1);
+    fileLayout->addWidget(intervalPanel,  1, 0, 1, 1);
+    fileLayout->addWidget(saveOn,         2, 0, 1, 1);
     filePanel->setLayout(fileLayout);
 
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(hSplit,     0, 0, 1, 1);
     layout->addWidget(filePanel,  1, 0, 1, 1);
     setLayout(layout);
+}
+
+CountPanel::~CountPanel()
+{
+    if (file) {
+        file->flush();
+        file->close();
+    }
 }
 
 void CountPanel::autoSave()
@@ -105,9 +134,68 @@ void CountPanel::autoSave()
     }
 }
 
+void CountPanel::ping(vector<bbox_t> *detections)
+{
+    sums.clear();
+    for (const bbox_t detection : *detections) {
+        int obj_id = detection.obj_id;
+
+        int indexSum = indexForSums(obj_id);
+        if (indexSum < 0) {
+            sums.push_back(make_pair(obj_id, 1));
+        }
+        else {
+            sums[indexSum].second++;
+        }
+    }
+
+    for (const pair<int, int>& sum : sums) {
+        int row = rowOf(sum.first);
+        if (row > -1) {
+            table->item(row, 1)->setText(QString::number(sum.second));
+            if (saveOn->isChecked())
+                addCount(sum.first, sum.second);
+        }
+    }
+
+    for (int i = 0; i < table->rowCount(); i++) {
+        int obj_id = idFromName(table->item(i, 0)->text());
+        if (indexForSums(obj_id) < 0) {
+            table->item(i, 1)->setText("0");
+            if (saveOn->isChecked())
+                addCount(obj_id, 0);
+        }
+    }
+}
+
 void CountPanel::timeout()
 {
     cout << "CountPanel::timeout" << endl;
+
+    if (counts.empty())
+        return;
+
+    mutex.lock();
+    QTextStream out(file);
+    out << QTime::currentTime().toString("hh:mm:ss");
+    for (pair<int, vector<int>>& count : counts) {
+        int row = rowOf(count.first);
+        if (row > -1) {
+            int samples = count.second.size();
+            double sum = accumulate(begin(count.second), end(count.second), 0.0);
+            double mean = sum / samples;
+            double accum = 0.0;
+            for_each(begin(count.second), end(count.second), [&](const double d) {
+                accum += (d - mean) * (d - mean);
+            });
+            double stdev = sqrt(accum / (samples - 1));
+            out << ", " << sum << ", " << mean << ", " << stdev;
+            count.second.clear();
+        }
+    }
+    out << "\n";
+    counts.clear();
+    mutex.unlock();
 }
 
 void CountPanel::saveOnChecked(int arg)
@@ -126,18 +214,41 @@ void CountPanel::saveOnChecked(int arg)
             QMessageBox::warning(this, "PlayQt", QString("Unable to open file:\n%1").arg(file->fileName()));
             return;
         }
+
         QTextStream out(file);
+        out << "time";
         for (int i = 0; i < table->rowCount(); i++) {
-            out << ", " << table->item(i, 0)->text() << ", total, avg, std dev";
+            out << ", " << table->item(i, 0)->text() << " total, avg, std dev";
         }
+        out << "\n";
+
+        list->setEnabled(false);
+        dirSetter->setEnabled(false);
+        intervalPanel->setEnabled(false);
+        timer->start(interval * 1000);
     }
     else {
+        timer->stop();
         if (file) {
             file->flush();
             file->close();
             file = nullptr;
         }
+        list->setEnabled(true);
+        dirSetter->setEnabled(true);
+        intervalPanel->setEnabled(true);
     }
+}
+
+void CountPanel::radioChecked()
+{
+    /*
+    cout << "CountPanel::radioChecked" << endl;
+    if (saveEveryFrame->isChecked())
+        MW->settings->setValue(groupBoxKey, 0);
+    else
+        MW->settings->setValue(groupBoxKey, 1);
+    */
 }
 
 void CountPanel::intervalEdited()
@@ -181,17 +292,27 @@ int CountPanel::indexForSums(int obj_id)
     return result;
 }
 
+int CountPanel::indexForCounts(int obj_id)
+{
+    int result = -1;
+    for (int i = 0; i < counts.size(); i++) {
+        if (counts[i].first == obj_id) {
+            result = i;
+            break;
+        }
+    }
+    return result;
+}
+
 int CountPanel::idFromName(const QString& name)
 {
     int result = -1;
-
     for (int i = 0; i < names.size(); i++) {
         if (name == names[i]) {
             result = i;
             break;
         }
     }
-
     return result;
 }
 
@@ -207,31 +328,19 @@ int CountPanel::rowOf(int obj_id)
     return result;
 }
 
-void CountPanel::ping(vector<bbox_t> *detections)
+void CountPanel::addCount(int obj_id, int count)
 {
-    sums.clear();
-    for (const bbox_t detection : *detections) {
-        int obj_id = detection.obj_id;
-
-        int indexSum = indexForSums(obj_id);
-        if (indexSum < 0) {
-            sums.push_back(make_pair(obj_id, 1));
-        }
-        else {
-            sums[indexSum].second++;
-        }
+    int index = indexForCounts(obj_id);
+    mutex.lock();
+    if (index < 0) {
+        vector<int> counter;
+        counter.push_back(count);
+        counts.push_back(make_pair(obj_id, counter));
     }
-
-    for (const pair<int, int>& sum : sums) {
-        int row = rowOf(sum.first);
-        if (row > -1)
-            table->item(row, 1)->setText(QString::number(sum.second));
+    else {
+        counts[index].second.push_back(count);
     }
-
-    for (int i = 0; i < table->rowCount(); i++) {
-        if (indexForSums(idFromName(table->item(i, 0)->text())) < 0)
-            table->item(i, 1)->setText("0");
-    }
+    mutex.unlock();
 }
 
 void CountPanel::addNewLine(int obj_id)
@@ -269,7 +378,8 @@ void CountPanel::itemChanged(QListWidgetItem *item)
     else {
         int index = rowOf(obj_id);
         ObjDrawer *objDrawer = (ObjDrawer*)table->cellWidget(index, 2);
-        objDrawer->emit shown(obj_id, YUVColor());
+        //objDrawer->emit shown(obj_id, YUVColor());
+        objDrawer->signalShown(obj_id, YUVColor());
         MW->settings->remove(objDrawer->getSettingsKey());
         table->removeCellWidget(index, 2);
         table->removeRow(index);
@@ -282,6 +392,11 @@ void CountPanel::itemClicked(QListWidgetItem *item)
             item->setCheckState(Qt::Unchecked);
     else
         item->setCheckState(Qt::Checked);
+}
+
+void ObjDrawer::signalShown(int obj_id, const YUVColor& color)
+{
+    emit shown(obj_id, color);
 }
 
 ObjDrawer::ObjDrawer(QMainWindow *parent, int obj_id)
@@ -372,25 +487,3 @@ CountDialog::CountDialog(QMainWindow *parent) : PanelDialog(parent)
     defaultHeight = 400;
     settingsKey = "CountDialog/geometry";
 }
-
-/*
-for (const pair<int, vector<int>>& size : sizes) {
-    int row = rowOf(size.first);
-    if (row > -1) {
-        int count = size.second.size();
-        QTableWidgetItem *item = new QTableWidgetItem(QString::number(count));
-        table->setItem(row, 1, item);
-        double sum = accumulate(begin(size.second), end(size.second), 0.0);
-        double mean = sum / count;
-        double accum = 0.0;
-        for_each(begin(size.second), end(size.second), [&](const double d) {
-            accum += (d - mean) * (d - mean);
-        });
-        double stdev = sqrt(accum / (count - 1));
-        QTableWidgetItem *avgItem = new QTableWidgetItem(QString::number(mean));
-        table->setItem(row, 2, avgItem);
-        QTableWidgetItem *stdItem = new QTableWidgetItem(QString::number(stdev));
-        table->setItem(row, 3, stdItem);
-    }
-}
-*/

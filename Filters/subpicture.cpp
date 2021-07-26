@@ -39,8 +39,11 @@ SubPicture::SubPicture(QMainWindow *parent)
     buttonDown = new QPushButton("v");
     buttonLeft = new QPushButton("<");
     buttonRight = new QPushButton(">");
-    buttonZoomIn = new QPushButton("Zoom In");
-    buttonZoomOut = new QPushButton("Zoom Out");
+
+    buttonUp->setMaximumWidth(buttonWidth);
+    buttonDown->setMaximumWidth(buttonWidth);
+    buttonLeft->setMaximumWidth(buttonWidth);
+    buttonRight->setMaximumWidth(buttonWidth);
 
     button1 = new QPushButton("1");
     button2 = new QPushButton("2");
@@ -48,21 +51,18 @@ SubPicture::SubPicture(QMainWindow *parent)
     button4 = new QPushButton("4");
     button5 = new QPushButton("5");
 
+    button1->setMinimumWidth(40);
+    button2->setMinimumWidth(40);
+    button3->setMinimumWidth(40);
+    button4->setMinimumWidth(40);
+    button5->setMinimumWidth(40);
+
     buttonReset = new QPushButton("Reset");
     buttonApply = new QPushButton("...");
-
-    buttonUp->setMaximumWidth(buttonWidth);
-    buttonDown->setMaximumWidth(buttonWidth);
-    buttonLeft->setMaximumWidth(buttonWidth);
-    buttonRight->setMaximumWidth(buttonWidth);
-    button1->setMaximumWidth(buttonWidth);
-    button2->setMaximumWidth(buttonWidth);
-    button3->setMaximumWidth(buttonWidth);
-    button4->setMaximumWidth(buttonWidth);
-    button5->setMaximumWidth(buttonWidth);
-    //buttonReset = new QPushButton("Reset");
     buttonApply->setMaximumWidth(buttonWidth);
 
+    buttonZoomIn = new QPushButton("Zoom In");
+    buttonZoomOut = new QPushButton("Zoom Out");
     int zoomWidth = buttonZoomOut->fontMetrics().boundingRect("Zoom Out").width() * 1.5;
     buttonZoomIn->setMaximumWidth(zoomWidth);
     buttonZoomOut->setMaximumWidth(zoomWidth);
@@ -108,23 +108,11 @@ SubPicture::SubPicture(QMainWindow *parent)
     zoomLayout->addWidget(buttonZoomOut,   1, 0, 1, 1);
     zoomPanel->setLayout(zoomLayout);
 
-
     QGridLayout *layout = new QGridLayout;
 
     layout->addWidget(coordinatePanel, 1, 0, 1, 10);
-
     layout->addWidget(directionPanel,  2, 0, 1, 6);
     layout->addWidget(zoomPanel,       2, 6, 1, 4);
-    /*
-    layout->addWidget(buttonLeft,  3, 1, 1, 2, Qt::AlignCenter);
-    layout->addWidget(buttonUp,    2, 4, 1, 2, Qt::AlignCenter);
-    layout->addWidget(buttonRight, 3, 7, 1, 2, Qt::AlignCenter);
-    layout->addWidget(buttonDown,  4, 4, 1, 2, Qt::AlignCenter);
-
-    layout->addWidget(buttonZoomOut, 3, 3, 1, 2, Qt::AlignCenter);
-    layout->addWidget(buttonZoomIn,  3, 5, 1, 2, Qt::AlignCenter);
-    */
-
     layout->addWidget(button1, 6, 0, 1, 2, Qt::AlignCenter);
     layout->addWidget(button2, 6, 2, 1, 2, Qt::AlignCenter);
     layout->addWidget(button3, 6, 4, 1, 2, Qt::AlignCenter);
@@ -397,20 +385,3 @@ void SubPicture::ptz()
         update(ptz_x, ptz_y, ptz_w, ptz_h);
     }
 }
-
-/*
-void SubPicture::saveSettings(QSettings *settings)
-{
-    for (int i = 0; i < 5; i++) {
-        settings->setValue(QString("SubPicture_preset_%1").arg(i), presets[i]);
-    }
-}
-
-void SubPicture::restoreSettings(QSettings *settings)
-{
-    for (int i = 0; i < 5; i++) {
-        QString name = QString("SubPicture_preset_%1").arg(i);
-        presets[i] = settings->value(name).toRect();
-    }
-}
-*/

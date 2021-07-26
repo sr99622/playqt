@@ -58,9 +58,7 @@ SOURCES += \
     mainwindow.cpp \
     optionpanel.cpp \
     parameterpanel.cpp \
-    simplefilter.cpp \
-    streampanel.cpp \
-    viewer.cpp
+    simplefilter.cpp
 
 HEADERS += \
     Cameras/admintab.h \
@@ -116,9 +114,7 @@ HEADERS += \
     mainwindow.h \
     optionpanel.h \
     parameterpanel.h \
-    simplefilter.h \
-    streampanel.h \
-    viewer.h
+    simplefilter.h
 
 #CUDA_DIR = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2"
 #CONTRIB_DIR = "C:/Users/sr996/Projects/contrib

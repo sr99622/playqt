@@ -9,6 +9,7 @@
 #include <QListWidgetItem>
 #include <QSettings>
 #include <QCheckBox>
+#include <QMenu>
 
 #include "Utilities/paneldialog.h"
 #include "Ffplay/CommandOptions.h"
@@ -25,11 +26,18 @@ public:
 
 class SavedCmdLines : public QListWidget
 {
+    Q_OBJECT
 
 public:
     SavedCmdLines(QMainWindow *parent);
-    QMainWindow *mainWindow;
     void keyPressEvent(QKeyEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+
+    QMainWindow *mainWindow;
+
+public slots:
+    void remove();
+    void rename();
 
 };
 
@@ -42,9 +50,10 @@ public:
     void setCmdLine();
     void addOptionToSaver(OptionDef option);
     const QString getOptionStorageString();
-    void saveSettings(QSettings *settings);
-    void restoreSettings(QSettings *settings);
-    void set(int option_index, char * arg);
+    void saveSettings();
+    void clearSettings();
+    void restoreSettings();
+    void set(int option_index, QString option_arg);
 
     QMainWindow *mainWindow;
     QComboBox *options;
@@ -53,6 +62,10 @@ public:
     QLineEdit *cmdLineName;
     SavedCmdLines *savedCmdLines;
     vector<OptionDef> saved_options;
+    QMenu *menu;
+    QString filters;
+
+    const QString cmdKey = "ParameterPanel/savedCmdLine_";
 
 public slots:
     void set();
@@ -61,7 +74,9 @@ public slots:
     void optionChanged(int);
     void parameterEntered();
     void saveCmdLine();
+    void itemChanged(QListWidgetItem*);
     void itemDoubleClicked(QListWidgetItem*);
+    void showContextMenu(const QPoint&);
 
 };
 
@@ -71,17 +86,10 @@ class ParameterDialog : public PanelDialog
 
 public:
     ParameterDialog(QMainWindow *parent);
-    int getDefaultHeight() override;
-    int getDefaultWidth() override;
-    QString getSettingsKey() const override;
     void show();
 
     QMainWindow *mainWindow;
     ParameterPanel *panel;
-
-    const int defaultWidth = 400;
-    const int defaultHeight = 320;
-    const QString settingsKey = "ParameterDialog/size";
 
 };
 

@@ -49,6 +49,7 @@ PanelDialog::PanelDialog(QMainWindow *parent) : QDialog(parent, Qt::WindowSystem
 
 void PanelDialog::keyPressEvent(QKeyEvent *event)
 {
+    cout << "PanelDialog::keyPressEvent: " << event->key() << endl;
     if (event->modifiers() & Qt::ControlModifier) {
         QAction action(getSettingsKey());
         action.setShortcut(QKeySequence(Qt::CTRL | event->key()));

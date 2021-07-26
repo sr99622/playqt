@@ -75,7 +75,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     audioPanel = new FilePanel(this, "Audio", QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
 
     cameraPanel = new CameraPanel(this);
-    streamPanel = new StreamPanel(this);
     tabWidget->addTab(videoPanel, tr("Videos"));
     tabWidget->addTab(picturePanel, tr("Pictures"));
     tabWidget->addTab(audioPanel, tr("Audio"));
@@ -89,17 +88,12 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         splitter->restoreState(settings->value(splitterKey).toByteArray());
     connect(splitter, SIGNAL(splitterMoved(int, int)), this, SLOT(splitterMoved(int, int)));
 
-    //tabWidget->tabBar()->setMinimumWidth(tabWidget->geometry().width());
-    //tabWidget->tabBar()->setDrawBase(true);
-
-
     setCentralWidget(splitter);
 
     messageBox = new MessageBox(this);
     filterDialog = new FilterDialog(this);
     optionDialog = new OptionDialog(this);
     parameterDialog = new ParameterDialog(this);
-    parameterDialog->panel->restoreSettings(settings);
     filterChain = new FilterChain(this);
     countDialog = new CountDialog(this);
 
