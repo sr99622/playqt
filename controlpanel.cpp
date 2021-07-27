@@ -74,7 +74,12 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
 
 QString ControlPanel::getButtonStyle(const QString& name) const
 {
-    return QString("QPushButton {image:url(:%1.png);} QPushButton:hover {image:url(:%1_hi.png);} QPushButton:pressed {image:url(:%1.png);}").arg(name);
+    bool native = false;
+
+    if (native)
+        return QString("QPushButton {image:url(:%1_lo.png);}").arg(name);
+    else
+        return QString("QPushButton {image:url(:%1.png);} QPushButton:hover {image:url(:%1_hi.png);} QPushButton:pressed {image:url(:%1.png);}").arg(name);
 }
 
 void ControlPanel::sliderMoved(int arg)
@@ -86,6 +91,7 @@ void ControlPanel::sliderMoved(int arg)
 
 void ControlPanel::resizeEvent(QResizeEvent *event) {
     //cout << "ControlPanel width: " << event->size().width() << " height: " << event->size().height() << endl;
+    QWidget::resizeEvent(event);
 }
 
 void ControlPanel::play()

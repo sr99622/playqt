@@ -19,8 +19,9 @@ extern "C" {
 
 #include "Utilities/paneldialog.h"
 #include "Ffplay/CommandOptions.h"
-#include "parameterpanel.h"
-class OptionPanel : public QWidget
+//#include "parameterpanel.h"
+
+class OptionPanel : public Panel
 {
     Q_OBJECT
 
@@ -58,8 +59,8 @@ public:
     const QString show_devices();
     const QString show_help_options(const OptionDef *options, const char *msg, int req_flags, int rej_flags, int alt_flags);
 
-    QMainWindow *mainWindow;
-    ParameterDialog *parameterDialog;
+    //QMainWindow *mainWindow;
+    //ParameterDialog *parameterDialog;
 
 public slots:
     void test();
@@ -90,14 +91,6 @@ class OptionDialog : public PanelDialog
 
 public:
     OptionDialog(QMainWindow *parent);
-    int getDefaultWidth() override;
-    int getDefaultHeight() override;
-
-    QMainWindow *mainWindow;
-    OptionPanel *panel;
-
-    int defaultWidth = 520;
-    int defaultHeight = 640;
 
 };
 

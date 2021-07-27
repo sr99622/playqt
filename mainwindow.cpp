@@ -10,6 +10,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     filename = QString(co->input_filename);
     av_log_set_level(AV_LOG_PANIC);
 
+    configDialog = new ConfigDialog(this);
 
     screen = QApplication::primaryScreen();
     settings = new QSettings("PlayQt", "Program Settings");
@@ -46,26 +47,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     connect(timer, SIGNAL(timeout()), this, SLOT(poll()));
     timer->start(1000 / 30);
 
-    QFile f(":darkstyle.qss");
-
-    if (!f.exists()) {
-        msg("Error: MainWindow::getThemes() Style sheet not found");
-    }
-    else {
-        f.open(QFile::ReadOnly | QFile::Text);
-        style = QString(f.readAll());
-        style.replace("background_light",  "#566170");
-        style.replace("background_medium", "#3E4754");
-        style.replace("background_dark",   "#283445");
-        style.replace("foreground_light",  "#C6D9F2");
-        style.replace("foreground_medium", "#9DADC2");
-        style.replace("foreground_dark",   "#808D9E");
-        style.replace("selection_light",   "#FFFFFF");
-        style.replace("selection_medium",  "#DDEEFF");
-        style.replace("selection_dark",    "#306294");
-        setStyleSheet(style);
-    }
-
+    mainPanel = new MainPanel(this);
+    applyStyle();
 
     tabWidget = new QTabWidget(this);
     tabWidget->setMinimumWidth(100);
@@ -79,7 +62,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     tabWidget->addTab(picturePanel, tr("Pictures"));
     tabWidget->addTab(audioPanel, tr("Audio"));
     tabWidget->addTab(cameraPanel, tr("Cameras"));
-    mainPanel = new MainPanel(this);
 
     splitter = new QSplitter(Qt::Orientation::Horizontal, this);
     splitter->addWidget(mainPanel);
@@ -144,6 +126,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     QAction *actCount = new QAction(tr("&Count"));
     actCount->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_C));
     toolsMenu->addAction(actCount);
+    QAction *actConfig = new QAction(tr("Conf&ig"));
+    toolsMenu->addAction(actConfig);
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&Options"));
@@ -172,6 +156,44 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         QThreadPool::globalInstance()->tryStart(launcher);
     }
 
+}
+
+void MainWindow::menuAction(QAction *action)
+{
+    cout << "action text: " << action->text().toStdString() << endl;
+
+    if (action->text() == "&Open" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_O))
+        openFile();
+    else if (action->text() == "E&xit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_X))
+        close();
+    else if (action->text() == "&Play/Pause" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_P))
+        mainPanel->controlPanel->play();
+    else if (action->text() == "&Rewind" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_R))
+        mainPanel->controlPanel->rewind();
+    else if (action->text() == "Fas&t Forward" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_T))
+        mainPanel->controlPanel->fastforward();
+    else if (action->text() == "Pre&vious" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_V))
+        mainPanel->controlPanel->previous();
+    else if (action->text() == "&Next" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_N))
+        mainPanel->controlPanel->next();
+    else if (action->text() == "&Quit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_Q))
+        mainPanel->controlPanel->quit();
+    else if (action->text() == "&Mute" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_M))
+        mainPanel->controlPanel->mute();
+    else if (action->text() == "&Filters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_F))
+        if (filterDialog->isVisible()) filterDialog->hide(); else filterDialog->show();
+    else if (action->text() == "&Engage" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_E))
+        (filterDialog->getPanel()->engageFilter->setChecked(!filterDialog->getPanel()->engageFilter->isChecked()));
+    else if (action->text() == "&Set Parameters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_S))
+        if (parameterDialog->isVisible()) parameterDialog->hide(); else parameterDialog->show();
+    else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))
+        if (messageBox->isVisible()) messageBox->hide(); else messageBox->show();
+    else if (action->text() == "&Count" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_C))
+        if (countDialog->isVisible()) countDialog->hide(); else countDialog->show();
+    else if (action->text() == "&Options")
+        optionDialog->show();
+    else if (action->text() == "Conf&ig")
+        configDialog->show();
 }
 
 void MainWindow::autoSave()
@@ -333,45 +355,40 @@ void MainWindow::openFile()
     }
 }
 
-void MainWindow::menuAction(QAction *action)
+void MainWindow::applyStyle()
 {
-    cout << "action text: " << action->text().toStdString() << endl;
+    QFile f(":darkstyle.qss");
+    if (!f.exists()) {
+        msg("Error: MainWindow::getThemes() Style sheet not found");
+    }
+    else {
+        f.open(QFile::ReadOnly | QFile::Text);
+        style = QString(f.readAll());
 
-    if (action->text() == "&Open" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_O))
-        openFile();
-    else if (action->text() == "E&xit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_X))
-        close();
-    else if (action->text() == "&Play/Pause" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_P))
-        mainPanel->controlPanel->play();
-    else if (action->text() == "&Rewind" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_R))
-        mainPanel->controlPanel->rewind();
-    else if (action->text() == "Fas&t Forward" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_T))
-        mainPanel->controlPanel->fastforward();
-    else if (action->text() == "Pre&vious" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_V))
-        mainPanel->controlPanel->previous();
-    else if (action->text() == "&Next" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_N))
-        mainPanel->controlPanel->next();
-    else if (action->text() == "&Quit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_Q))
-        mainPanel->controlPanel->quit();
-    else if (action->text() == "&Mute" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_M))
-        mainPanel->controlPanel->mute();
-    else if (action->text() == "&Filters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_F))
-        if (filterDialog->isVisible()) filterDialog->hide(); else filterDialog->show();
-    else if (action->text() == "&Engage" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_E))
-        (filterDialog->getPanel()->engageFilter->setChecked(!filterDialog->getPanel()->engageFilter->isChecked()));
-    else if (action->text() == "&Set Parameters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_S))
-        if (parameterDialog->isVisible()) parameterDialog->hide(); else parameterDialog->show();
-    else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))
-        if (messageBox->isVisible()) messageBox->hide(); else messageBox->show();
-    else if (action->text() == "&Count" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_C))
-        if (countDialog->isVisible()) countDialog->hide(); else countDialog->show();
-    else if (action->text() == "&Options")
-        optionDialog->show();
+        style.replace("background_light",  config()->bl->color.name());
+        style.replace("background_medium", config()->bm->color.name());
+        style.replace("background_dark",   config()->bd->color.name());
+        style.replace("foreground_light",  config()->fl->color.name());
+        style.replace("foreground_medium", config()->fm->color.name());
+        style.replace("foreground_dark",   config()->fd->color.name());
+        style.replace("selection_light",   config()->sl->color.name());
+        style.replace("selection_medium",  config()->sm->color.name());
+        style.replace("selection_dark",    config()->sd->color.name());
+
+        setStyleSheet(style);
+    }
+
+    mainPanel->displayContainer->display->setStyleSheet(QString("QFrame {background-color: %1; padding: 0px;}").arg(config()->bm->color.name()));
 }
 
 void MainWindow::showHelp(const QString &str)
 {
     cout << str.toStdString() << endl;
+}
+
+ConfigPanel *MainWindow::config()
+{
+    return (ConfigPanel*)configDialog->panel;
 }
 
 void MainWindow::ping(vector<bbox_t>* arg)

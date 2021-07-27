@@ -41,7 +41,7 @@ public slots:
 
 };
 
-class ParameterPanel : public QWidget
+class ParameterPanel : public Panel
 {
     Q_OBJECT
 
@@ -55,7 +55,7 @@ public:
     void restoreSettings();
     void set(int option_index, QString option_arg);
 
-    QMainWindow *mainWindow;
+    //QMainWindow *mainWindow;
     QComboBox *options;
     QLineEdit *parameter;
     QLabel *cmdLineEquiv;
@@ -77,6 +77,7 @@ public slots:
     void itemChanged(QListWidgetItem*);
     void itemDoubleClicked(QListWidgetItem*);
     void showContextMenu(const QPoint&);
+    void comboActivated(int);
 
 };
 
@@ -88,8 +89,8 @@ public:
     ParameterDialog(QMainWindow *parent);
     void show();
 
-    QMainWindow *mainWindow;
-    ParameterPanel *panel;
+    //QMainWindow *mainWindow;
+    //ParameterPanel *panel;
 
 };
 

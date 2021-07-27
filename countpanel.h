@@ -67,11 +67,8 @@ public:
     QTableWidget *table;
     QSplitter *hSplit;
     DirectorySetter *dirSetter;
-    //QRadioButton *saveEveryFrame;
-    //QRadioButton *saveOnInterval;
     NumberTextBox *txtInterval;
     QWidget *intervalPanel;
-    //QGroupBox *groupBox;
     QCheckBox *saveOn;
     QTimer *timer;
     QFile *file = nullptr;

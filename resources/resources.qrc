@@ -43,5 +43,15 @@
         <file>radio-on.png</file>
         <file>radio-on_hi.png</file>
         <file>radio-on_lo.png</file>
+        <file>audio_lo.png</file>
+        <file>fast-forward_lo.png</file>
+        <file>mute_lo.png</file>
+        <file>pause_lo.png</file>
+        <file>play_lo.png</file>
+        <file>previous_lo.png</file>
+        <file>rewind_lo.png</file>
+        <file>stop_lo.png</file>
+        <file>branch_closed_lo.png</file>
+        <file>small_arrow_left_lo.png</file>
     </qresource>
 </RCC>

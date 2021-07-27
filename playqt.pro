@@ -38,6 +38,7 @@ SOURCES += \
     Filters/filterpanel.cpp \
     Filters/subpicture.cpp \
     Utilities/avexception.cpp \
+    Utilities/colorbutton.cpp \
     Utilities/cudaexception.cpp \
     Utilities/directorysetter.cpp \
     Utilities/displaycontainer.cpp \
@@ -51,6 +52,7 @@ SOURCES += \
     Utilities/paneldialog.cpp \
     Utilities/waitbox.cpp \
     Utilities/yuvcolor.cpp \
+    configpanel.cpp \
     controlpanel.cpp \
     countpanel.cpp \
     main.cpp \
@@ -95,6 +97,7 @@ HEADERS += \
     Filters/filterpanel.h \
     Filters/subpicture.h \
     Utilities/avexception.h \
+    Utilities/colorbutton.h \
     Utilities/cudaexception.h \
     Utilities/directorysetter.h \
     Utilities/displaycontainer.h \
@@ -108,6 +111,7 @@ HEADERS += \
     Utilities/paneldialog.h \
     Utilities/waitbox.h \
     Utilities/yuvcolor.h \
+    configpanel.h \
     controlpanel.h \
     countpanel.h \
     mainpanel.h \

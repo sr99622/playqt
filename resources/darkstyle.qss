@@ -518,6 +518,14 @@ QLineEdit:focus {
     border : 1px solid foreground_medium;
 }
 
+QTextEdit {
+    border : 1px solid foreground_dark;
+}
+
+QTextEdit:focus {
+    border : 1px solid foreground_medium;
+}
+
 QGroupBox {
     border : 1px solid foreground_dark;
     margin-top : 3ex;

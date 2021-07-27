@@ -16,19 +16,13 @@ OptionDialog::OptionDialog(QMainWindow *parent) : PanelDialog(parent)
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(panel);
     setLayout(layout);
+
+    defaultWidth = 520;
+    defaultHeight = 640;
+    settingsKey = "OptionDialog/geometry";
 }
 
-int OptionDialog::getDefaultWidth()
-{
-    return defaultWidth;
-}
-
-int OptionDialog::getDefaultHeight()
-{
-    return defaultHeight;
-}
-
-OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
+OptionPanel::OptionPanel(QMainWindow *parent) : Panel(parent)
 {
     mainWindow = parent;
 
@@ -106,7 +100,7 @@ OptionPanel::OptionPanel(QMainWindow *parent) : QWidget(parent)
     connect(details, SIGNAL(clicked()), this, SLOT(details()));
     connect(config, SIGNAL(clicked()), this, SLOT(config()));
 
-    parameterDialog = new ParameterDialog(mainWindow);
+    //parameterDialog = new ParameterDialog(mainWindow);
 }
 
 void OptionPanel::showConfig(const QString& str)

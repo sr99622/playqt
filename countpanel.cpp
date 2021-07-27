@@ -23,11 +23,8 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     QStringList headers;
     headers << tr("Name") << tr("Count") << tr("Show");
     table->setHorizontalHeaderLabels(headers);
-    //table->horizontalHeader()->setStretchLastSection(false);
-
     table->verticalHeader()->setVisible(false);
 
-    //table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     if (MW->settings->contains(headerKey)) {
         table->horizontalHeader()->restoreState(MW->settings->value(headerKey).toByteArray());
     }
@@ -64,26 +61,6 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
         dirSetter->setPath(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
     connect(dirSetter, SIGNAL(directorySet(const QString&)), this, SLOT(setDir(const QString&)));
 
-    //groupBox = new QGroupBox("Set file save parameters");
-    //saveEveryFrame = new QRadioButton("Save Every Frame");
-    //saveOnInterval = new QRadioButton("Save on Interval");
-    //saveOnInterval->setChecked(true);
-
-    /*
-    if (MW->settings->contains(groupBoxKey)) {
-        int index = MW->settings->value(groupBoxKey).toInt();
-        if (index == 0)
-            saveEveryFrame->setChecked(true);
-        else
-            saveOnInterval->setChecked(true);
-    }
-    else {
-        saveOnInterval->setChecked(true);
-    }
-    */
-
-    //connect(saveEveryFrame, SIGNAL(clicked()), this, SLOT(radioChecked()));
-    //connect(saveOnInterval, SIGNAL(clicked()), this, SLOT(radioChecked()));
     txtInterval = new NumberTextBox();
     txtInterval->setMaximumWidth(txtInterval->fontMetrics().boundingRect("0000000").width());
     txtInterval->setText(MW->settings->value(intervalKey, "60").toString());

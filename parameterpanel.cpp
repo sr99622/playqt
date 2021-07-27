@@ -1,13 +1,13 @@
 #include "parameterpanel.h"
 #include "mainwindow.h"
 
-ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
+ParameterPanel::ParameterPanel(QMainWindow *parent) : Panel(parent)
 {
     mainWindow = parent;
 
     options = new QComboBox();
     options->setPlaceholderText("-");
-    //options->setFocusPolicy(Qt::NoFocus);
+    //connect(options, SIGNAL(activated(int)), this, SLOT(comboActivated(int)));
 
     for (int i = 0; i < NUM_OPTIONS; i++) {
         if (!(MW->co->options[i].flags & OPT_EXIT || MW->co->options[i].flags & OPT_NO_GUI))
@@ -77,9 +77,9 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     storagePanel->setLayout(sLayout);
 
     QGridLayout *mainLayout = new QGridLayout();
-    commandPanel->setMaximumWidth(400);
     mainLayout->addWidget(commandPanel,      0, 0, 1, 1);
     mainLayout->addWidget(storagePanel,      0, 1, 1, 1);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
 
     menu = new QMenu("SavedCmdLines Menu", savedCmdLines);
@@ -91,12 +91,17 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : QWidget(parent)
     menu->addAction(rename);
 
     savedCmdLines->setFocus();
-    filters = MW->optionDialog->panel->show_filters();
+    filters = ((OptionPanel*)MW->optionDialog->panel)->show_filters();
 }
 
 void ParameterPanel::apply()
 {
     MW->runLoop();
+}
+
+void ParameterPanel::comboActivated(int index)
+{
+    cout << "ParameterPanel::comboActivated" << endl;
 }
 
 void ParameterPanel::itemChanged(QListWidgetItem *item)
@@ -198,6 +203,17 @@ void ParameterPanel::itemDoubleClicked(QListWidgetItem *item)
 void ParameterPanel::saveCmdLine()
 {
     cout << "ParameterPanel::saveCmdLine" << cmdLineEquiv->text().toStdString() << endl;
+
+    if (cmdLineEquiv->text().length() == 0) {
+        QMessageBox::warning(this, "PlayQt", "No command line is currently set");
+        return;
+    }
+
+    if (cmdLineName->text().length() == 0) {
+        QMessageBox::warning(this, "PlayQt", "Command name is required");
+        return;
+    }
+
     StoredOption *storedOption = new StoredOption(cmdLineName->text());
     storedOption->arg = getOptionStorageString();
     savedCmdLines->addItem(storedOption);
@@ -385,8 +401,16 @@ void ParameterPanel::set()
 
 void ParameterPanel::set(int option_index, QString option_arg)
 {
+    cout << "option_index: " << option_index << endl;
+    cout << "description: " << options->currentText().toStdString() << endl;
+
+    if (option_index < 0) {
+        QMessageBox::warning(this, "PlayQt", "No option specified, please select an option from the drop down box");
+        return;
+    }
+
     if (option_arg.length() == 0) {
-        QMessageBox::warning(this, "PlayQt", "Arguments are required for all parameters");
+        QMessageBox::warning(this, "PlayQt", "Incomplete parameter specification.  Arguments are required for all parameters");
         return;
     }
     cout << "option_arg: " << option_arg.toStdString() << endl;
@@ -410,7 +434,7 @@ void ParameterPanel::set(int option_index, QString option_arg)
         cout << "OPT_STRING" << endl;
 
         av_freep(dst);
-        *(char **)dst = av_strdup(arg);
+        *(char **)dst = av_strdup(str.toLatin1().data());
 
 
         /*
@@ -580,7 +604,7 @@ ParameterDialog::ParameterDialog(QMainWindow *parent) : PanelDialog(parent)
 
 void ParameterDialog::show()
 {
-    panel->setCmdLine();
+    ((ParameterPanel*)panel)->setCmdLine();
     PanelDialog::show();
 }
 
@@ -606,7 +630,7 @@ void SavedCmdLines::remove()
     QString msg = QString("You are about to delete the command '%1'\nAre you sure you want to continue?").arg(currentItem()->text());
     QMessageBox::StandardButton result = QMessageBox::question(this, "PlayQt", msg);
     if (result == QMessageBox::Yes) {
-        MW->parameterDialog->panel->clearSettings();
+        ((ParameterPanel*)MW->parameterDialog->panel)->clearSettings();
 
         int row = currentRow();
         QListWidgetItem *item = takeItem(row);
@@ -620,7 +644,7 @@ void SavedCmdLines::remove()
         }
         */
 
-        MW->parameterDialog->panel->saveSettings();
+        ((ParameterPanel*)MW->parameterDialog->panel)->saveSettings();
 
     }
 }
@@ -643,10 +667,10 @@ void SavedCmdLines::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_Return:
         if (currentItem())
-            MW->parameterDialog->panel->itemDoubleClicked(currentItem());
+            ((ParameterPanel*)MW->parameterDialog->panel)->itemDoubleClicked(currentItem());
         break;
     case Qt::Key_Escape:
-        MW->parameterDialog->panel->clear();
+        ((ParameterPanel*)MW->parameterDialog->panel)->clear();
         break;
     default:
         QListWidget::keyPressEvent(event);
@@ -658,5 +682,5 @@ void SavedCmdLines::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QListWidgetItem *item = itemAt(event->pos());
     if (item)
-        MW->parameterDialog->panel->itemDoubleClicked(item);
+        ((ParameterPanel*)MW->parameterDialog->panel)->itemDoubleClicked(item);
 }

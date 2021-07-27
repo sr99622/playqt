@@ -47,8 +47,10 @@
 #include "Filters/filterchain.h"
 #include "Cameras/camerapanel.h"
 #include "mainpanel.h"
+#include "parameterpanel.h"
 #include "optionpanel.h"
 #include "countpanel.h"
+#include "configpanel.h"
 
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
@@ -109,6 +111,8 @@ public:
     void initializeSDL();
     void openFile();
 
+    ConfigPanel *config();
+
     QString filename;
 
     CommandOptions *co;
@@ -127,6 +131,7 @@ public:
     QTabWidget *tabWidget;
     MessageBox *messageBox;
     ParameterDialog *parameterDialog;
+    ConfigDialog *configDialog;
 
     FilterDialog *filterDialog;
     FilterChain *filterChain;
@@ -158,6 +163,7 @@ public slots:
     void start();
     void splitterMoved(int, int);
     void autoSave();
+    void applyStyle();
 
 };
 #endif // MAINWINDOW_H

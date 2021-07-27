@@ -250,7 +250,7 @@ CommandOptions::CommandOptions()
     options[44].help = "borderless window";
 
     options[45].name = "volume";
-    options[45].flags = OPT_INT | HAS_ARG;
+    options[45].flags = OPT_INT | HAS_ARG | OPT_NO_GUI;
     options[45].u.dst_ptr = &startup_volume;
     options[45].help = "set startup volume";
     options[45].argname = "volume";
@@ -427,7 +427,7 @@ CommandOptions::CommandOptions()
     options[73].help = "find stream information";
 
     options[74].name = "filter_threads";
-    options[74].flags = HAS_ARG | OPT_INT | OPT_EXPERT;
+    options[74].flags = HAS_ARG | OPT_INT | OPT_EXPERT | OPT_NO_GUI;
     options[74].u.dst_ptr = &filter_nbthreads;
     options[74].help = "number of filter threads per graph";
 
@@ -557,7 +557,7 @@ int CommandOptions::opt_sync(void* optctx, const char* opt, const char* arg)
         QMessageBox::warning(MW->parameterDialog, "Invalid setting", msg);
         av_sync_type = AV_SYNC_AUDIO_MASTER;
         clock_sync = nullptr;
-        MW->parameterDialog->panel->parameter->setText("");
+        ((ParameterPanel*)MW->parameterDialog->panel)->parameter->setText("");
         //av_log(NULL, AV_LOG_ERROR, "Unknown value for %s: %s\n", opt, arg);
         //exit(1);
         return -1;

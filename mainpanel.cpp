@@ -7,7 +7,8 @@ MainPanel::MainPanel(QMainWindow *parent) : QWidget(parent)
 
     //setStyleSheet("QWidget {background: blue; }");
     displayContainer = new DisplayContainer(mainWindow);
-    displayContainer->display->setStyleSheet("QFrame { background-color: #32414B; padding: 0px; } ");
+    //displayContainer->display->setStyleSheet(QString("QFrame { background-color: #32414B; padding: 0px; } "));
+    displayContainer->display->setStyleSheet(QString("QFrame {background-color: %1; padding: 0px;}").arg(MW->config()->bm->color.name()));
     controlPanel = new ControlPanel(mainWindow);
 
     QGridLayout *layout = new QGridLayout();
