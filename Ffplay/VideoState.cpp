@@ -90,7 +90,7 @@ void VideoState::video_image_display()
         }
     }
 
-    QSize displaySize = MW->mainPanel->displayContainer->display->size();
+    QSize displaySize = MW->display()->size();
 
     width = displaySize.width() * MW->screen->devicePixelRatio();
     height = displaySize.height() * MW->screen->devicePixelRatio();
@@ -406,8 +406,8 @@ void VideoState::step_to_next_frame()
 
 void VideoState::set_default_window_size(int width, int height, AVRational sar)
 {
-    int display_width = MW->mainPanel->displayContainer->display->size().width() * MW->screen->devicePixelRatio();
-    int display_height = MW->mainPanel->displayContainer->display->size().height() * MW->screen->devicePixelRatio();
+    int display_width = MW->display()->size().width() * MW->screen->devicePixelRatio();
+    int display_height = MW->display()->size().height() * MW->screen->devicePixelRatio();
 
     SDL_Rect rect;
     int max_width = display_width ? display_width : INT_MAX;
@@ -543,7 +543,7 @@ int VideoState::video_open()
 {
     int w, h, x, y;
 
-    QSize displaySize = MW->mainPanel->displayContainer->display->size();
+    QSize displaySize = MW->display()->size();
     w = displaySize.width() * MW->screen->devicePixelRatio();
     h = displaySize.height() * MW->screen->devicePixelRatio();
     x = 0;
@@ -2165,7 +2165,7 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     is = (VideoState*)av_mallocz(sizeof(VideoState));
 
     is->co = ((MainWindow*)mw)->co;
-    is->disp = &(((MainWindow*)mw)->display);
+    is->disp = &(((MainWindow*)mw)->ffDisplay);
     is->flush_pkt = &(((MainWindow*)mw)->flush_pkt);
     is->filterChain = ((MainWindow*)mw)->filterChain;
     is->mainWindow = mw;

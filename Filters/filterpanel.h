@@ -41,6 +41,7 @@ public:
     ~FilterPanel() override;
     void autoSave() override;
     void idle();
+    void styleButtons();
     void saveSettings(QSettings *settings);
     void restoreSettings(QSettings *settings);
     bool isFilterActive(Filter *filter);
@@ -85,8 +86,6 @@ public:
     void keyReleaseEvent(QKeyEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     FilterPanel *getPanel();
-
-    QMainWindow *mainWindow;
 
 };
 

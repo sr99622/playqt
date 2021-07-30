@@ -21,6 +21,7 @@ public:
     void resizeEvent(QResizeEvent *event) override;
     bool checkCodec(const QString& filename);
     QString getButtonStyle(const QString& name) const;
+    void styleButtons();
 
     QMainWindow *mainWindow;
     QCheckBox *engageFilter;

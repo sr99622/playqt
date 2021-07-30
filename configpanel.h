@@ -13,6 +13,7 @@ class ConfigPanel : public Panel
 
 public:
     ConfigPanel(QMainWindow *parent);
+    void sysGuiEnabled(bool arg);
     void autoSave() override;
 
     const QString blDefault = "#566170";
@@ -36,10 +37,13 @@ public:
     ColorButton *sd;
 
     QCheckBox *useSystemGui;
+    QPushButton *restore;
+
+    const QString sysGuiKey = "ConfigPanel/useSystemGui";
 
 public slots:
     void setDefaultStyle();
-
+    void stateChanged(int);
 };
 
 class ConfigDialog : public PanelDialog

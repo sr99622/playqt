@@ -37,17 +37,13 @@ VideoTab::VideoTab(QWidget *parent)
 
     comboResolutions = new QComboBox();
 
-    QString style = ((MainWindow*)((CameraPanel*)cameraPanel)->mainWindow)->style;
     QLineEdit *textBitrate = new QLineEdit();
-    textBitrate->setStyleSheet(style);
     spinBitrate = new SpinBox(textBitrate);
 
     QLineEdit *textFrameRate = new QLineEdit();
-    textFrameRate->setStyleSheet(style);
     spinFrameRate = new SpinBox(textFrameRate);
 
     QLineEdit *textGovLength = new QLineEdit();
-    textGovLength->setStyleSheet(style);
     spinGovLength = new SpinBox(textGovLength);
 
     lblResolutions = new QLabel("Resolution");

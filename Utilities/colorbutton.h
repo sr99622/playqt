@@ -11,9 +11,11 @@ class ColorButton : public QWidget
     Q_OBJECT
 
 public:
-    ColorButton(const QString& qss_name, const QString& color_name);
+    ColorButton(QMainWindow *parent, const QString& qss_name, const QString& color_name);
     QString getStyle() const;
+    void setColor(const QString& color_name);
 
+    QMainWindow *mainWindow;
     QString name;
     QColor color;
     QPushButton *button;
@@ -21,7 +23,6 @@ public:
 
 public slots:
     void clicked();
-
 
 };
 

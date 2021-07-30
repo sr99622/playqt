@@ -8,24 +8,14 @@
 ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
 {
     mainWindow = parent;
-
     btnPlay = new QPushButton();
-    btnPlay->setStyleSheet(getButtonStyle("play"));
-
     btnStop = new QPushButton();
-    btnStop->setStyleSheet(getButtonStyle("stop"));
-
     btnRewind = new QPushButton();
-    btnRewind->setStyleSheet(getButtonStyle("rewind"));
-
     btnFastForward = new QPushButton();
-    btnFastForward->setStyleSheet(getButtonStyle("fast-forward"));
-
     btnNext = new QPushButton();
-    btnNext->setStyleSheet(getButtonStyle("next"));
-
     btnPrevious = new QPushButton();
-    btnPrevious->setStyleSheet(getButtonStyle("previous"));
+    btnMute = new QPushButton();
+    styleButtons();
 
     QLabel *spacer = new QLabel("     ");
     engageFilter = new QCheckBox("Engage Filter");
@@ -34,8 +24,6 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     volumeSlider->setRange(0, 128);
     volumeSlider->setValue(100);
 
-    btnMute = new QPushButton();
-    btnMute->setStyleSheet(getButtonStyle("audio"));
 
     QWidget *volumePanel = new QWidget;
     QHBoxLayout *volumeLayout = new QHBoxLayout;
@@ -72,11 +60,20 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
 
 }
 
+void ControlPanel::styleButtons()
+{
+    btnPlay->setStyleSheet(getButtonStyle("play"));
+    btnStop->setStyleSheet(getButtonStyle("stop"));
+    btnRewind->setStyleSheet(getButtonStyle("rewind"));
+    btnFastForward->setStyleSheet(getButtonStyle("fast-forward"));
+    btnNext->setStyleSheet(getButtonStyle("next"));
+    btnPrevious->setStyleSheet(getButtonStyle("previous"));
+    btnMute->setStyleSheet(getButtonStyle("audio"));
+}
+
 QString ControlPanel::getButtonStyle(const QString& name) const
 {
-    bool native = false;
-
-    if (native)
+    if (MW->config()->useSystemGui->isChecked())
         return QString("QPushButton {image:url(:%1_lo.png);}").arg(name);
     else
         return QString("QPushButton {image:url(:%1.png);} QPushButton:hover {image:url(:%1_hi.png);} QPushButton:pressed {image:url(:%1.png);}").arg(name);
@@ -218,7 +215,7 @@ bool ControlPanel::checkCodec(const QString& filename)
 
 void ControlPanel::engage(int state)
 {
-    MW->filterDialog->getPanel()->engageFilter->setChecked(state);
+    MW->filter()->engageFilter->setChecked(state);
 }
 
 void ControlPanel::test()

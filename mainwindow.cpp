@@ -10,14 +10,14 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     filename = QString(co->input_filename);
     av_log_set_level(AV_LOG_PANIC);
 
+    settings = new QSettings("PlayQt", "Program Settings");
     configDialog = new ConfigDialog(this);
 
-    screen = QApplication::primaryScreen();
-    settings = new QSettings("PlayQt", "Program Settings");
     autoSaveTimer = new QTimer(this);
     connect(autoSaveTimer, SIGNAL(timeout()), this, SLOT(autoSave()));
     autoSaveTimer->start(10000);
 
+    screen = QApplication::primaryScreen();
     QRect screenSize = screen->geometry();
     int w = min(APP_DEFAULT_WIDTH, screenSize.width());
     int h = min(APP_DEFAULT_HEIGHT, screenSize.height());
@@ -47,9 +47,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     connect(timer, SIGNAL(timeout()), this, SLOT(poll()));
     timer->start(1000 / 30);
 
-    mainPanel = new MainPanel(this);
-    applyStyle();
-
     tabWidget = new QTabWidget(this);
     tabWidget->setMinimumWidth(100);
 
@@ -62,6 +59,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     tabWidget->addTab(picturePanel, tr("Pictures"));
     tabWidget->addTab(audioPanel, tr("Audio"));
     tabWidget->addTab(cameraPanel, tr("Cameras"));
+
+    mainPanel = new MainPanel(this);
 
     splitter = new QSplitter(Qt::Orientation::Horizontal, this);
     splitter->addWidget(mainPanel);
@@ -138,6 +137,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     connect(helpMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
     connect(co, SIGNAL(showHelp(const QString&)), optionDialog->panel, SLOT(showConfig(const QString&)));
 
+    applyStyle();
+
     sdlCustomEventType = SDL_RegisterEvents(1);
     av_init_packet(&flush_pkt);
     flush_pkt.data = (uint8_t*)&flush_pkt;
@@ -146,13 +147,13 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     int startup_volume = av_clip(co->startup_volume, 0, 128);
     if (startup_volume == 0)
-        mainPanel->controlPanel->mute();
+        control()->mute();
     else
-        mainPanel->controlPanel->volumeSlider->setValue(startup_volume);
+        control()->volumeSlider->setValue(startup_volume);
 
     if (co->input_filename) {
         launcher = new Launcher(this);
-        connect(launcher, SIGNAL(done()), mainPanel->controlPanel, SLOT(play()));
+        connect(launcher, SIGNAL(done()), control(), SLOT(play()));
         QThreadPool::globalInstance()->tryStart(launcher);
     }
 
@@ -167,23 +168,23 @@ void MainWindow::menuAction(QAction *action)
     else if (action->text() == "E&xit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_X))
         close();
     else if (action->text() == "&Play/Pause" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_P))
-        mainPanel->controlPanel->play();
+        control()->play();
     else if (action->text() == "&Rewind" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_R))
-        mainPanel->controlPanel->rewind();
+        control()->rewind();
     else if (action->text() == "Fas&t Forward" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_T))
-        mainPanel->controlPanel->fastforward();
+        control()->fastforward();
     else if (action->text() == "Pre&vious" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_V))
-        mainPanel->controlPanel->previous();
+        control()->previous();
     else if (action->text() == "&Next" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_N))
-        mainPanel->controlPanel->next();
+        control()->next();
     else if (action->text() == "&Quit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_Q))
-        mainPanel->controlPanel->quit();
+        control()->quit();
     else if (action->text() == "&Mute" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_M))
-        mainPanel->controlPanel->mute();
+        control()->mute();
     else if (action->text() == "&Filters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_F))
         if (filterDialog->isVisible()) filterDialog->hide(); else filterDialog->show();
     else if (action->text() == "&Engage" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_E))
-        (filterDialog->getPanel()->engageFilter->setChecked(!filterDialog->getPanel()->engageFilter->isChecked()));
+        (filter()->engageFilter->setChecked(!filter()->engageFilter->isChecked()));
     else if (action->text() == "&Set Parameters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_S))
         if (parameterDialog->isVisible()) parameterDialog->hide(); else parameterDialog->show();
     else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))
@@ -221,7 +222,7 @@ void MainWindow::runLoop()
     if (is) {
         if (!quitter) {
             quitter = new Quitter(this);
-            connect(quitter, SIGNAL(done()), mainPanel->controlPanel, SLOT(play()));
+            connect(quitter, SIGNAL(done()), control(), SLOT(play()));
         }
         QThreadPool::globalInstance()->tryStart(quitter);
     }
@@ -280,11 +281,11 @@ void MainWindow::guiUpdate(int arg)
 
 void MainWindow::initializeSDL()
 {
-    display.window = SDL_CreateWindowFrom((void*)mainPanel->displayContainer->display->winId());
-    display.renderer = SDL_CreateRenderer(display.window, -1, 0);
-    SDL_GetRendererInfo(display.renderer, &display.renderer_info);
+    ffDisplay.window = SDL_CreateWindowFrom((void*)display()->winId());
+    ffDisplay.renderer = SDL_CreateRenderer(ffDisplay.window, -1, 0);
+    SDL_GetRendererInfo(ffDisplay.renderer, &ffDisplay.renderer_info);
 
-    if (!display.window || !display.renderer || !display.renderer_info.num_texture_formats) {
+    if (!ffDisplay.window || !ffDisplay.renderer || !ffDisplay.renderer_info.num_texture_formats) {
         av_log(NULL, AV_LOG_FATAL, "Failed to create window or renderer: %s", SDL_GetError());
     }
 }
@@ -328,7 +329,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     //filterDialog->closeEvent(event);
 
     autoSave();
-    filterDialog->getPanel()->engageFilter->setChecked(false);
+    filter()->engageFilter->setChecked(false);
 
     SDL_Event sdl_event;
     sdl_event.type = FF_QUIT_EVENT;
@@ -351,12 +352,21 @@ void MainWindow::openFile()
     QString path = QFileDialog::getOpenFileName(this, "", default_path, "");
     if (path.length() > 0) {
         co->input_filename = av_strdup(path.toLatin1().data());
-        mainPanel->controlPanel->play();
+        control()->play();
     }
 }
 
 void MainWindow::applyStyle()
 {
+    if (config()->useSystemGui->isChecked()) {
+        setStyleSheet("");
+        control()->styleButtons();
+        filter()->styleButtons();
+        display()->setStyleSheet("");
+        parameter()->applyStyle();
+        return;
+    }
+
     QFile f(":darkstyle.qss");
     if (!f.exists()) {
         msg("Error: MainWindow::getThemes() Style sheet not found");
@@ -376,9 +386,12 @@ void MainWindow::applyStyle()
         style.replace("selection_dark",    config()->sd->color.name());
 
         setStyleSheet(style);
+        control()->styleButtons();
+        filter()->styleButtons();
+        display()->setStyleSheet(QString("QFrame {background-color: %1; padding: 0px;}").arg(config()->bm->color.name()));
+        parameter()->applyStyle();
     }
 
-    mainPanel->displayContainer->display->setStyleSheet(QString("QFrame {background-color: %1; padding: 0px;}").arg(config()->bm->color.name()));
 }
 
 void MainWindow::showHelp(const QString &str)
@@ -389,6 +402,31 @@ void MainWindow::showHelp(const QString &str)
 ConfigPanel *MainWindow::config()
 {
     return (ConfigPanel*)configDialog->panel;
+}
+
+ControlPanel *MainWindow::control()
+{
+    return mainPanel->controlPanel;
+}
+
+FilterPanel *MainWindow::filter()
+{
+    return (FilterPanel*)filterDialog->panel;
+}
+
+ParameterPanel *MainWindow::parameter()
+{
+    return (ParameterPanel*)parameterDialog->panel;
+}
+
+CountPanel *MainWindow::count()
+{
+    return (CountPanel*)countDialog->panel;
+}
+
+QLabel *MainWindow::display()
+{
+    return mainPanel->displayContainer->display;
 }
 
 void MainWindow::ping(vector<bbox_t>* arg)
@@ -437,8 +475,8 @@ void Quitter::run()
     while (MW->e->running)
         QThread::msleep(10);
 
-    MW->mainPanel->controlPanel->stopped = true;
-    MW->mainPanel->controlPanel->paused = false;
+    MW->control()->stopped = true;
+    MW->control()->paused = false;
 
     emit done();
 }

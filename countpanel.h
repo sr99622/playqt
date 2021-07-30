@@ -14,6 +14,7 @@
 #include "Utilities/directorysetter.h"
 #include "Utilities/numbertextbox.h"
 #include "Filters/darknet.h"
+#include "alarmpanel.h"
 
 class ObjDrawer : public QWidget
 {
@@ -42,6 +43,24 @@ signals:
 
 public slots:
     void stateChanged(int);
+    void buttonPressed();
+
+};
+
+class AlarmSetter : public QWidget
+{
+    Q_OBJECT
+
+public:
+    AlarmSetter(QMainWindow *parent, int obj_id);
+
+    QMainWindow *mainWindow;
+    QPushButton *button;
+    int obj_id;
+
+    AlarmDialog *alarmDialog;
+
+public slots:
     void buttonPressed();
 
 };
@@ -93,7 +112,6 @@ public slots:
     void setDir(const QString&);
     void saveOnChecked(int);
     void intervalEdited();
-    void radioChecked();
     void timeout();
 
 };

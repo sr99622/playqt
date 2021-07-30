@@ -50,18 +50,10 @@ FilterPanel::FilterPanel(QMainWindow *parent) : Panel(parent)
     connect(rightView->selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), rightModel, SLOT(onSelectedItemsChanged(QItemSelection, QItemSelection)));
 
     moveUpButton = new QPushButton("^");
-    //moveUpButton->setMaximumWidth(30);
-    moveUpButton->setMinimumHeight(40);
     moveDownButton = new QPushButton("v");
-    //moveDownButton->setMaximumWidth(30);
-    moveDownButton->setMinimumHeight(40);
-
     moveRightButton = new QPushButton(">");
-    moveRightButton->setMinimumWidth(42);
-    moveRightButton->setMaximumHeight(17);
     moveLeftButton = new QPushButton("<");
-    moveLeftButton->setMinimumWidth(42);
-    moveLeftButton->setMaximumHeight(17);
+    styleButtons();
 
     connect(moveLeftButton, SIGNAL(clicked()), this, SLOT(moveLeft()));
     connect(moveRightButton, SIGNAL(clicked()), this, SLOT(moveRight()));
@@ -121,6 +113,25 @@ void FilterPanel::autoSave()
     for (int i = 0; i < filters.size(); i++) {
         filters[i]->autoSave();
     }
+}
+
+void FilterPanel::styleButtons()
+{
+    if (MW->config()->useSystemGui->isChecked()) {
+        moveUpButton->setMaximumWidth(30);
+        moveDownButton->setMaximumWidth(30);
+        moveRightButton->setMaximumHeight(30);
+        moveLeftButton->setMaximumHeight(30);
+    }
+    else {
+        moveUpButton->setMinimumHeight(40);
+        moveDownButton->setMinimumHeight(40);
+        moveRightButton->setMinimumWidth(42);
+        moveRightButton->setMaximumHeight(17);
+        moveLeftButton->setMinimumWidth(42);
+        moveLeftButton->setMaximumHeight(17);
+    }
+
 }
 
 Filter *FilterPanel::getCurrentFilter()
@@ -340,7 +351,6 @@ Filter *FilterPanel::getFilterByName(QString filter_name)
 
 FilterDialog::FilterDialog(QMainWindow *parent) : PanelDialog(parent)
 {
-    mainWindow = parent;
     setWindowTitle("Filter");
     panel = new FilterPanel(mainWindow);
     QVBoxLayout *layout = new QVBoxLayout;

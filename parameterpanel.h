@@ -50,12 +50,12 @@ public:
     void setCmdLine();
     void addOptionToSaver(OptionDef option);
     const QString getOptionStorageString();
+    void applyStyle();
     void saveSettings();
     void clearSettings();
     void restoreSettings();
     void set(int option_index, QString option_arg);
 
-    //QMainWindow *mainWindow;
     QComboBox *options;
     QLineEdit *parameter;
     QLabel *cmdLineEquiv;
@@ -88,9 +88,6 @@ class ParameterDialog : public PanelDialog
 public:
     ParameterDialog(QMainWindow *parent);
     void show();
-
-    //QMainWindow *mainWindow;
-    //ParameterPanel *panel;
 
 };
 

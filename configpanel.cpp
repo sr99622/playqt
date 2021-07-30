@@ -13,15 +13,15 @@ ConfigPanel::ConfigPanel(QMainWindow *parent) : Panel(parent)
     QLabel *lblSM = new QLabel("Selection Medium");
     QLabel *lblSD = new QLabel("Selection Dark");
 
-    bl = new ColorButton("background_light", blDefault);
-    bm = new ColorButton("background_medium", bmDefault);
-    bd = new ColorButton("background_dark", bdDefault);
-    fl = new ColorButton("foreground_light", flDefault);
-    fm = new ColorButton("foreground_medium", fmDefault);
-    fd = new ColorButton("foreground_dark", fdDefault);
-    sl = new ColorButton("selection_light", slDefault);
-    sm = new ColorButton("selection_medium", smDefault);
-    sd = new ColorButton("selection_dark", sdDefault);
+    bl = new ColorButton(mainWindow, "background_light", blDefault);
+    bm = new ColorButton(mainWindow, "background_medium", bmDefault);
+    bd = new ColorButton(mainWindow, "background_dark", bdDefault);
+    fl = new ColorButton(mainWindow, "foreground_light", flDefault);
+    fm = new ColorButton(mainWindow, "foreground_medium", fmDefault);
+    fd = new ColorButton(mainWindow, "foreground_dark", fdDefault);
+    sl = new ColorButton(mainWindow, "selection_light", slDefault);
+    sm = new ColorButton(mainWindow, "selection_medium", smDefault);
+    sd = new ColorButton(mainWindow, "selection_dark", sdDefault);
 
     QGridLayout *cLayout = new QGridLayout();
     cLayout->addWidget(lblBL,   0, 0, 1, 1);
@@ -46,48 +46,59 @@ ConfigPanel::ConfigPanel(QMainWindow *parent) : Panel(parent)
     QWidget *cPanel = new QWidget();
     cPanel->setLayout(cLayout);
 
-    useSystemGui = new QCheckBox("Use System GUI");
-
-    QPushButton *save = new QPushButton("Save");
-    QPushButton *restore = new QPushButton("Defaults");
-    QPushButton *apply = new QPushButton("Apply");
-    int button_width = apply->fontMetrics().boundingRect("XXXXXXXX").width();
-    save->setMaximumWidth(button_width);
+    restore = new QPushButton("Defaults");
+    int button_width = restore->fontMetrics().boundingRect("XXXXXXXX").width();
     restore->setMaximumWidth(button_width);
     connect(restore, SIGNAL(clicked()), this, SLOT(setDefaultStyle()));
-    apply->setMaximumWidth(button_width);
-    connect(apply, SIGNAL(clicked()), mainWindow, SLOT(applyStyle()));
+
+    useSystemGui = new QCheckBox("Use System GUI");
+    if (MW->settings->contains(sysGuiKey))
+        useSystemGui->setChecked(MW->settings->value(sysGuiKey).toBool());
+    sysGuiEnabled(useSystemGui->isChecked());
+    connect(useSystemGui, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
 
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(cPanel,        0, 0, 1, 4);
     layout->addWidget(useSystemGui,  1, 0, 1, 1);
-    layout->addWidget(save,          2, 1, 1, 1);
-    layout->addWidget(restore,       2, 2, 1, 1);
-    layout->addWidget(apply,         2, 3, 1, 1);
+    layout->addWidget(restore,       2, 4, 1, 1);
     setLayout(layout);
 
 }
 
+void ConfigPanel::sysGuiEnabled(bool arg)
+{
+    bl->setEnabled(!arg);
+    bm->setEnabled(!arg);
+    bd->setEnabled(!arg);
+    fl->setEnabled(!arg);
+    fm->setEnabled(!arg);
+    fd->setEnabled(!arg);
+    sl->setEnabled(!arg);
+    sm->setEnabled(!arg);
+    sd->setEnabled(!arg);
+
+    restore->setEnabled(!arg);
+}
+
+void ConfigPanel::stateChanged(int state)
+{
+    MW->settings->setValue(sysGuiKey, useSystemGui->isChecked());
+    MW->applyStyle();
+    sysGuiEnabled(useSystemGui->isChecked());
+}
+
 void ConfigPanel::setDefaultStyle()
 {
-    bl->color.setNamedColor(blDefault);
-    bl->setStyleSheet(bl->getStyle());
-    bm->color.setNamedColor(bmDefault);
-    bm->setStyleSheet(bm->getStyle());
-    bd->color.setNamedColor(bdDefault);
-    bd->setStyleSheet(bd->getStyle());
-    fl->color.setNamedColor(flDefault);
-    fl->setStyleSheet(fl->getStyle());
-    fm->color.setNamedColor(fmDefault);
-    fm->setStyleSheet(fm->getStyle());
-    fd->color.setNamedColor(fdDefault);
-    fd->setStyleSheet(fd->getStyle());
-    sl->color.setNamedColor(slDefault);
-    sl->setStyleSheet(sl->getStyle());
-    sm->color.setNamedColor(smDefault);
-    sm->setStyleSheet(sm->getStyle());
-    sd->color.setNamedColor(sdDefault);
-    sd->setStyleSheet(sd->getStyle());
+    bl->setColor(blDefault);
+    bm->setColor(bmDefault);
+    bd->setColor(bdDefault);
+    fl->setColor(flDefault);
+    fm->setColor(fmDefault);
+    fd->setColor(fdDefault);
+    sl->setColor(slDefault);
+    sm->setColor(smDefault);
+    sd->setColor(sdDefault);
+
     MW->applyStyle();
 }
 

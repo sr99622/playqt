@@ -59,7 +59,7 @@ void FilterChain::process(Frame *vp)
         }
     }
 
-    FilterPanel *panel = MW->filterDialog->getPanel();
+    FilterPanel *panel = MW->filter();
 
     if (panel->engageFilter->isChecked()) {
         for (int i = 0; i < panel->leftModel->filters.size(); i++)

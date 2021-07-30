@@ -1,20 +1,27 @@
 #include "colorbutton.h"
 #include "mainwindow.h"
 
-ColorButton::ColorButton(const QString& qss_name, const QString& color_name)
+ColorButton::ColorButton(QMainWindow *parent, const QString& qss_name, const QString& color_name)
 {
+    mainWindow = parent;
     name = qss_name;
-    color.setNamedColor(color_name);
+    settingsKey = qss_name + "/" + color_name;
+    color.setNamedColor(MW->settings->value(settingsKey, color_name).toString());
     button = new QPushButton();
     button->setStyleSheet(getStyle());
     connect(button, SIGNAL(clicked()), this, SLOT(clicked()));
-    settingsKey = qss_name + "/" + color_name;
-
     QGridLayout *layout = new QGridLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(button, 0, 0, 1, 1);
     setLayout(layout);
 
+}
+
+void ColorButton::setColor(const QString& color_name)
+{
+    color.setNamedColor(color_name);
+    button->setStyleSheet(getStyle());
+    MW->settings->setValue(settingsKey, color.name());
 }
 
 QString ColorButton::getStyle() const
@@ -29,5 +36,7 @@ void ColorButton::clicked()
     if (result.isValid()) {
         color = result;
         button->setStyleSheet(getStyle());
+        MW->settings->setValue(settingsKey, color.name());
+        MW->applyStyle();
     }
 }

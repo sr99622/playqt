@@ -557,7 +557,8 @@ int CommandOptions::opt_sync(void* optctx, const char* opt, const char* arg)
         QMessageBox::warning(MW->parameterDialog, "Invalid setting", msg);
         av_sync_type = AV_SYNC_AUDIO_MASTER;
         clock_sync = nullptr;
-        ((ParameterPanel*)MW->parameterDialog->panel)->parameter->setText("");
+        MW->parameter()->parameter->setText("");
+        //((ParameterPanel*)MW->parameterDialog->panel)->parameter->setText("");
         //av_log(NULL, AV_LOG_ERROR, "Unknown value for %s: %s\n", opt, arg);
         //exit(1);
         return -1;

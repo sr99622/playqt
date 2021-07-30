@@ -3,7 +3,7 @@
 
 CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
 {
-    darknet = (Darknet*)MW->filterDialog->getPanel()->getFilterByName("Darknet");
+    darknet = (Darknet*)MW->filter()->getFilterByName("Darknet");
     connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
 
     timer = new QTimer(this);
@@ -19,9 +19,10 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
         list->item(i)->setCheckState(Qt::Unchecked);
     }
 
-    table = new QTableWidget(0, 3);
+    table = new QTableWidget(0, 4);
+    table->horizontalHeader()->setStyleSheet(QString("QHeaderView::section:last {border-right: 1px solid %1;}").arg(MW->config()->fd->color.name()));
     QStringList headers;
-    headers << tr("Name") << tr("Count") << tr("Show");
+    headers << tr("Name") << tr("Count") << tr("Show") << tr("Alarm");
     table->setHorizontalHeaderLabels(headers);
     table->verticalHeader()->setVisible(false);
 
@@ -217,17 +218,6 @@ void CountPanel::saveOnChecked(int arg)
     }
 }
 
-void CountPanel::radioChecked()
-{
-    /*
-    cout << "CountPanel::radioChecked" << endl;
-    if (saveEveryFrame->isChecked())
-        MW->settings->setValue(groupBoxKey, 0);
-    else
-        MW->settings->setValue(groupBoxKey, 1);
-    */
-}
-
 void CountPanel::intervalEdited()
 {
     MW->settings->setValue(intervalKey, txtInterval->text());
@@ -329,7 +319,7 @@ void CountPanel::addNewLine(int obj_id)
     name->setFlags(name->flags() & ~Qt::ItemIsEditable);
     table->setItem(table->rowCount()-1, 0, name);
     QTableWidgetItem *sum = new QTableWidgetItem("0");
-    sum->setTextAlignment(Qt::AlignRight);
+    sum->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     sum->setFlags(sum->flags() & ~Qt::ItemIsEditable);
     table->setItem(table->rowCount()-1, 1, sum);
     if (MW->settings->contains(objDrawer->getSettingsKey()))
@@ -341,6 +331,8 @@ void CountPanel::addNewLine(int obj_id)
     if (objDrawer->show)
         darknet->obj_drawn[objDrawer->obj_id] = objDrawer->color;
     MW->settings->setValue(objDrawer->getSettingsKey(), objDrawer->saveState());
+    AlarmSetter *setter = new AlarmSetter(mainWindow, obj_id);
+    table->setCellWidget(table->rowCount()-1, 3, setter);
 }
 
 void CountPanel::itemChanged(QListWidgetItem *item)
@@ -355,7 +347,6 @@ void CountPanel::itemChanged(QListWidgetItem *item)
     else {
         int index = rowOf(obj_id);
         ObjDrawer *objDrawer = (ObjDrawer*)table->cellWidget(index, 2);
-        //objDrawer->emit shown(obj_id, YUVColor());
         objDrawer->signalShown(obj_id, YUVColor());
         MW->settings->remove(objDrawer->getSettingsKey());
         table->removeCellWidget(index, 2);
@@ -371,9 +362,31 @@ void CountPanel::itemClicked(QListWidgetItem *item)
         item->setCheckState(Qt::Checked);
 }
 
-void ObjDrawer::signalShown(int obj_id, const YUVColor& color)
+AlarmSetter::AlarmSetter(QMainWindow *parent, int obj_id)
 {
-    emit shown(obj_id, color);
+    mainWindow = parent;
+    this->obj_id = obj_id;
+    button = new QPushButton("...");
+    button->setMaximumWidth(30);
+    button->setMaximumHeight(20);
+    QGridLayout *layout = new QGridLayout();
+    layout->addWidget(button, 0, 0, 1, 1);
+    layout->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout);
+
+    alarmDialog = nullptr;
+
+    connect(button, SIGNAL(clicked()), this, SLOT(buttonPressed()));
+}
+
+void AlarmSetter::buttonPressed()
+{
+    cout << "AlarmSetter::buttonPressed()" << endl;
+    if (!alarmDialog)
+        alarmDialog = new AlarmDialog(mainWindow, obj_id);
+    QString obj_name = MW->count()->names[obj_id];
+    alarmDialog->setWindowTitle(QString("Alarm Configuration - ") + obj_name);
+    alarmDialog->show();
 }
 
 ObjDrawer::ObjDrawer(QMainWindow *parent, int obj_id)
@@ -396,6 +409,11 @@ ObjDrawer::ObjDrawer(QMainWindow *parent, int obj_id)
 
     connect(chkShow, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
     connect(btnColor, SIGNAL(clicked()), this, SLOT(buttonPressed()));
+}
+
+void ObjDrawer::signalShown(int obj_id, const YUVColor& color)
+{
+    emit shown(obj_id, color);
 }
 
 QString ObjDrawer::saveState() const

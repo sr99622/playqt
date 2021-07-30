@@ -112,12 +112,17 @@ public:
     void openFile();
 
     ConfigPanel *config();
+    ControlPanel *control();
+    FilterPanel *filter();
+    ParameterPanel *parameter();
+    CountPanel *count();
+    QLabel *display();
 
     QString filename;
 
     CommandOptions *co;
     MainPanel *mainPanel;
-    Display display;
+    Display ffDisplay;
     AVPacket flush_pkt;
     EventHandler *e;
     VideoState *is = nullptr;

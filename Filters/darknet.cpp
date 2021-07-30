@@ -269,7 +269,7 @@ void DarknetLoader::run()
     ((DarknetModel*)model)->detector = new Detector(cfg_file, weights_file, gpu_id);
     emit done(0);
     MainWindow *mainWindow = (MainWindow*)((DarknetModel*)model)->mainWindow;
-    FilterPanel *panel = mainWindow->filterDialog->getPanel();
+    FilterPanel *panel = mainWindow->filter();
     ((Darknet*)panel->getFilterByName("Darknet"))->loading = false;
 }
 

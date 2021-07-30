@@ -20,7 +20,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : Panel(parent)
 
     QLabel *lbl00 = new QLabel("Command Line Equivalent: ");
     cmdLineEquiv = new QLabel();
-    cmdLineEquiv->setStyleSheet("QLabel { background-color : #3E4754; color : #C6D9F2; }");
+    applyStyle();
     cmdLineEquiv->setWordWrap(true);
 
     QPushButton *set = new QPushButton("Set");
@@ -97,6 +97,17 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : Panel(parent)
 void ParameterPanel::apply()
 {
     MW->runLoop();
+}
+
+void ParameterPanel::applyStyle()
+{
+    if (MW->config()->useSystemGui->isChecked()) {
+        cmdLineEquiv->setStyleSheet("");
+    }
+    else {
+        cmdLineEquiv->setStyleSheet(QString("QLabel { background-color : %1; color : %2; }")
+                  .arg(MW->config()->bm->color.name()).arg(MW->config()->fl->color.name()));
+    }
 }
 
 void ParameterPanel::comboActivated(int index)
@@ -630,7 +641,7 @@ void SavedCmdLines::remove()
     QString msg = QString("You are about to delete the command '%1'\nAre you sure you want to continue?").arg(currentItem()->text());
     QMessageBox::StandardButton result = QMessageBox::question(this, "PlayQt", msg);
     if (result == QMessageBox::Yes) {
-        ((ParameterPanel*)MW->parameterDialog->panel)->clearSettings();
+        MW->parameter()->clearSettings();
 
         int row = currentRow();
         QListWidgetItem *item = takeItem(row);
@@ -644,7 +655,7 @@ void SavedCmdLines::remove()
         }
         */
 
-        ((ParameterPanel*)MW->parameterDialog->panel)->saveSettings();
+        MW->parameter()->saveSettings();
 
     }
 }
@@ -667,10 +678,10 @@ void SavedCmdLines::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_Return:
         if (currentItem())
-            ((ParameterPanel*)MW->parameterDialog->panel)->itemDoubleClicked(currentItem());
+            MW->parameter()->itemDoubleClicked(currentItem());
         break;
     case Qt::Key_Escape:
-        ((ParameterPanel*)MW->parameterDialog->panel)->clear();
+        MW->parameter()->clear();
         break;
     default:
         QListWidget::keyPressEvent(event);
@@ -682,5 +693,5 @@ void SavedCmdLines::mouseDoubleClickEvent(QMouseEvent *event)
 {
     QListWidgetItem *item = itemAt(event->pos());
     if (item)
-        ((ParameterPanel*)MW->parameterDialog->panel)->itemDoubleClicked(item);
+        MW->parameter()->itemDoubleClicked(item);
 }
