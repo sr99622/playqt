@@ -343,6 +343,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::msg(const QString &str)
 {
     messageBox->message->append(str);
+    messageBox->message->ensureCursorVisible();
 }
 
 void MainWindow::openFile()

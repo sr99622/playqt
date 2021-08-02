@@ -46,6 +46,7 @@ MessageBox::MessageBox(QMainWindow *parent) : PanelDialog(parent)
     dlgLayout->addWidget(message);
     dlgLayout->addWidget(buttonBox);
     setLayout(dlgLayout);
+    message->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 }
 
 void MessageBox::clear()

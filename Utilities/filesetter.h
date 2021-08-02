@@ -22,6 +22,7 @@ public:
     QPushButton *button;
     QString filename;
     QString filter;
+    QString defaultPath;
 
     QMainWindow *mainWindow;
 

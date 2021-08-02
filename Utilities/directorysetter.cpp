@@ -37,8 +37,8 @@ DirectorySetter::DirectorySetter(QMainWindow *parent, const QString& labelText)
     layout->setContentsMargins(0, 0, 0, 0);
     if (label->text() != "")
         layout->addWidget(label,  0, 0, 1, 1);
-    layout->addWidget(text,   0, 1, 1, 4);
-    layout->addWidget(button, 0, 5, 1, 1);
+    layout->addWidget(text,   0, 1, 1, 1);
+    layout->addWidget(button, 0, 2, 1, 1);
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
     setContentsMargins(0, 0, 0, 0);

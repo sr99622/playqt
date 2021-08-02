@@ -131,6 +131,14 @@ void CountPanel::ping(vector<bbox_t> *detections)
         int row = rowOf(sum.first);
         if (row > -1) {
             table->item(row, 1)->setText(QString::number(sum.second));
+
+            int test = 12;
+            int obj_id = sum.first;
+            int count = sum.second;
+
+            //emit feed(obj_id, count);
+
+            ((AlarmSetter*)table->cellWidget(row, 3))->alarmDialog->getPanel()->feed(count);
             if (saveOn->isChecked())
                 addCount(sum.first, sum.second);
         }
@@ -140,6 +148,11 @@ void CountPanel::ping(vector<bbox_t> *detections)
         int obj_id = idFromName(table->item(i, 0)->text());
         if (indexForSums(obj_id) < 0) {
             table->item(i, 1)->setText("0");
+
+
+            //emit feed(obj_id, 0);
+
+            ((AlarmSetter*)table->cellWidget(i, 3))->alarmDialog->getPanel()->feed(0);
             if (saveOn->isChecked())
                 addCount(obj_id, 0);
         }
@@ -332,6 +345,7 @@ void CountPanel::addNewLine(int obj_id)
         darknet->obj_drawn[objDrawer->obj_id] = objDrawer->color;
     MW->settings->setValue(objDrawer->getSettingsKey(), objDrawer->saveState());
     AlarmSetter *setter = new AlarmSetter(mainWindow, obj_id);
+    //connect(this, SIGNAL(feed(int, int)), setter, SLOT(feed(int, int)));
     table->setCellWidget(table->rowCount()-1, 3, setter);
 }
 
@@ -374,7 +388,8 @@ AlarmSetter::AlarmSetter(QMainWindow *parent, int obj_id)
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    alarmDialog = nullptr;
+    //alarmDialog = nullptr;
+    alarmDialog = new AlarmDialog(mainWindow, obj_id);
 
     connect(button, SIGNAL(clicked()), this, SLOT(buttonPressed()));
 }
@@ -382,8 +397,8 @@ AlarmSetter::AlarmSetter(QMainWindow *parent, int obj_id)
 void AlarmSetter::buttonPressed()
 {
     cout << "AlarmSetter::buttonPressed()" << endl;
-    if (!alarmDialog)
-        alarmDialog = new AlarmDialog(mainWindow, obj_id);
+    //if (!alarmDialog)
+    //    alarmDialog = new AlarmDialog(mainWindow, obj_id);
     QString obj_name = MW->count()->names[obj_id];
     alarmDialog->setWindowTitle(QString("Alarm Configuration - ") + obj_name);
     alarmDialog->show();

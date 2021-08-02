@@ -40,11 +40,22 @@ void FileSetter::setPath()
 
 void FileSetter::selectFile()
 {
+    /*
     QString default_path = text->text();
     if (default_path.length() == 0)
         default_path = QDir::homePath();
+    */
 
-    QString path = QFileDialog::getOpenFileName(mainWindow, label->text(), default_path, filter);
+    if (text->text().length() > 0) {
+        defaultPath = text->text();
+    }
+    else {
+        if (defaultPath.length() == 0) {
+            defaultPath = QDir::homePath();
+        }
+    }
+
+    QString path = QFileDialog::getOpenFileName(mainWindow, label->text(), defaultPath, filter);
     if (path.length() > 0) {
         filename = path;
         text->setText(filename);

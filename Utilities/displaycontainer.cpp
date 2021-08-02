@@ -29,8 +29,8 @@ DisplayContainer::DisplayContainer(QMainWindow *parent)
 {
     mainWindow = parent;
     display = new DisplayLabel();
-    display->setMinimumWidth(displayInitialWidth);
-    display->setMinimumHeight(displayInitialHeight);
+    //display->setMinimumWidth(displayInitialWidth);
+    //display->setMinimumHeight(displayInitialHeight);
     //display->setUpdatesEnabled(false);  // This setting prevents flicker in the display, deferred to render
     QGridLayout *layout = new QGridLayout();
     layout->setContentsMargins(11, 0, 11, 0);

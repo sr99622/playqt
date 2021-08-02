@@ -103,6 +103,9 @@ public:
     vector<pair<int, vector<int>>> counts;
     QMutex mutex;
 
+signals:
+    //void feed(int, int);
+
 public slots:
     void itemChanged(QListWidgetItem*);
     void itemClicked(QListWidgetItem*);
