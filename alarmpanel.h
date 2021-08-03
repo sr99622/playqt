@@ -4,14 +4,15 @@
 #include <QCheckBox>
 #include <QRunnable>
 #include <QRadioButton>
-#include <QMutex>
 #include <QSettings>
+#include <QSlider>
 
 #include "Utilities/kalman.h"
 #include "Utilities/paneldialog.h"
 #include "Utilities/numbertextbox.h"
 #include "Utilities/filesetter.h"
 #include "Utilities/directorysetter.h"
+#include "configpanel.h"
 
 #include <chrono>
 
@@ -21,6 +22,7 @@ struct AudioData
 {
     uint8_t *position;
     uint32_t length;
+    int volume;
 };
 
 class AlarmPlayer : public QObject, public QRunnable
@@ -30,15 +32,15 @@ class AlarmPlayer : public QObject, public QRunnable
 public:
     AlarmPlayer(QMainWindow *parent);
     void run() override;
-    void setLength(int length);
     void stop();
+    void mute(bool muted);
     static void audioCallback(void *userData, uint8_t *stream, int streamLength);
 
     QMainWindow *mainWindow;
     QString filename;
     AudioData audio;
-    QMutex mutex;
     bool running = false;
+    int lastVolume;
 
 signals:
     void done();
@@ -82,6 +84,7 @@ class AlarmPanel : public Panel
 public:
     AlarmPanel(QMainWindow *parent, int obj_id);
     ~AlarmPanel();
+    void autoSave() override;
     void feed(int count);
     QString key() const;
 
@@ -100,6 +103,7 @@ public:
     QRadioButton *playOnce;
     QRadioButton *playContinuous;
     QPushButton *btnTest;
+    QSlider *volumeSlider;
 
     bool minAlarmOn = false;
     bool maxAlarmOn = false;
@@ -109,13 +113,15 @@ public:
 
     Kalman k_count;
     bool first_pass = true;
-    high_resolution_clock::time_point t1;
-
+    high_resolution_clock::time_point lastTime;
+    ColorProfile alarmProfile;
+    ColorProfile storedProfile;
     AlarmPlayer *player;
 
     QString soundSetterKey;
     QString dirSetterKey;
     QString playOnceKey;
+    QString volumeKey;
 
     bool testing = false;
 
@@ -127,6 +133,9 @@ public slots:
     void soundPlayFinished();
     void chkSoundClicked(bool);
     void chkColorClicked(bool);
+    void volumeChanged(int);
+    void alarmOff();
+    void mute(bool);
 
 };
 

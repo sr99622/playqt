@@ -29,5 +29,6 @@ public:
 	AVRational next_pts_tb;
 	SDL_cond* empty_queue_cond;
 	SDL_Thread* decoder_tid;
+
 };
 

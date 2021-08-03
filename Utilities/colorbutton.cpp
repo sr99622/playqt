@@ -17,6 +17,12 @@ ColorButton::ColorButton(QMainWindow *parent, const QString& qss_name, const QSt
 
 }
 
+void ColorButton::setTempColor(const QString& color_name)
+{
+    color.setNamedColor(color_name);
+    button->setStyleSheet(getStyle());
+}
+
 void ColorButton::setColor(const QString& color_name)
 {
     color.setNamedColor(color_name);
@@ -37,6 +43,6 @@ void ColorButton::clicked()
         color = result;
         button->setStyleSheet(getStyle());
         MW->settings->setValue(settingsKey, color.name());
-        MW->applyStyle();
+        MW->applyStyle(MW->config()->getProfile());
     }
 }

@@ -137,7 +137,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     connect(helpMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
     connect(co, SIGNAL(showHelp(const QString&)), optionDialog->panel, SLOT(showConfig(const QString&)));
 
-    applyStyle();
+    applyStyle(config()->getProfile());
 
     sdlCustomEventType = SDL_RegisterEvents(1);
     av_init_packet(&flush_pkt);
@@ -357,14 +357,14 @@ void MainWindow::openFile()
     }
 }
 
-void MainWindow::applyStyle()
+void MainWindow::applyStyle(const ColorProfile& profile)
 {
     if (config()->useSystemGui->isChecked()) {
         setStyleSheet("");
         control()->styleButtons();
         filter()->styleButtons();
         display()->setStyleSheet("");
-        parameter()->applyStyle();
+        parameter()->applyStyle(profile);
         return;
     }
 
@@ -376,21 +376,21 @@ void MainWindow::applyStyle()
         f.open(QFile::ReadOnly | QFile::Text);
         style = QString(f.readAll());
 
-        style.replace("background_light",  config()->bl->color.name());
-        style.replace("background_medium", config()->bm->color.name());
-        style.replace("background_dark",   config()->bd->color.name());
-        style.replace("foreground_light",  config()->fl->color.name());
-        style.replace("foreground_medium", config()->fm->color.name());
-        style.replace("foreground_dark",   config()->fd->color.name());
-        style.replace("selection_light",   config()->sl->color.name());
-        style.replace("selection_medium",  config()->sm->color.name());
-        style.replace("selection_dark",    config()->sd->color.name());
+        style.replace("background_light",  profile.bl);
+        style.replace("background_medium", profile.bm);
+        style.replace("background_dark",   profile.bd);
+        style.replace("foreground_light",  profile.fl);
+        style.replace("foreground_medium", profile.fm);
+        style.replace("foreground_dark",   profile.fd);
+        style.replace("selection_light",   profile.sl);
+        style.replace("selection_medium",  profile.sm);
+        style.replace("selection_dark",    profile.sd);
 
         setStyleSheet(style);
         control()->styleButtons();
         filter()->styleButtons();
-        display()->setStyleSheet(QString("QFrame {background-color: %1; padding: 0px;}").arg(config()->bm->color.name()));
-        parameter()->applyStyle();
+        display()->setStyleSheet(QString("QFrame {background-color: %1; padding: 0px;}").arg(profile.bm));
+        parameter()->applyStyle(profile);
     }
 
 }

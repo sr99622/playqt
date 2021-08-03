@@ -14,6 +14,7 @@ public:
     ColorButton(QMainWindow *parent, const QString& qss_name, const QString& color_name);
     QString getStyle() const;
     void setColor(const QString& color_name);
+    void setTempColor(const QString& color_name);
 
     QMainWindow *mainWindow;
     QString name;

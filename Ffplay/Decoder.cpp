@@ -1,4 +1,5 @@
 #include "Decoder.h"
+#include "mainwindow.h"
 
 Decoder::Decoder()
 {

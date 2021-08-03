@@ -65,6 +65,35 @@ ConfigPanel::ConfigPanel(QMainWindow *parent) : Panel(parent)
 
 }
 
+ColorProfile ConfigPanel::getProfile() const
+{
+    ColorProfile profile;
+    profile.bl = bl->color.name();
+    profile.bm = bm->color.name();
+    profile.bd = bd->color.name();
+    profile.fl = fl->color.name();
+    profile.fm = fm->color.name();
+    profile.fd = fd->color.name();
+    profile.sl = sl->color.name();
+    profile.sm = sm->color.name();
+    profile.sd = sd->color.name();
+
+    return profile;
+}
+
+void ConfigPanel::setTempProfile(const ColorProfile& profile)
+{
+    bl->setTempColor(profile.bl);
+    bm->setTempColor(profile.bm);
+    bd->setTempColor(profile.bd);
+    fl->setTempColor(profile.fl);
+    fm->setTempColor(profile.fm);
+    fd->setTempColor(profile.fd);
+    sl->setTempColor(profile.sl);
+    sm->setTempColor(profile.sm);
+    sd->setTempColor(profile.sd);
+}
+
 void ConfigPanel::sysGuiEnabled(bool arg)
 {
     bl->setEnabled(!arg);
@@ -83,7 +112,7 @@ void ConfigPanel::sysGuiEnabled(bool arg)
 void ConfigPanel::stateChanged(int state)
 {
     MW->settings->setValue(sysGuiKey, useSystemGui->isChecked());
-    MW->applyStyle();
+    MW->applyStyle(getProfile());
     sysGuiEnabled(useSystemGui->isChecked());
 }
 
@@ -99,7 +128,7 @@ void ConfigPanel::setDefaultStyle()
     sm->setColor(smDefault);
     sd->setColor(sdDefault);
 
-    MW->applyStyle();
+    MW->applyStyle(getProfile());
 }
 
 void ConfigPanel::autoSave()

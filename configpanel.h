@@ -7,6 +7,19 @@
 #include <QColor>
 #include <QCheckBox>
 
+struct ColorProfile
+{
+    QString bl;
+    QString bm;
+    QString bd;
+    QString fl;
+    QString fm;
+    QString fd;
+    QString sl;
+    QString sm;
+    QString sd;
+};
+
 class ConfigPanel : public Panel
 {
     Q_OBJECT
@@ -15,6 +28,8 @@ public:
     ConfigPanel(QMainWindow *parent);
     void sysGuiEnabled(bool arg);
     void autoSave() override;
+    ColorProfile getProfile() const;
+    void setTempProfile(const ColorProfile& profile);
 
     const QString blDefault = "#566170";
     const QString bmDefault = "#3E4754";

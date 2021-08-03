@@ -27,6 +27,7 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     QGroupBox *groupBox = new QGroupBox("Alarm actions");
 
     chkSound = new AlarmCheckBox("Play Sound", key() + "/chkSound", MW->settings, false);
+    connect(chkSound, SIGNAL(clicked(bool)), this, SLOT(chkSoundClicked(bool)));
 
     soundSetter = new FileSetter(mainWindow, "File", "Sounds(*.wav)");
     soundSetter->defaultPath = "C:/Windows/Media";
@@ -42,6 +43,13 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     playContinuous->setChecked(!playOnce->isChecked());
     connect(playOnce, SIGNAL(toggled(bool)), this, SLOT(playOnceToggled(bool)));
 
+    volumeSlider = new QSlider(Qt::Horizontal, this);
+    volumeSlider->setRange(0, 128);
+    volumeKey = key() + "/volume";
+    volumeSlider->setValue(MW->settings->value(volumeKey, 100).toInt());
+    connect(volumeSlider, SIGNAL(valueChanged(int)), this, SLOT(volumeChanged(int)));
+    QLabel *lbl04 = new QLabel("Volume");
+
     QGridLayout *pLayout = new QGridLayout();
     pLayout->addWidget(playOnce,        0, 0, 1, 1);
     pLayout->addWidget(playContinuous,  0, 1, 1, 1);
@@ -49,6 +57,7 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     playBox->setLayout(pLayout);
 
     chkColor = new AlarmCheckBox("Change Color", key() + "/chkColor", MW->settings, false);
+    connect(chkColor, SIGNAL(clicked(bool)), this, SLOT(chkColorClicked(bool)));
 
     btnTest = new QPushButton("Test");
     btnTest->setMaximumWidth(btnTest->fontMetrics().boundingRect(btnTest->text()).width() * 1.5);
@@ -63,12 +72,14 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
 
     QGridLayout *gLayout = new QGridLayout();
     gLayout->addWidget(chkSound,     0, 0, 1, 1);
-    gLayout->addWidget(soundSetter,  0, 1, 1, 1);
+    gLayout->addWidget(soundSetter,  0, 1, 1, 2);
     gLayout->addWidget(btnTest,      1, 0, 1, 1, Qt::AlignCenter);
-    gLayout->addWidget(playBox,      1, 1, 1, 1);
-    gLayout->addWidget(chkColor,     2, 0, 1, 1);
-    gLayout->addWidget(chkWrite,     3, 0, 1, 1);
-    gLayout->addWidget(dirSetter,    3, 1, 1, 1);
+    gLayout->addWidget(playBox,      1, 1, 1, 2);
+    gLayout->addWidget(lbl04,        2, 1, 1, 1);
+    gLayout->addWidget(volumeSlider, 2, 2, 1, 1);
+    gLayout->addWidget(chkColor,     3, 0, 1, 1);
+    gLayout->addWidget(chkWrite,     4, 0, 1, 1);
+    gLayout->addWidget(dirSetter,    4, 1, 1, 2);
     groupBox->setLayout(gLayout);
 
     QPushButton *close = new QPushButton("Close");
@@ -90,7 +101,20 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
 
     player = new AlarmPlayer(mainWindow);
     player->filename = soundSetter->filename;
+    player->audio.volume = volumeSlider->value();
     connect(player, SIGNAL(done()), this, SLOT(soundPlayFinished()));
+    connect(MW->control(), SIGNAL(quitting()), this, SLOT(alarmOff()));
+    connect(MW->control(), SIGNAL(muting(bool)), this, SLOT(mute(bool)));
+
+    alarmProfile.bl = "#B33525";
+    alarmProfile.bm = "#8F0000";
+    alarmProfile.bd = "#630000";
+    alarmProfile.fl = "#D8DAB5";
+    alarmProfile.fm = "#864130";
+    alarmProfile.fd = "#735972";
+    alarmProfile.sl = "#FFFFFF";
+    alarmProfile.sm = "#F4F4E1";
+    alarmProfile.sd = "#306294";
 }
 
 AlarmPanel::~AlarmPanel()
@@ -98,52 +122,65 @@ AlarmPanel::~AlarmPanel()
     player->stop();
 }
 
+void AlarmPanel::mute(bool muted)
+{
+    player->mute(muted);
+    if (muted)
+        volumeSlider->setEnabled(false);
+    else
+        volumeSlider->setEnabled(true);
+}
+
+void AlarmPanel::alarmOff()
+{
+    cout << "AlarmPanel::alarmOff" << endl;
+    if (minAlarmOn || maxAlarmOn) {
+        QString str;
+        QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Min Alarm for "
+                          << MW->count()->names[obj_id] << " turned off Manually";
+        MW->msg(str);
+        minAlarmOn = false;
+        minAlarmStart = reference;
+        MW->applyStyle(MW->config()->getProfile());
+        player->stop();
+    }
+}
+
 void AlarmPanel::feed(int count)
 {
-    //cout << "count in : " << count << endl;
-
     if (first_pass) {
         cout << "First Pass" << endl;
-        t1 = high_resolution_clock::now();
+        lastTime = high_resolution_clock::now();
         first_pass = false;
         return;
     }
 
     auto now = high_resolution_clock::now();
-    long msec = duration_cast<milliseconds>(now - t1).count();
-
-    //cout << "msec: " << msec << endl;
+    long msec = duration_cast<milliseconds>(now - lastTime).count();
 
     if (!k_count.initialized)
         k_count.initialize(count, 0, 0.2f, 0.1f);
     else
         k_count.measure(count, msec);
 
-    //cout << "k_count.xh00: " << k_count.xh00 << endl;
-
-    t1 = now;
-
-    long test = duration_cast<milliseconds>(minAlarmStart - reference).count();
-    //cout << "test: " << test << endl;
+    lastTime = now;
 
     if (chkMin->isChecked()) {
         if (k_count.xh00 < minLimit->floatValue()) {
-            //cout << "Min Alarm Condition Met" << endl;
             if (duration_cast<milliseconds>(minAlarmStart - reference).count() == 0) {
-                //cout << "Starting timer" << endl;
                 minAlarmStart = now;
             }
             else {
                 if (duration_cast<milliseconds>(now - minAlarmStart).count() > minLimitTime->floatValue() * 1000) {
-                    //cout << "TURN ALARM ON" << endl;
                     if (!minAlarmOn) {
                         QString str;
                         QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Min Alarm Condition Met for "
                                           << MW->count()->names[obj_id] << " count: " << k_count.xh00;
                         MW->msg(str);
                         minAlarmOn = true;
-                        if (chkColor->isChecked())
-                            MW->setStyleSheet("QWidget {background-color: red;}");
+                        if (chkColor->isChecked()) {
+                            MW->applyStyle(alarmProfile);
+                        }
                         if (chkSound->isChecked()) {
                             if (player->filename.length() > 0) {
                                 QThreadPool::globalInstance()->tryStart(player);
@@ -152,27 +189,77 @@ void AlarmPanel::feed(int count)
                     }
                 }
             }
-
         }
         else {
-            //cout << "TURN ALARM OFF" << endl;
+
+            minAlarmStart = reference;
+
             if (minAlarmOn) {
                 QString str;
                 QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Min Alarm for "
                                   << MW->count()->names[obj_id] << " turned off";
                 MW->msg(str);
                 minAlarmOn = false;
-                minAlarmStart = reference;
-                MW->setStyleSheet(MW->style);
+                //minAlarmStart = reference;
+                MW->applyStyle(MW->config()->getProfile());
                 player->stop();
             }
         }
     }
+
+    if (chkMax->isChecked()) {
+        if (k_count.xh00 > maxLimit->floatValue()) {
+            if (duration_cast<milliseconds>(maxAlarmStart - reference).count() == 0) {
+                maxAlarmStart = now;
+            }
+            else {
+                if (duration_cast<milliseconds>(now - maxAlarmStart).count() > maxLimitTime->floatValue() * 1000) {
+                    if (!maxAlarmOn) {
+                        QString str;
+                        QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Max Alarm Condition Met for "
+                                          << MW->count()->names[obj_id] << " count: " << k_count.xh00;
+                        MW->msg(str);
+                        maxAlarmOn = true;
+                        if (chkColor->isChecked()) {
+                            MW->applyStyle(alarmProfile);
+                        }
+                        if (chkSound->isChecked()) {
+                            if (player->filename.length() > 0) {
+                                QThreadPool::globalInstance()->tryStart(player);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else {
+
+            maxAlarmStart = reference;
+
+            if (maxAlarmOn) {
+                QString str;
+                QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Min Alarm for "
+                                  << MW->count()->names[obj_id] << " turned off";
+                MW->msg(str);
+                maxAlarmOn = false;
+                //minAlarmStart = reference;
+                MW->applyStyle(MW->config()->getProfile());
+                player->stop();
+            }
+        }
+    }
+
 }
 
 void AlarmPanel::chkColorClicked(bool checked)
 {
-
+    cout << "AlarmPanel::chkColorClicked" << endl;
+    if (minAlarmOn || maxAlarmOn) {
+        if (checked)
+            MW->applyStyle(alarmProfile);
+        else
+            MW->applyStyle(MW->config()->getProfile());
+    }
 }
 
 void AlarmPanel::chkSoundClicked(bool checked)
@@ -189,13 +276,29 @@ void AlarmPanel::chkSoundClicked(bool checked)
     }
 }
 
+void AlarmPanel::autoSave()
+{
+    if (changed) {
+        cout << "AlarmPanel::autoSave" << endl;
+        MW->settings->setValue(volumeKey, volumeSlider->value());
+        changed = false;
+    }
+}
+
+void AlarmPanel::volumeChanged(int volume)
+{
+    cout << "AlarmPanel::volumeChanged: " << volume << endl;
+    player->audio.volume = volume;
+    changed = true;
+}
+
 void AlarmPanel::soundPlayFinished()
 {
     if (testing) {
         testing = false;
     }
     else {
-        if (playContinuous->isChecked()) {
+        if (playContinuous->isChecked() && chkSound->isChecked()) {
             if (minAlarmOn || maxAlarmOn) {
                 QThreadPool::globalInstance()->tryStart(player);
             }
@@ -281,24 +384,29 @@ void AlarmPlayer::audioCallback(void *userData, uint8_t *stream, int streamLengt
 
     uint32_t length = (uint32_t)streamLength;
     length = (length > audio->length ? audio->length : length);
-    SDL_memcpy(stream, audio->position, length);
+    //SDL_memcpy(stream, audio->position, length);
+    memset(stream, 0, length);
+    SDL_MixAudioFormat(stream, audio->position, AUDIO_S16SYS, length, audio->volume);
     audio->position += length;
     audio->length -= length;
 }
 
-void AlarmPlayer::setLength(int length)
+void AlarmPlayer::mute(bool muted)
 {
-    mutex.lock();
-    audio.length = length;
-    mutex.unlock();
+    if (muted) {
+        lastVolume = audio.volume;
+        audio.volume = 0;
+    }
+    else {
+        audio.volume = lastVolume;
+    }
+
 }
 
 void AlarmPlayer::stop()
 {
     if (running) {
-        mutex.lock();
-        audio.length = 16;
-        mutex.unlock();
+        audio.length = 0;
         while (running)
             QThread::msleep(10);
     }

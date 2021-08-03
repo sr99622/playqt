@@ -60,7 +60,14 @@ void EventHandler::feed()
             ts = percentage * MW->is->ic->duration / 1000;
             if (MW->is->ic->start_time != AV_NOPTS_VALUE)
                 ts += MW->is->ic->start_time;
+
+            //MW->control()->lastEngaged = MW->control()->engageFilter->isChecked();
+
             MW->is->stream_seek(ts, 0, 0);
+
+            //MW->control()->restoreEngaged();
+
+
             break;
         }
     }

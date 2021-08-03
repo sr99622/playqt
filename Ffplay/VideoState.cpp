@@ -239,6 +239,8 @@ void VideoState::stream_close()
 
     cout << "stream_close 8" << endl;
 
+    MW->control()->restoreEngaged();
+
     av_free(this);
 }
 
@@ -1273,6 +1275,7 @@ the_end:
     avfilter_graph_free(&agraph);
 #endif
     av_frame_free(&frame);
+
     return ret;
 }
 
@@ -1981,6 +1984,7 @@ void VideoState::read_loop()
         if (!paused &&
             (!audio_st || (auddec.finished == audioq.serial && sampq.nb_remaining() == 0)) &&
             (!video_st || (viddec.finished == videoq.serial && pictq.nb_remaining() == 0))) {
+
             if (co->loop != 1 && (!co->loop || --co->loop)) {
                 stream_seek(co->start_time != AV_NOPTS_VALUE ? co->start_time : 0, 0, 0);
             }
@@ -2002,6 +2006,10 @@ void VideoState::read_loop()
                 if (subtitle_stream >= 0)
                     subtitleq.put_nullpacket(subtitle_stream);
                 eof = 1;
+
+                cout << "STREAM FINISHED" << endl;
+                if (!paused)
+                    MW->control()->quit();
             }
             if (ic->pb && ic->pb->error)
                 break;

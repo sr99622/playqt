@@ -62,13 +62,20 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
 
 void ControlPanel::styleButtons()
 {
-    btnPlay->setStyleSheet(getButtonStyle("play"));
+
+    if (!paused)
+        btnPlay->setStyleSheet(getButtonStyle("pause"));
+    else
+        btnPlay->setStyleSheet(getButtonStyle("play"));
     btnStop->setStyleSheet(getButtonStyle("stop"));
     btnRewind->setStyleSheet(getButtonStyle("rewind"));
     btnFastForward->setStyleSheet(getButtonStyle("fast-forward"));
     btnNext->setStyleSheet(getButtonStyle("next"));
     btnPrevious->setStyleSheet(getButtonStyle("previous"));
-    btnMute->setStyleSheet(getButtonStyle("audio"));
+    if (muted)
+        btnMute->setStyleSheet(getButtonStyle("mute"));
+    else
+        btnMute->setStyleSheet(getButtonStyle("audio"));
 }
 
 QString ControlPanel::getButtonStyle(const QString& name) const
@@ -322,12 +329,22 @@ void ControlPanel::mute()
         volumeSlider->setEnabled(true);
         btnMute->setStyleSheet(getButtonStyle("audio"));
     }
+
+    emit muting(muted);
+}
+
+void ControlPanel::restoreEngaged()
+{
+    MW->filter()->engageFilter->setChecked(lastEngaged);
 }
 
 void ControlPanel::quit()
 {
     if (MW->is)
         MW->is->abort_request = 1;
+
+    lastEngaged = MW->filter()->engageFilter->isChecked();
+    MW->filter()->engageFilter->setChecked(false);
 
     stopped = true;
     paused = false;
@@ -338,5 +355,7 @@ void ControlPanel::quit()
     event.type = FF_QUIT_EVENT;
     event.user.data1 = this;
     SDL_PushEvent(&event);
+
+    emit quitting();
 }
 

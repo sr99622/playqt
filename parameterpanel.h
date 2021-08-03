@@ -13,6 +13,7 @@
 
 #include "Utilities/paneldialog.h"
 #include "Ffplay/CommandOptions.h"
+#include "configpanel.h"
 
 using namespace std;
 
@@ -50,7 +51,7 @@ public:
     void setCmdLine();
     void addOptionToSaver(OptionDef option);
     const QString getOptionStorageString();
-    void applyStyle();
+    void applyStyle(const ColorProfile& profile);
     void saveSettings();
     void clearSettings();
     void restoreSettings();

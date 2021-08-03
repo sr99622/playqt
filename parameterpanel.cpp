@@ -20,7 +20,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : Panel(parent)
 
     QLabel *lbl00 = new QLabel("Command Line Equivalent: ");
     cmdLineEquiv = new QLabel();
-    applyStyle();
+    applyStyle(MW->config()->getProfile());
     cmdLineEquiv->setWordWrap(true);
 
     QPushButton *set = new QPushButton("Set");
@@ -99,14 +99,14 @@ void ParameterPanel::apply()
     MW->runLoop();
 }
 
-void ParameterPanel::applyStyle()
+void ParameterPanel::applyStyle(const ColorProfile& profile)
 {
     if (MW->config()->useSystemGui->isChecked()) {
         cmdLineEquiv->setStyleSheet("");
     }
     else {
         cmdLineEquiv->setStyleSheet(QString("QLabel { background-color : %1; color : %2; }")
-                  .arg(MW->config()->bm->color.name()).arg(MW->config()->fl->color.name()));
+                  .arg(profile.bm).arg(profile.fl));
     }
 }
 

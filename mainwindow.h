@@ -110,6 +110,7 @@ public:
     void showEvent(QShowEvent *event) override;
     void initializeSDL();
     void openFile();
+    void applyStyle(const ColorProfile& profile);
 
     ConfigPanel *config();
     ControlPanel *control();
@@ -168,7 +169,6 @@ public slots:
     void start();
     void splitterMoved(int, int);
     void autoSave();
-    void applyStyle();
 
 };
 #endif // MAINWINDOW_H

@@ -22,6 +22,7 @@ public:
     bool checkCodec(const QString& filename);
     QString getButtonStyle(const QString& name) const;
     void styleButtons();
+    void restoreEngaged();
 
     QMainWindow *mainWindow;
     QCheckBox *engageFilter;
@@ -45,12 +46,16 @@ public:
     bool muted = false;
     bool paused = false;
     bool stopped = true;
+    bool lastEngaged;
+
     //bool input_switched = false;
 
     AVExceptionHandler av;
 
 signals:
     void msg(const QString&);
+    void quitting();
+    void muting(bool);
 
 public slots:
     void test();

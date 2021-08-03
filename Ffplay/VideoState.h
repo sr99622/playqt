@@ -116,6 +116,9 @@ public:
     void rewind();
     void fastforward();
     const QString formatTime(double time_in_seconds);
+    //void handleEOF(AVMediaType frame_type);
+    //bool audio_eof_first_pass;
+    //bool video_eof_first_pass;
 
     double elapsed;
     double total;
