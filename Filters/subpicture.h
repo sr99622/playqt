@@ -26,6 +26,7 @@
 #include "Utilities/numbertextbox.h"
 #include <QPushButton>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QRect>
 #include <QObject>
 #include <QMainWindow>
@@ -40,11 +41,8 @@ public:
     SubPicture(QMainWindow *parent);
 
     void filter(Frame *vp) override;
-    //void initialize() override;
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
-    //void saveSettings(QSettings *settings) override;
-    //void restoreSettings(QSettings *settings) override;
     void ptz();
 
     Frame sub_frame;
@@ -72,6 +70,10 @@ public:
     NumberTextBox *textW;
     NumberTextBox *textH;
 
+    QCheckBox *autoLoad;
+    QComboBox *autoPreset;
+    bool first_pass = true;
+
     int x = 0, y = 0, w = 0, h = 0;
     int pan, tilt, zoom;
 
@@ -81,16 +83,15 @@ public:
 
     QRect presets[5] = {QRect(0,0,0,0)};
     QCheckBox *checkPreset;
-    QString presetKey = "SubPicture_preset_";
+
+    QString presetKey     = "SubPicture/preset_";
+    QString autoPresetKey = "SubPicture/autoPreset";
+    QString autoLoadKey   = "SubPicture/autoLoad";
 
     int codec_width = 0, codec_height = 0;
 
-    //const char * buttonStyle =  "QPushButton{                 \
-    //                            background-color:lightGrey;   \
-    //                            }";
-
-signals:
-    void msg(const QString&);
+//signals:
+//    void msg(const QString&);
 
 public slots:
     void move(int p, int t, int z);
@@ -99,6 +100,8 @@ public slots:
     void update(int x_arg, int y_arg, int w_arg, int h_arg);
     void reset();
     void preset(int arg);
+    void autoPresetChanged(int index);
+    void autoLoadClicked(bool);
 
 };
 

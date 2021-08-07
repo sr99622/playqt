@@ -56,6 +56,8 @@ public:
     void savePassword();
     void saveAutoDiscovery();
     void saveNetIntf(const QString& name);
+    void autoLoadClicked(bool checked);
+    void autoCameraChanged(int index);
 
     Camera *camera;
     QTabWidget *tabWidget;
@@ -74,14 +76,17 @@ public:
     LoginDialog *loginDialog = nullptr;
     QSettings *cameraNames;
 
-    const QString usernameKey = "CameraPanel/username";
-    const QString passwordKey = "CameraPanel/password";
-    const QString autoDiscKey = "CameraPanel/autodiscovery";
-    const QString netIntfKey = "CameraPanel/networkInterface";
+    const QString usernameKey   = "CameraPanel/username";
+    const QString passwordKey   = "CameraPanel/password";
+    const QString autoDiscKey   = "CameraPanel/autoDiscovery";
+    const QString netIntfKey    = "CameraPanel/networkInterface";
+    const QString autoLoadKey   = "CameraPanel/autoLoad";
+    const QString autoCameraKey = "CameraPanel/autoCamera";
+
+    QString savedAutoCameraName;
+    bool autoCameraFound;
 
 signals:
-    void stopStreaming();
-    void startStreaming();
     void msg(QString str);
 
 public slots:
@@ -91,6 +96,7 @@ public slots:
     void showLoginDialog(Credential*);
     void applyButtonClicked();
     void discoverButtonClicked();
+    void discoveryFinished();
 
 };
 

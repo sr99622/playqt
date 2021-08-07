@@ -3,8 +3,6 @@
 #include "VideoState.h"
 #include <QMainWindow>
 
-//#include <SDL.h>
-
 class EventHandler
 {
 

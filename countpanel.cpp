@@ -4,7 +4,7 @@
 CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
 {
     darknet = (Darknet*)MW->filter()->getFilterByName("Darknet");
-    connect(darknet, SIGNAL(ping(vector<bbox_t>*)), this, SLOT(ping(vector<bbox_t>*)));
+    connect(darknet, SIGNAL(send(vector<bbox_t>*)), this, SLOT(feed(vector<bbox_t>*)));
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
@@ -79,18 +79,20 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     intervalPanel->setLayout(intervalLayout);
 
     saveOn = new QCheckBox("Save On");
-    connect(saveOn, SIGNAL(stateChanged(int)), this, SLOT(saveOnChecked(int)));
+    saveOn->setChecked(MW->settings->value(saveOnKey, false).toBool());
+    connect(saveOn, SIGNAL(clicked(bool)), this, SLOT(saveOnClicked(bool)));
 
     QWidget *filePanel = new QWidget(this);
     QGridLayout *fileLayout = new QGridLayout();
-    fileLayout->addWidget(dirSetter,      0, 0, 1, 1);
+    fileLayout->addWidget(dirSetter,      0, 0, 1, 2);
     fileLayout->addWidget(intervalPanel,  1, 0, 1, 1);
-    fileLayout->addWidget(saveOn,         2, 0, 1, 1);
+    fileLayout->addWidget(saveOn,         1, 1, 1, 1);
     filePanel->setLayout(fileLayout);
 
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(hSplit,     0, 0, 1, 1);
     layout->addWidget(filePanel,  1, 0, 1, 1);
+    layout->setRowStretch(0, 10);
     setLayout(layout);
 }
 
@@ -105,14 +107,14 @@ CountPanel::~CountPanel()
 void CountPanel::autoSave()
 {
     if (changed) {
-        cout << "CountPanel::saveSettings" << endl;
+        cout << "CountPanel::autoSave" << endl;
         MW->settings->setValue(hSplitKey, hSplit->saveState());
         MW->settings->setValue(headerKey, table->horizontalHeader()->saveState());
         changed = false;
     }
 }
 
-void CountPanel::ping(vector<bbox_t> *detections)
+void CountPanel::feed(vector<bbox_t> *detections)
 {
     sums.clear();
     for (const bbox_t detection : *detections) {
@@ -132,11 +134,7 @@ void CountPanel::ping(vector<bbox_t> *detections)
         if (row > -1) {
             table->item(row, 1)->setText(QString::number(sum.second));
 
-            int test = 12;
-            int obj_id = sum.first;
             int count = sum.second;
-
-            //emit feed(obj_id, count);
 
             ((AlarmSetter*)table->cellWidget(row, 3))->alarmDialog->getPanel()->feed(count);
             if (saveOn->isChecked())
@@ -149,9 +147,6 @@ void CountPanel::ping(vector<bbox_t> *detections)
         if (indexForSums(obj_id) < 0) {
             table->item(i, 1)->setText("0");
 
-
-            //emit feed(obj_id, 0);
-
             ((AlarmSetter*)table->cellWidget(i, 3))->alarmDialog->getPanel()->feed(0);
             if (saveOn->isChecked())
                 addCount(obj_id, 0);
@@ -161,14 +156,12 @@ void CountPanel::ping(vector<bbox_t> *detections)
 
 void CountPanel::timeout()
 {
-    cout << "CountPanel::timeout" << endl;
-
     if (counts.empty())
         return;
 
     mutex.lock();
     QTextStream out(file);
-    out << QTime::currentTime().toString("hh:mm:ss");
+    out << QTime::currentTime().toString("hh:mm:ss") << ", " << MW->dc()->elapsed->text();
     for (pair<int, vector<int>>& count : counts) {
         int row = rowOf(count.first);
         if (row > -1) {
@@ -189,10 +182,9 @@ void CountPanel::timeout()
     mutex.unlock();
 }
 
-void CountPanel::saveOnChecked(int arg)
+void CountPanel::saveOnClicked(bool checked)
 {
-    cout << "CountPanel::saveOnChecked: " << arg << endl;
-    if (arg) {
+    if (checked) {
         int interval = txtInterval->intValue();
         if (interval == 0) {
             QMessageBox::warning(this, "PlayQt", "Save on Interval must be set to continue");
@@ -207,7 +199,7 @@ void CountPanel::saveOnChecked(int arg)
         }
 
         QTextStream out(file);
-        out << "time";
+        out << "system time, stream time";
         for (int i = 0; i < table->rowCount(); i++) {
             out << ", " << table->item(i, 0)->text() << " total, avg, std dev";
         }
@@ -229,6 +221,8 @@ void CountPanel::saveOnChecked(int arg)
         dirSetter->setEnabled(true);
         intervalPanel->setEnabled(true);
     }
+
+    MW->settings->setValue(saveOnKey, checked);
 }
 
 void CountPanel::intervalEdited()
@@ -345,13 +339,11 @@ void CountPanel::addNewLine(int obj_id)
         darknet->obj_drawn[objDrawer->obj_id] = objDrawer->color;
     MW->settings->setValue(objDrawer->getSettingsKey(), objDrawer->saveState());
     AlarmSetter *setter = new AlarmSetter(mainWindow, obj_id);
-    //connect(this, SIGNAL(feed(int, int)), setter, SLOT(feed(int, int)));
     table->setCellWidget(table->rowCount()-1, 3, setter);
 }
 
 void CountPanel::itemChanged(QListWidgetItem *item)
 {
-    cout << "CountPanel::itemChanged" << endl;
     QString name = item->text();
     int obj_id = idFromName(name);
 
@@ -388,7 +380,6 @@ AlarmSetter::AlarmSetter(QMainWindow *parent, int obj_id)
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
-    //alarmDialog = nullptr;
     alarmDialog = new AlarmDialog(mainWindow, obj_id);
 
     connect(button, SIGNAL(clicked()), this, SLOT(buttonPressed()));
@@ -396,9 +387,6 @@ AlarmSetter::AlarmSetter(QMainWindow *parent, int obj_id)
 
 void AlarmSetter::buttonPressed()
 {
-    cout << "AlarmSetter::buttonPressed()" << endl;
-    //if (!alarmDialog)
-    //    alarmDialog = new AlarmDialog(mainWindow, obj_id);
     QString obj_name = MW->count()->names[obj_id];
     alarmDialog->setWindowTitle(QString("Alarm Configuration - ") + obj_name);
     alarmDialog->show();
@@ -422,8 +410,8 @@ ObjDrawer::ObjDrawer(QMainWindow *parent, int obj_id)
     layout->setContentsMargins(10, 0, 10, 0);
     setLayout(layout);
 
-    connect(chkShow, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
-    connect(btnColor, SIGNAL(clicked()), this, SLOT(buttonPressed()));
+    connect(chkShow, SIGNAL(clicked(bool)), this, SLOT(chkShowClicked(bool)));
+    connect(btnColor, SIGNAL(clicked()), this, SLOT(btnColorClicked()));
 }
 
 void ObjDrawer::signalShown(int obj_id, const YUVColor& color)
@@ -464,18 +452,18 @@ QString ObjDrawer::getButtonStyle() const
     return QString("QPushButton {background-color: %1;}").arg(color.name());
 }
 
-void ObjDrawer::stateChanged(int state)
+void ObjDrawer::chkShowClicked(bool checked)
 {
-    show = (bool)state;
+    show = checked;
     MW->settings->setValue(getSettingsKey(), saveState());
 
-    if (state)
+    if (checked)
         emit shown(obj_id, YUVColor(color));
     else
         emit shown(obj_id, YUVColor());
 }
 
-void ObjDrawer::buttonPressed()
+void ObjDrawer::btnColorClicked()
 {
     color = QColorDialog::getColor(color, MW->countDialog, "PlayQt");
     btnColor->setStyleSheet(getButtonStyle());

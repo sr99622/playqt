@@ -6,7 +6,6 @@
 
 #include "configtab.h"
 #include "camerapanel.h"
-//#include "mainwindow.h"
 
 ConfigTab::ConfigTab(QWidget *parent)
 {
@@ -14,7 +13,7 @@ ConfigTab::ConfigTab(QWidget *parent)
 
     networkInterfaces = new QComboBox();
     QLabel *lbl00 = new QLabel("Select Network Interface");
-    autoDiscovery = new QCheckBox("Automatic Discovery");
+    autoDiscovery = new QCheckBox("Auto Discovery");
     commonUsername = new QLineEdit();
     commonUsername->setMaximumWidth(100);
     QLabel *lbl01 = new QLabel("Common Username");
@@ -22,31 +21,55 @@ ConfigTab::ConfigTab(QWidget *parent)
     commonPassword->setMaximumWidth(100);
     QLabel *lbl02 = new QLabel("Common Password");
 
+    autoLoad = new QCheckBox("Auto Load Camera");
+    autoCamera = new QComboBox();
+    autoLabel = new QLabel(" on Startup");
+
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(lbl00,               0, 0, 1, 1);
-    layout->addWidget(networkInterfaces,   0, 1, 1, 1);
+    layout->addWidget(networkInterfaces,   0, 1, 1, 3);
     layout->addWidget(autoDiscovery,       1, 0, 1, 1);
-    layout->addWidget(lbl01,               2, 0, 1, 1);
-    layout->addWidget(commonUsername,      2, 1, 1, 1);
-    layout->addWidget(lbl02,               3, 0, 1, 1);
-    layout->addWidget(commonPassword,      3, 1, 1, 1);
+    layout->addWidget(autoLoad,            2, 0, 1, 1);
+    layout->addWidget(autoCamera,          2, 1, 1, 2);
+    layout->addWidget(autoLabel,           2, 3, 1, 1);
+    layout->addWidget(lbl01,               3, 0, 1, 1);
+    layout->addWidget(commonUsername,      3, 1, 1, 1);
+    layout->addWidget(lbl02,               4, 0, 1, 1);
+    layout->addWidget(commonPassword,      4, 1, 1, 1);
     setLayout(layout);
 
     getActiveNetworkInterfaces();
 
     connect(commonUsername, SIGNAL(editingFinished()), this, SLOT(usernameUpdated()));
     connect(commonPassword, SIGNAL(editingFinished()), this, SLOT(passwordUpdated()));
-    connect(autoDiscovery, SIGNAL(stateChanged(int)), this, SLOT(autoDiscoveryClicked(int)));
+    connect(autoDiscovery, SIGNAL(clicked(bool)), this, SLOT(autoDiscoveryClicked(bool)));
+    connect(autoLoad, SIGNAL(clicked(bool)), this, SLOT(autoLoadClicked(bool)));
+    connect(autoCamera, SIGNAL(currentIndexChanged(int)), this, SLOT(autoCameraChanged(int)));
     connect(networkInterfaces, SIGNAL(currentTextChanged(const QString&)), this, SLOT(netIntfChanged(const QString&)));
+}
+
+void ConfigTab::autoLoadClicked(bool checked)
+{
+    CP->autoLoadClicked(checked);
+}
+
+void ConfigTab::autoCameraChanged(int index)
+{
+    CP->autoCameraChanged(index);
 }
 
 void ConfigTab::netIntfChanged(const QString& name)
 {
     CP->saveNetIntf(name);
 }
-void ConfigTab::autoDiscoveryClicked(int state)
+void ConfigTab::autoDiscoveryClicked(bool checked)
 {
     CP->saveAutoDiscovery();
+    autoLoad->setEnabled(checked);
+    autoCamera->setEnabled(checked);
+    autoLabel->setEnabled(checked);
+    if (!checked)
+        autoLoad->setChecked(false);
 }
 
 void ConfigTab::usernameUpdated()

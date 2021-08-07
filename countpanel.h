@@ -42,8 +42,8 @@ signals:
     void colored(int, const YUVColor&);
 
 public slots:
-    void stateChanged(int);
-    void buttonPressed();
+    void chkShowClicked(bool);
+    void btnColorClicked();
 
 };
 
@@ -93,27 +93,25 @@ public:
     QFile *file = nullptr;
     Darknet *darknet;
 
-    QString headerKey   = "CountPanel/header";
-    QString hSplitKey   = "CountPanel/hSplit";
-    QString dirKey      = "CountPanel/dir";
-    QString intervalKey = "CountPanel/interval";
-    QString groupBoxKey = "CountPanel/groupBox";
+    const QString headerKey   = "CountPanel/header";
+    const QString hSplitKey   = "CountPanel/hSplit";
+    const QString dirKey      = "CountPanel/dir";
+    const QString intervalKey = "CountPanel/interval";
+    const QString groupBoxKey = "CountPanel/groupBox";
+    const QString saveOnKey   = "CountPanel/saveOn";
 
     vector<pair<int, int>> sums;
     vector<pair<int, vector<int>>> counts;
     QMutex mutex;
 
-signals:
-    //void feed(int, int);
-
 public slots:
     void itemChanged(QListWidgetItem*);
     void itemClicked(QListWidgetItem*);
     void hSplitMoved(int, int);
-    void ping(vector<bbox_t>*);
+    void feed(vector<bbox_t>*);
     void headerChanged(int, int, int);
     void setDir(const QString&);
-    void saveOnChecked(int);
+    void saveOnClicked(bool);
     void intervalEdited();
     void timeout();
 

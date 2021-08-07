@@ -26,6 +26,7 @@ FilterChain::FilterChain(QMainWindow *parent)
 {
     mainWindow = parent;
     //panel = MW->filterDialog->panel;
+    fp = new Frame();
 }
 
 FilterChain::~FilterChain()
@@ -48,20 +49,20 @@ void FilterChain::process(Frame *vp)
     this->vp = vp;
 
     if (!MW->is->paused) {
-        fp.copy(vp);
+        fp->copy(vp);
     }
     else {
         Frame *tmp = MW->is->pictq.peek_last();
         if (tmp) {
             if (tmp->frame->width) {
-                fp.copy(tmp);
+                fp->copy(tmp);
             }
         }
     }
 
     FilterPanel *panel = MW->filter();
 
-    if (panel->engageFilter->isChecked()) {
+    if (panel->engageFilter->isChecked() && !disengaged) {
         for (int i = 0; i < panel->leftModel->filters.size(); i++)
             panel->leftModel->filters[i]->filter(vp);
     }

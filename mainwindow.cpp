@@ -12,6 +12,8 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     settings = new QSettings("PlayQt", "Program Settings");
     configDialog = new ConfigDialog(this);
+    //status = new QStatusBar(this);
+    //setStatusBar(status);
 
     autoSaveTimer = new QTimer(this);
     connect(autoSaveTimer, SIGNAL(timeout()), this, SLOT(autoSave()));
@@ -161,8 +163,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
 void MainWindow::menuAction(QAction *action)
 {
-    cout << "action text: " << action->text().toStdString() << endl;
-
     if (action->text() == "&Open" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_O))
         openFile();
     else if (action->text() == "E&xit" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_X))
@@ -184,7 +184,7 @@ void MainWindow::menuAction(QAction *action)
     else if (action->text() == "&Filters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_F))
         if (filterDialog->isVisible()) filterDialog->hide(); else filterDialog->show();
     else if (action->text() == "&Engage" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_E))
-        (filter()->engageFilter->setChecked(!filter()->engageFilter->isChecked()));
+        (filter()->toggleEngage());
     else if (action->text() == "&Set Parameters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_S))
         if (parameterDialog->isVisible()) parameterDialog->hide(); else parameterDialog->show();
     else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))
@@ -200,7 +200,7 @@ void MainWindow::menuAction(QAction *action)
 void MainWindow::autoSave()
 {
     if (changed) {
-        cout << "MainWindow::saveSettings" << endl;
+        cout << "MainWindow::autoSave" << endl;
         settings->setValue(geometryKey, saveGeometry());
         settings->setValue(splitterKey, splitter->saveState());
         changed = false;
@@ -233,8 +233,12 @@ void MainWindow::runLoop()
 
 void MainWindow::start()
 {
-    cout << "start: " << co->input_filename << endl;
     if (co->input_filename) {
+
+        QString str;
+        QTextStream(&str) << "start: " << co->input_filename << " at " << QTime::currentTime().toString("hh:mm:ss");
+        msg(str);
+
         if (tabWidget->tabText(tabWidget->currentIndex()) == "Cameras") {
             CameraPanel *cameraPanel = (CameraPanel*)tabWidget->currentWidget();
             Camera *camera = cameraPanel->cameraList->getCurrentCamera();
@@ -250,32 +254,21 @@ void MainWindow::start()
             setWindowTitle(title);
         }
         is = VideoState::stream_open(this);
-        cout << "stream opened" << endl;
         e->event_loop();
     }
 }
 
 void MainWindow::poll()
 {
-    if (is != nullptr) {
+    if (is) {
         if (is->paused) {
-            guiUpdate(0);
+            is->video_display();
         }
 
         double remaining_time = REFRESH_RATE;
         if (is->show_mode != SHOW_MODE_NONE && (!is->paused || is->force_refresh)) {
             is->video_refresh(&remaining_time);
         }
-    }
-}
-
-void MainWindow::guiUpdate(int arg)
-{
-    if (arg > 0)
-        cout << "MainWindow::guiUpdate: " << arg << endl;
-
-    if (is != nullptr) {
-        is->video_display();
     }
 }
 
@@ -286,7 +279,9 @@ void MainWindow::initializeSDL()
     SDL_GetRendererInfo(ffDisplay.renderer, &ffDisplay.renderer_info);
 
     if (!ffDisplay.window || !ffDisplay.renderer || !ffDisplay.renderer_info.num_texture_formats) {
-        av_log(NULL, AV_LOG_FATAL, "Failed to create window or renderer: %s", SDL_GetError());
+        QString str;
+        QTextStream(&str) << "MainWindow::initializeSDL error - Failed to create window or renderer: " << SDL_GetError();
+        msg(str);
     }
 }
 
@@ -297,7 +292,6 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    //cout << QTime::currentTime().toString("hh:mm:ss.zzz").toStdString() << endl;
     if (isVisible())
         changed = true;
     QMainWindow::resizeEvent(event);
@@ -323,20 +317,8 @@ void MainWindow::splitterMoved(int pos, int index)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    //filterDialog->panel->saveSettings(settings);
-    //parameterDialog->panel->saveSettings(settings);
-
-    //filterDialog->closeEvent(event);
-
     autoSave();
-    filter()->engageFilter->setChecked(false);
-
-    SDL_Event sdl_event;
-    sdl_event.type = FF_QUIT_EVENT;
-    SDL_PushEvent(&sdl_event);
-
-    //timer->stop();
-
+    control()->quit();
     QMainWindow::closeEvent(event);
 }
 
@@ -430,13 +412,9 @@ QLabel *MainWindow::display()
     return mainPanel->displayContainer->display;
 }
 
-void MainWindow::ping(vector<bbox_t>* arg)
+DisplayContainer *MainWindow::dc()
 {
-    cout << "ping: " << arg->size() << endl;
-    for (const bbox_t detection : *arg) {
-        cout << " "  << detection.track_id;
-    }
-    cout << endl;
+    return mainPanel->displayContainer;
 }
 
 void MainWindow::test()

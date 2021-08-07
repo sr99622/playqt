@@ -79,7 +79,7 @@ FilterPanel::FilterPanel(QMainWindow *parent) : Panel(parent)
     connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
     engageFilter = new QCheckBox("Engage Filter");
-    connect(engageFilter, SIGNAL(stateChanged(int)), this, SLOT(engage(int)));
+    connect(engageFilter, SIGNAL(clicked(bool)), this, SLOT(engage(bool)));
 
     QLabel *lbl01 = new QLabel("fps: ");
     fps = new QLabel();
@@ -113,6 +113,12 @@ void FilterPanel::autoSave()
     for (int i = 0; i < filters.size(); i++) {
         filters[i]->autoSave();
     }
+}
+
+void FilterPanel::toggleEngage()
+{
+    engageFilter->setChecked(!engageFilter->isChecked());
+    MW->control()->engageFilter->setChecked(engageFilter->isChecked());
 }
 
 void FilterPanel::styleButtons()
@@ -270,10 +276,14 @@ void FilterPanel::panelShow(int index)
 
 void FilterPanel::tabChanged(int index)
 {
+    /// minor gui bug here unable to connect tab to leftModel for current filter display
+
+    /*
     cout << "visible: " << tabWidget->isVisible() << endl;
     cout << "index: " << index << endl;
     cout << "leftModel->current_index: " << leftModel->current_index << endl;
     cout << "leftModel->filters.size(): " << leftModel->filters.size() << endl;
+    */
 
     /*
     if (tabWidget->isVisible() && index > -1) {
@@ -308,9 +318,9 @@ void FilterPanel::tabChanged(int index)
     */
 }
 
-void FilterPanel::engage(int state)
+void FilterPanel::engage(bool checked)
 {
-    MW->mainPanel->controlPanel->engageFilter->setChecked(state);
+    MW->mainPanel->controlPanel->engageFilter->setChecked(checked);
 }
 
 bool FilterPanel::isFilterActive(Filter *filter) {
@@ -367,11 +377,13 @@ FilterPanel *FilterDialog::getPanel()
     return (FilterPanel*)panel;
 }
 
+/*
 void FilterDialog::closeEvent(QCloseEvent *event)
 {
     getPanel()->engageFilter->setChecked(false);
     PanelDialog::closeEvent(event);
 }
+*/
 
 void FilterDialog::keyPressEvent(QKeyEvent *event)
 {

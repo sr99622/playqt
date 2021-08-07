@@ -48,6 +48,7 @@ public:
     bool isFilterActive(QString filter_name);
     Filter *getFilterByName(QString filter_name);
     Filter *getCurrentFilter();
+    void toggleEngage();
 
     QMainWindow *mainWindow;
     FilterListView *leftView;
@@ -70,7 +71,7 @@ public slots:
     void moveRight();
     void moveUp();
     void moveDown();
-    void engage(int);
+    void engage(bool);
     void panelShow(int);
     void tabChanged(int);
 
@@ -84,7 +85,7 @@ public:
     FilterDialog(QMainWindow *parent);
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
-    void closeEvent(QCloseEvent *event) override;
+    //void closeEvent(QCloseEvent *event) override;
     FilterPanel *getPanel();
 
 };

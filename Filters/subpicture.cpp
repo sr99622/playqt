@@ -31,41 +31,9 @@ SubPicture::SubPicture(QMainWindow *parent)
     name = "Sub Picture";
     panel = new Panel(mainWindow);
     mainWindow = parent;
-    connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
+    //connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
 
-    int buttonWidth = 50;
-
-    buttonUp = new QPushButton("^");
-    buttonDown = new QPushButton("v");
-    buttonLeft = new QPushButton("<");
-    buttonRight = new QPushButton(">");
-
-    buttonUp->setMaximumWidth(buttonWidth);
-    buttonDown->setMaximumWidth(buttonWidth);
-    buttonLeft->setMaximumWidth(buttonWidth);
-    buttonRight->setMaximumWidth(buttonWidth);
-
-    button1 = new QPushButton("1");
-    button2 = new QPushButton("2");
-    button3 = new QPushButton("3");
-    button4 = new QPushButton("4");
-    button5 = new QPushButton("5");
-
-    button1->setMinimumWidth(40);
-    button2->setMinimumWidth(40);
-    button3->setMinimumWidth(40);
-    button4->setMinimumWidth(40);
-    button5->setMinimumWidth(40);
-
-    buttonReset = new QPushButton("Reset");
-    buttonApply = new QPushButton("...");
-    buttonApply->setMaximumWidth(buttonWidth);
-
-    buttonZoomIn = new QPushButton("Zoom In");
-    buttonZoomOut = new QPushButton("Zoom Out");
-    int zoomWidth = buttonZoomOut->fontMetrics().boundingRect("Zoom Out").width() * 1.5;
-    buttonZoomIn->setMaximumWidth(zoomWidth);
-    buttonZoomOut->setMaximumWidth(zoomWidth);
+    //int buttonWidth = 50;
 
     textX = new NumberTextBox;
     textY = new NumberTextBox;
@@ -78,7 +46,9 @@ SubPicture::SubPicture(QMainWindow *parent)
     textW->setMaximumWidth(textWidth);
     textH->setMaximumWidth(textWidth);
 
-    checkPreset = new QCheckBox("Set PTZ Position");
+    buttonApply = new QPushButton("...");
+    buttonApply->setMaximumWidth(50);
+    connect(buttonApply, SIGNAL(clicked()), this, SLOT(apply()));
 
     QWidget *coordinatePanel = new QWidget;
     QGridLayout *coordinateLayout = new QGridLayout;
@@ -93,6 +63,24 @@ SubPicture::SubPicture(QMainWindow *parent)
     coordinateLayout->addWidget(buttonApply,       0, 8, 1, 1);
     coordinatePanel->setLayout(coordinateLayout);
 
+    buttonUp = new QPushButton("^");
+    buttonDown = new QPushButton("v");
+    buttonLeft = new QPushButton("<");
+    buttonRight = new QPushButton(">");
+
+    buttonUp->setMaximumWidth(50);
+    buttonDown->setMaximumWidth(50);
+    buttonLeft->setMaximumWidth(50);
+    buttonRight->setMaximumWidth(50);
+
+    connect(buttonUp, &QPushButton::pressed, [=] {move(0, 1, 0);});
+    connect(buttonDown, &QPushButton::pressed, [=] {move(0, -1, 0);});
+    connect(buttonLeft, &QPushButton::pressed, [=] {move(-1, 0, 0);});
+    connect(buttonRight, &QPushButton::pressed, [=] {move(1, 0, 0);});
+    connect(buttonUp, SIGNAL(released()), this, SLOT(stop()));
+    connect(buttonDown, SIGNAL(released()), this, SLOT(stop()));
+    connect(buttonLeft, SIGNAL(released()), this, SLOT(stop()));
+    connect(buttonRight, SIGNAL(released()), this, SLOT(stop()));
 
     QWidget *directionPanel = new QWidget;
     QGridLayout *directionLayout = new QGridLayout;
@@ -100,51 +88,82 @@ SubPicture::SubPicture(QMainWindow *parent)
     directionLayout->addWidget(buttonLeft,      1, 0, 1, 1);
     directionLayout->addWidget(buttonRight,     1, 2, 1, 1);
     directionLayout->addWidget(buttonDown,      2, 1, 1, 1);
+    directionLayout->setContentsMargins(11, 0, 0, 0);
     directionPanel->setLayout(directionLayout);
+
+    buttonZoomIn = new QPushButton("Zoom In");
+    buttonZoomOut = new QPushButton("Zoom Out");
+    int zoomWidth = buttonZoomOut->fontMetrics().boundingRect("Zoom Out").width() * 1.5;
+    buttonZoomIn->setMaximumWidth(zoomWidth);
+    buttonZoomOut->setMaximumWidth(zoomWidth);
+    connect(buttonZoomIn, &QPushButton::pressed, [=] {move(0, 0, 1);});
+    connect(buttonZoomOut, &QPushButton::pressed, [=] {move(0, 0, -1);});
+    connect(buttonZoomIn, SIGNAL(released()), this, SLOT(stop()));
+    connect(buttonZoomOut, SIGNAL(released()), this, SLOT(stop()));
 
     QWidget *zoomPanel = new QWidget;
     QGridLayout *zoomLayout = new QGridLayout;
     zoomLayout->addWidget(buttonZoomIn,    0, 0, 1, 1);
     zoomLayout->addWidget(buttonZoomOut,   1, 0, 1, 1);
+    zoomLayout->setContentsMargins(0, 0, 0, 0);
     zoomPanel->setLayout(zoomLayout);
 
-    QGridLayout *layout = new QGridLayout;
+    checkPreset = new QCheckBox("Set PTZ Position");
 
-    layout->addWidget(coordinatePanel, 1, 0, 1, 10);
-    layout->addWidget(directionPanel,  2, 0, 1, 6);
-    layout->addWidget(zoomPanel,       2, 6, 1, 4);
-    layout->addWidget(button1, 6, 0, 1, 2, Qt::AlignCenter);
-    layout->addWidget(button2, 6, 2, 1, 2, Qt::AlignCenter);
-    layout->addWidget(button3, 6, 4, 1, 2, Qt::AlignCenter);
-    layout->addWidget(button4, 6, 6, 1, 2, Qt::AlignCenter);
-    layout->addWidget(button5, 6, 8, 1, 2, Qt::AlignCenter);
+    button1 = new QPushButton("1");
+    button2 = new QPushButton("2");
+    button3 = new QPushButton("3");
+    button4 = new QPushButton("4");
+    button5 = new QPushButton("5");
 
-    layout->addWidget(checkPreset, 7, 0, 1, 5, Qt::AlignLeft);
-    layout->addWidget(buttonReset, 7, 5, 1, 5, Qt::AlignRight);
-
-    panel->setLayout(layout);
-
-    connect(buttonUp, &QPushButton::pressed, [=] {move(0, 1, 0);});
-    connect(buttonDown, &QPushButton::pressed, [=] {move(0, -1, 0);});
-    connect(buttonLeft, &QPushButton::pressed, [=] {move(-1, 0, 0);});
-    connect(buttonRight, &QPushButton::pressed, [=] {move(1, 0, 0);});
-    connect(buttonZoomIn, &QPushButton::pressed, [=] {move(0, 0, 1);});
-    connect(buttonZoomOut, &QPushButton::pressed, [=] {move(0, 0, -1);});
-    connect(buttonUp, SIGNAL(released()), this, SLOT(stop()));
-    connect(buttonDown, SIGNAL(released()), this, SLOT(stop()));
-    connect(buttonLeft, SIGNAL(released()), this, SLOT(stop()));
-    connect(buttonRight, SIGNAL(released()), this, SLOT(stop()));
-    connect(buttonZoomIn, SIGNAL(released()), this, SLOT(stop()));
-    connect(buttonZoomOut, SIGNAL(released()), this, SLOT(stop()));
+    button1->setMinimumWidth(40);
+    button2->setMinimumWidth(40);
+    button3->setMinimumWidth(40);
+    button4->setMinimumWidth(40);
+    button5->setMinimumWidth(40);
 
     connect(button1, &QPushButton::clicked, [=] {preset(0);});
     connect(button2, &QPushButton::clicked, [=] {preset(1);});
     connect(button3, &QPushButton::clicked, [=] {preset(2);});
     connect(button4, &QPushButton::clicked, [=] {preset(3);});
+
+    autoLoad = new QCheckBox("Auto Load Preset ");
+    autoLoad->setChecked(MW->settings->value(autoLoadKey, false).toBool());
+    connect(autoLoad, SIGNAL(clicked(bool)), this, SLOT(autoLoadClicked(bool)));
+    QStringList list;
+    list << "1" << "2" << "3" << "4" << "5";
+    autoPreset = new QComboBox();
+    autoPreset->addItems(list);
+    autoPreset->setMaximumWidth(50);
+    autoPreset->setCurrentIndex(MW->settings->value(autoPresetKey, 0).toInt());
+    connect(autoPreset, SIGNAL(currentIndexChanged(int)), this, SLOT(autoPresetChanged(int)));
+    QLabel *lbl00 = new QLabel(" on Startup");
+
+    buttonReset = new QPushButton("Reset");
+    connect(buttonReset, SIGNAL(clicked()), this, SLOT(reset()));
     connect(button5, &QPushButton::clicked, [=] {preset(4);});
 
-    connect(buttonApply, SIGNAL(clicked()), this, SLOT(apply()));
-    connect(buttonReset, SIGNAL(clicked()), this, SLOT(reset()));
+    QWidget *footPanel = new QWidget();
+    QGridLayout *footLayout = new QGridLayout();
+    footLayout->addWidget(autoLoad,    0, 0, 1, 1);
+    footLayout->addWidget(autoPreset,  0, 1, 1, 1);
+    footLayout->addWidget(lbl00,       0, 2, 1, 1);
+    footLayout->addWidget(buttonReset, 0, 3, 1, 1);
+    footPanel->setLayout(footLayout);
+
+    QGridLayout *layout = new QGridLayout;
+    layout->addWidget(coordinatePanel, 1, 0, 1, 10);
+    layout->addWidget(directionPanel,  2, 0, 1, 6);
+    layout->addWidget(zoomPanel,       2, 6, 1, 4);
+    layout->addWidget(checkPreset,     3, 5, 1, 5, Qt::AlignCenter);
+    layout->addWidget(button1,         4, 0, 1, 2, Qt::AlignCenter);
+    layout->addWidget(button2,         4, 2, 1, 2, Qt::AlignCenter);
+    layout->addWidget(button3,         4, 4, 1, 2, Qt::AlignCenter);
+    layout->addWidget(button4,         4, 6, 1, 2, Qt::AlignCenter);
+    layout->addWidget(button5,         4, 8, 1, 2, Qt::AlignCenter);
+    layout->addWidget(footPanel,       5, 0, 1, 10);
+    layout->setContentsMargins(0, 0, 0, 0);
+    panel->setLayout(layout);
 
     for (int i = 0; i < 5; i++) {
         if (MW->settings->contains(presetKey + QString::number(i))) {
@@ -162,6 +181,20 @@ void SubPicture::filter(Frame *vp)
     if (codec_width != MW->is->video_st->codecpar->width || codec_height != MW->is->video_st->codecpar->height)
         reset();
 
+    if (first_pass) {
+        if (autoLoad->isChecked()) {
+            QRect rect = presets[autoPreset->currentIndex()];
+            bool wider = rect.x() + rect.width() > codec_width;
+            bool higher = rect.y() + rect.height() > codec_height;
+            if (!wider && !higher) {
+                update(rect.x(), rect.y(), rect.width(), rect.height());
+                denominator = ZOOM_FACTOR * codec_width / (float) w;
+            }
+        }
+        first_pass = false;
+        return;
+    }
+
     ptz();
 
     Frame dummy(w, h, (AVPixelFormat)vp->format);
@@ -176,6 +209,16 @@ void SubPicture::filter(Frame *vp)
             MW->is->step_to_next_frame();
     }
 
+}
+
+void SubPicture::autoLoadClicked(bool checked)
+{
+    MW->settings->setValue(autoLoadKey, checked);
+}
+
+void SubPicture::autoPresetChanged(int index)
+{
+    MW->settings->setValue(autoPresetKey, index);
 }
 
 void SubPicture::apply()
@@ -321,10 +364,10 @@ void SubPicture::preset(int arg) {
     }
     else {
         if (presets[arg].x() == 0 && presets[arg].y() == 0 && presets[arg].width() == 0 && presets[arg].height() == 0) {
-            emit msg(QString("No value found for preset %1").arg(arg+1));
+            MW->msg(QString("No value found for preset %1").arg(arg+1));
         }
         else if (presets[arg].x() + presets[arg].width() > codec_width || presets[arg].y() + presets[arg].height() > codec_height) {
-            emit msg(QString("Invalid preset values for this resolution"));
+            MW->msg(QString("Invalid preset values for this resolution"));
         }
         else {
             update(presets[arg].x(), presets[arg].y(), presets[arg].width(), presets[arg].height());

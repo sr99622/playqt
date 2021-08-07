@@ -432,9 +432,6 @@ CommandOptions::CommandOptions()
     options[74].help = "number of filter threads per graph";
 
     //options[75] = NULL;
-
-    cout << "address: " << &video_codec_name << endl;
-    cout << "storage: " << options[71].u.dst_ptr << endl;
 }
 
 int CommandOptions::findOptionIndexByHelp(QString help)

@@ -1,46 +1,48 @@
 #include "VideoState.h"
 #include "mainwindow.h"
 
-static int decode_interrupt_cb(void* ctx)
+int decode_interrupt_cb(void* ctx)
 {
-    VideoState* is = (VideoState*)ctx;
-    //cout << "DECODE INTERRUPT CB: " << is->abort_request << " " << TS << endl;
-    return is->abort_request;
+    return ((VideoState*)ctx)->abort_request;
 }
 
-static int readThread(void* opaque)
+int readThread(void* opaque)
 {
-    return static_cast<VideoState*>(opaque)->read_thread();
+    return ((VideoState*)opaque)->read_thread();
 }
 
-static int videoThread(void* opaque)
+int videoThread(void* opaque)
 {
-    return static_cast<VideoState*>(opaque)->video_thread();
+    return ((VideoState*)opaque)->video_thread();
 }
 
-static int audioThread(void* opaque)
+int audioThread(void* opaque)
 {
-    return static_cast<VideoState*>(opaque)->audio_thread();
+    return ((VideoState*)opaque)->audio_thread();
+}
+
+void sdlAudioCallback(void* opaque, Uint8* stream, int len)
+{
+    ((VideoState*)opaque)->sdl_audio_callback(stream, len);
 }
 
 VideoState::VideoState()
 {
-    //memset(this, 0, sizeof(VideoState));
+
 }
 
 void VideoState::video_image_display()
 {
-
     Frame* vp;
     Frame* sp = NULL;
     SDL_Rect rect;
 
-    if (paused)
-        vp = &MW->filterChain->fp;
-    else
+    if (paused) {
+        vp = MW->filterChain->fp;
+    }
+    else {
         vp = pictq.peek_last();
-
-    //vp = pictq.peek_last();
+    }
 
     filterChain->process(vp);  //  hook into playqt filtering system
 
@@ -139,7 +141,6 @@ int VideoState::cmp_audio_fmts(enum AVSampleFormat fmt1, int64_t channel_count1,
 
 void VideoState::stream_component_close(int stream_index)
 {
-    //AVFormatContext* ic = ic;
     AVCodecParameters* codecpar;
 
     if (stream_index < 0 || stream_index >= ic->nb_streams)
@@ -197,12 +198,10 @@ void VideoState::stream_component_close(int stream_index)
 
 void VideoState::stream_close()
 {
-    cout << "stream_close 1" << endl;
     // XXX: use a special url_shutdown call to abort parse cleanly 
     abort_request = 1;
     SDL_WaitThread(read_tid, NULL);
 
-    cout << "stream_close 2" << endl;
     // close each stream
     if (audio_stream >= 0)
         stream_component_close(audio_stream);
@@ -211,25 +210,22 @@ void VideoState::stream_close()
     if (subtitle_stream >= 0)
         stream_component_close(subtitle_stream);
 
-    cout << "stream_close 3" << endl;
     avformat_close_input(&ic);
 
-    cout << "stream_close 4" << endl;
     videoq.destroy();
     audioq.destroy();
     subtitleq.destroy();
 
-    cout << "stream_close 5" << endl;
     // free all pictures
     pictq.destroy();
     sampq.destroy();
     subpq.destroy();
-    cout << "stream_close 6" << endl;
+
     SDL_DestroyCond(continue_read_thread);
     sws_freeContext(img_convert_ctx);
     sws_freeContext(sub_convert_ctx);
     av_free(filename);
-    cout << "stream_close 7" << endl;
+
     if (vis_texture)
         SDL_DestroyTexture(vis_texture);
     if (vid_texture)
@@ -237,9 +233,7 @@ void VideoState::stream_close()
     if (sub_texture)
         SDL_DestroyTexture(sub_texture);
 
-    cout << "stream_close 8" << endl;
-
-    MW->control()->restoreEngaged();
+    MW->filterChain->disengaged = false;
 
     av_free(this);
 }
@@ -306,13 +300,7 @@ void VideoState::stream_seek(int64_t pos, int64_t rel, int seek_by_bytes)
             seek_flags |= AVSEEK_FLAG_BYTE;
         seek_req = 1;
 
-        //if (!paused) {
-            SDL_CondSignal(continue_read_thread);
-            cout << "stream seek" << endl;
-        //}
-        //else {
-        //    cout << "stream is paused" << endl;
-        //}
+        SDL_CondSignal(continue_read_thread);
     }
 }
 
@@ -338,7 +326,6 @@ void VideoState::seek_chapter(int incr)
     if (i >= ic->nb_chapters)
         return;
 
-    av_log(NULL, AV_LOG_VERBOSE, "Seeking to chapter %d.\n", i);
     stream_seek(av_rescale_q(ic->chapters[i]->start, ic->chapters[i]->time_base,
         av_make_q(1, AV_TIME_BASE)), 0, 0);
 }
@@ -394,7 +381,7 @@ void VideoState::update_volume(int sign, double step)
 
 void VideoState::set_volume(double arg)
 {
-    double volume_level = audio_volume ? (20 * log(audio_volume / (double)SDL_MIX_MAXVOLUME) / log(10)) : -1000.0;
+    //double volume_level = audio_volume ? (20 * log(audio_volume / (double)SDL_MIX_MAXVOLUME) / log(10)) : -1000.0;
     int new_volume = lrint(SDL_MIX_MAXVOLUME * pow(10.0, (arg) / 20.0));
     audio_volume = av_clip(audio_volume == new_volume ? (arg) : new_volume, 0, SDL_MIX_MAXVOLUME);
 }
@@ -465,8 +452,6 @@ int VideoState::get_video_frame(AVFrame* frame)
         if (frame->pts != AV_NOPTS_VALUE)
             dpts = av_q2d(video_st->time_base) * frame->pts;
 
-        //cout << "VideoState::get_video_frame: " << TS << endl;
-
         frame->sample_aspect_ratio = av_guess_sample_aspect_ratio(ic, video_st, frame);
 
         if (co->framedrop > 0 || (co->framedrop && get_master_sync_type() != AV_SYNC_VIDEO_MASTER)) {
@@ -493,9 +478,6 @@ double VideoState::compute_target_delay(double delay)
 
     // update delay to follow master synchronisation source 
     if (get_master_sync_type() == AV_SYNC_VIDEO_MASTER) {
-        //delay = 0.017;
-        //cout << "framerate: " << video_st->codec->framerate.num << " / " << video_st->codec->framerate.den << endl;
-        //delay = av_q2d(av_inv_q(video_st->codec->framerate));
         delay = codec_frame_duration;
     }
     else {
@@ -536,7 +518,6 @@ double VideoState::vp_duration(Frame* vp, Frame* nextvp) {
 }
 
 void VideoState::update_video_pts(double pts, int64_t pos, int serial) {
-    //cout << "update_video_pts" << endl;
     vidclk.set_clock(pts, serial);
     extclk.sync_clock_to_slave(&vidclk);
 }
@@ -550,11 +531,6 @@ int VideoState::video_open()
     h = displaySize.height() * MW->screen->devicePixelRatio();
     x = 0;
     y = 0;
-
-    //w = co->screen_width ? co->screen_width : co->default_width;
-    //h = co->screen_height ? co->screen_height : co->default_height;
-    //x = co->screen_left;
-    //y = co->screen_top;
 
     if (!co->window_title)
         co->window_title = co->input_filename;
@@ -571,7 +547,9 @@ int VideoState::video_open()
 
     display_mutex = SDL_CreateMutex();
     if (!display_mutex) {
-        cout << "ERROR SDL_CreateMutex: " << SDL_GetError() << endl;
+        QString str;
+        QTextStream(&str) << "VideoState::video_open error SDL_CreateMutex: " << SDL_GetError();
+        MW->msg(str);
         return -1;
     }
 
@@ -824,8 +802,6 @@ end:
     return ret;
 }
 #endif // CONFIG_AVFILTER
-/*
-*/
 
 int VideoState::synchronize_audio(int nb_samples)
 {
@@ -953,7 +929,7 @@ int VideoState::audio_decode_frame()
             return -1;
         }
         if (len2 == out_count) {
-            av_log(NULL, AV_LOG_WARNING, "audio buffer is probably too small\n");
+            MW->msg("VideoState::audio_decode_frame - audio buffer is probably too small");
             if (swr_init(swr_ctx) < 0)
                 swr_free(&swr_ctx);
         }
@@ -1018,8 +994,11 @@ void VideoState::show_status()
             av_diff = get_master_clock() - vidclk.get_clock();
         else if (audio_st)
             av_diff = get_master_clock() - audclk.get_clock();
-        av_log(NULL, AV_LOG_INFO,
-            "%7.2f %s:%7.3f fd=%4d aq=%5dKB vq=%5dKB sq=%5dB f=%I64d/%I64d   \r",
+
+        char buf[256];
+
+        sprintf(buf,
+            "%7.2f %s:%7.3f fd=%4d aq=%5dKB vq=%5dKB sq=%5dB f=%I64d/%I64d   ",
             get_master_clock(),
             (audio_st && video_st) ? "A-V" : (video_st ? "M-V" : (audio_st ? "M-A" : "   ")),
             av_diff,
@@ -1029,7 +1008,8 @@ void VideoState::show_status()
             sqsize,
             video_st ? viddec.avctx->pts_correction_num_faulty_dts : 0,
             video_st ? viddec.avctx->pts_correction_num_faulty_pts : 0);
-        fflush(stdout);
+        //fflush(stdout);
+        //MW->status->showMessage(buf);
         last_time = cur_time;
     }
 }
@@ -1090,12 +1070,7 @@ void VideoState::video_refresh(double* remaining_time)
     if (video_st) {
         bool trying = true;
         while (trying) {
-
-            //cout << "\t\t-----" << endl;
-            //QThread::msleep(1);
-
             if (pictq.nb_remaining() == 0) {
-                //cout << "pictq.nb_remaining == 0" << endl;
                 force_refresh = 0;
                 break;
             }
@@ -1107,30 +1082,23 @@ void VideoState::video_refresh(double* remaining_time)
             vp = pictq.peek();
 
             if (vp->serial != videoq.serial) {
-                cout << "vp->serial != videoq.serial" << endl;
                 pictq.next();
                 continue;
             }
 
             if (lastvp->serial != vp->serial) {
-                cout << "lastvp->serial != vp->serial" << endl;
                 frame_timer = av_gettime_relative() / 1000000.0;
             }
 
             if (paused) {
-                cout << "is this tag ever used" << endl;
-                //break;
-
-                /**/
-                /// empty the picture queue and display if paused
-
                 while (pictq.nb_remaining() > 0)
                     pictq.next();
-
-                //video_display();
+                while (sampq.nb_remaining() > 0)
+                    sampq.next();
+                while (subpq.nb_remaining() > 0)
+                    subpq.next();
 
                 break;
-                /**/
             }
 
             last_duration = vp_duration(lastvp, vp);
@@ -1160,7 +1128,6 @@ void VideoState::video_refresh(double* remaining_time)
                 Frame* nextvp = pictq.peek_next();
                 duration = vp_duration(vp, nextvp);
                 if (!step && (co->framedrop > 0 || (co->framedrop && get_master_sync_type() != AV_SYNC_VIDEO_MASTER)) && time > frame_timer + duration) {
-                    //cout << "frame drop" << endl;
                     frame_drops_late++;
                     video_display();
                     pictq.next();
@@ -1174,7 +1141,6 @@ void VideoState::video_refresh(double* remaining_time)
             force_refresh = 1;
 
             if (step && !paused) {
-                cout << "video_refresh step && !paused" << endl;
                 stream_toggle_pause();
             }
 
@@ -1193,7 +1159,6 @@ void VideoState::video_refresh(double* remaining_time)
 
 int VideoState::audio_thread()
 {
-    //VideoState* is = (VideoState*)arg;
     AVFrame* frame = av_frame_alloc();
     Frame* af;
 #if CONFIG_AVFILTER
@@ -1281,7 +1246,6 @@ the_end:
 
 int VideoState::video_thread()
 {
-    //VideoState* is = (VideoState*)arg;
     AVFrame* frame = av_frame_alloc();
     double pts;
     double duration;
@@ -1401,7 +1365,6 @@ static int subtitleThread(void* opaque)
 
 int VideoState::subtitle_thread()
 {
-    //VideoState* is = (VideoState*)arg;
     Frame* sp;
     int got_subtitle;
     double pts;
@@ -1434,14 +1397,8 @@ int VideoState::subtitle_thread()
     return 0;
 }
 
-static void sdlAudioCallback(void* opaque, Uint8* stream, int len)
-{
-    static_cast<VideoState*>(opaque)->sdl_audio_callback(stream, len);
-}
-
 void VideoState::sdl_audio_callback(Uint8* stream, int len)
 {
-    //VideoState* is = (VideoState*)opaque;
     int audio_size, len1;
 
     co->audio_callback_time = av_gettime_relative();
@@ -1560,8 +1517,6 @@ int VideoState::audio_open(int64_t wanted_channel_layout, int wanted_nb_channels
 
 int VideoState::stream_component_open(int stream_index)
 {
-    //AVFormatContext* ic = ic;
-
     AVCodecContext* avctx;
     AVCodec* codec;
     const char* forced_codec_name = NULL;
@@ -1730,7 +1685,6 @@ int VideoState::stream_component_open(int stream_index)
     event.user.data2 = &total;
     SDL_PushEvent(&event);
 
-
     goto out;
 
 fail:
@@ -1743,40 +1697,22 @@ out:
 
 void VideoState::rewind()
 {
+    MW->filterChain->disengaged = true;
     double pctg = MW->mainPanel->displayContainer->slider->value() / (double) 1000;
     double elapsed = pctg * MW->is->ic->duration / AV_TIME_BASE;
     double target = elapsed - MW->co->seek_interval;
     MW->is->stream_seek(target * AV_TIME_BASE, 0, 0);
-
-    /*
-    double incr = MW->co->seek_interval ? -MW->co->seek_interval : -10.0;
-    double pos = get_master_clock();
-    if (isnan(pos))
-        pos = (double)seek_pos / AV_TIME_BASE;
-    pos += incr;
-    if (ic->start_time != AV_NOPTS_VALUE && pos < ic->start_time / (double)AV_TIME_BASE)
-        pos = ic->start_time / (double)AV_TIME_BASE;
-    stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
-    */
+    MW->filterChain->disengaged = false;
 }
 
 void VideoState::fastforward()
 {
+    MW->filterChain->disengaged = true;
     double pctg = MW->mainPanel->displayContainer->slider->value() / (double) 1000;
     double elapsed = pctg * MW->is->ic->duration / AV_TIME_BASE;
     double target = elapsed + MW->co->seek_interval;
     MW->is->stream_seek(target * AV_TIME_BASE, 0, 0);
-
-    /*
-    double incr = MW->co->seek_interval ? MW->co->seek_interval : 10.0;
-    double pos = get_master_clock();
-    if (isnan(pos))
-        pos = (double)seek_pos / AV_TIME_BASE;
-    pos += incr;
-    if (ic->start_time != AV_NOPTS_VALUE && pos < MW->is->ic->start_time / (double)AV_TIME_BASE)
-        pos = ic->start_time / (double)AV_TIME_BASE;
-    stream_seek((int64_t)(pos * AV_TIME_BASE), (int64_t)(incr * AV_TIME_BASE), 0);
-    */
+    MW->filterChain->disengaged = false;
 }
 
 const QString VideoState::formatTime(double time_in_seconds)
@@ -1819,15 +1755,8 @@ void VideoState::assign_read_options()
         ic->flags |= AVFMT_FLAG_GENPTS;
 
     if (co->find_stream_info) {
-        cout << "co->find_stream_info" << endl;
         AVDictionary** opts = setup_find_stream_info_opts(ic, codec_opts);
         int orig_nb_streams = ic->nb_streams;
-
-        cout << "orig_nb_streams: " << orig_nb_streams << endl;
-
-        for (int i = 0; i < orig_nb_streams; i++) {
-            cout << "av_dict_count: " << av_dict_count(opts[i]) << endl;
-        }
 
         ret = avformat_find_stream_info(ic, opts);
 
@@ -1839,7 +1768,6 @@ void VideoState::assign_read_options()
             char buf[256];
             sprintf(buf, "%s: could not find codec parameters\n", filename);
             MW->msg(buf);
-            cout << buf << endl;
             ret = -1;
             return;
         }
@@ -1865,7 +1793,9 @@ void VideoState::read_loop()
 
     SDL_mutex *wait_mutex = SDL_CreateMutex();
     if (!wait_mutex) {
-        cout << "ERROR SDL_CreateMutex: " << SDL_GetError() << endl;
+        QString str;
+        QTextStream(&str) << "VideoState::read_loop error SDL_CreateMutex: " << SDL_GetError();
+        MW->msg(str);
         return;
     }
 
@@ -1899,17 +1829,13 @@ void VideoState::read_loop()
             // FIXME the +-2 is due to rounding being not done in the correct direction in generation
             //      of the seek_pos/seek_rel variables
 
-            cout << "seek request: " << seek_target << endl;
-
             int ret = avformat_seek_file(ic, -1, seek_min, seek_target, seek_max, seek_flags);
             if (ret < 0) {
                 char buf[256];
                 sprintf(buf, "%s: error while seeking\n", ic->url);
                 MW->msg(buf);
-                cout << "error while seeking" << ic->url << endl;
             }
             else {
-                cout << "buffer flush" << endl;
                 if (audio_stream >= 0) {
                     audioq.flush();
                     audioq.put(flush_pkt);
@@ -1950,8 +1876,6 @@ void VideoState::read_loop()
                 QThread::msleep(av_q2d(av_inv_q(video_st->codec->framerate)) * 1000);
 
                 step_to_next_frame();
-                //showNextFrame = true;
-                //break;
             }
         }
 
@@ -2007,19 +1931,16 @@ void VideoState::read_loop()
                     subtitleq.put_nullpacket(subtitle_stream);
                 eof = 1;
 
-                cout << "STREAM FINISHED" << endl;
+                // stream has reached eof
                 if (!paused)
                     MW->control()->quit();
             }
             if (ic->pb && ic->pb->error)
                 break;
 
-            //cout << "SDL_LockMutex " << TS << endl;
             SDL_LockMutex(wait_mutex);
-            //cout << "acquired lock " << endl;
             SDL_CondWaitTimeout(continue_read_thread, wait_mutex, 10);
             SDL_UnlockMutex(wait_mutex);
-            //cout << "SDL_UnlockMutex" << endl;
 
             continue;
         }
@@ -2248,17 +2169,6 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     }
 
     return is;
-}
-
-void VideoState::refresh_loop_flush_event(SDL_Event* event) {
-    double remaining_time = 0;
-    SDL_PumpEvents();
-    while (!SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
-        if (show_mode != SHOW_MODE_NONE && (!paused || force_refresh)) {
-            video_refresh(&remaining_time);
-        }
-        SDL_PumpEvents();
-    }
 }
 
 void VideoState::refresh_loop_wait_event(SDL_Event* event) {

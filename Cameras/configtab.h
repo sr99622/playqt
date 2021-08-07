@@ -5,6 +5,8 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QCheckBox>
+#include <QLabel>
+#include <QMainWindow>
 
 #include "cameradialogtab.h"
 
@@ -20,6 +22,9 @@ public:
     QWidget *cameraPanel;
     QComboBox *networkInterfaces;
     QCheckBox *autoDiscovery;
+    QCheckBox *autoLoad;
+    QComboBox *autoCamera;
+    QLabel *autoLabel;
     QLineEdit *commonUsername;
     QLineEdit *commonPassword;
 
@@ -29,8 +34,10 @@ signals:
 public slots:
     void usernameUpdated();
     void passwordUpdated();
-    void autoDiscoveryClicked(int);
+    void autoDiscoveryClicked(bool);
     void netIntfChanged(const QString&);
+    void autoLoadClicked(bool);
+    void autoCameraChanged(int);
 
 };
 

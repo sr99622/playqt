@@ -55,6 +55,7 @@ public:
     void saveSettings();
     void clearSettings();
     void restoreSettings();
+    void fillAutoCmds();
     void set(int option_index, QString option_arg);
 
     QComboBox *options;
@@ -66,12 +67,18 @@ public:
     QMenu *menu;
     QString filters;
 
-    const QString cmdKey = "ParameterPanel/savedCmdLine_";
+    QCheckBox *autoLoad;
+    QComboBox *cmds;
+    QString currentAutoCmd;
+
+    const QString cmdKey      = "ParameterPanel/savedCmdLine_";
+    const QString autoLoadKey = "ParameterPanel/autoLoad";
+    const QString autoCmdKey  = "ParamaterPanel/autoCmd";
 
 public slots:
     void set();
     void clear();
-    void apply();
+    //void apply();
     void optionChanged(int);
     void parameterEntered();
     void saveCmdLine();
@@ -79,6 +86,8 @@ public slots:
     void itemDoubleClicked(QListWidgetItem*);
     void showContextMenu(const QPoint&);
     void comboActivated(int);
+    void autoLoadClicked(bool);
+    void autoCmdIndexChanged(int);
 
 };
 

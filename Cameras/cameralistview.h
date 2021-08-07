@@ -35,6 +35,7 @@ class CameraListView : public QListView
 public:
     CameraListView(QMainWindow *parent);
     Camera *getCurrentCamera();
+    void setCurrentCamera(const QString& cameraName);
     void refresh();
     void animateWriter();
     void animateSnapshot();

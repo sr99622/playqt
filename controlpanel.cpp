@@ -54,7 +54,7 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     connect(btnPrevious, SIGNAL(clicked()), this, SLOT(previous()));
     connect(btnNext, SIGNAL(clicked()), this, SLOT(next()));
     connect(btnMute, SIGNAL(clicked()), this, SLOT(mute()));
-    connect(engageFilter, SIGNAL(stateChanged(int)), this, SLOT(engage(int)));
+    connect(engageFilter, SIGNAL(clicked(bool)), this, SLOT(engage(bool)));
     connect(volumeSlider, SIGNAL(sliderMoved(int)), this, SLOT(sliderMoved(int)));
     connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
 
@@ -62,7 +62,6 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
 
 void ControlPanel::styleButtons()
 {
-
     if (!paused)
         btnPlay->setStyleSheet(getButtonStyle("pause"));
     else
@@ -88,13 +87,11 @@ QString ControlPanel::getButtonStyle(const QString& name) const
 
 void ControlPanel::sliderMoved(int arg)
 {
-    cout << "slider moved: " << arg << endl;
     if (MW->is)
         MW->is->audio_volume = arg;
 }
 
 void ControlPanel::resizeEvent(QResizeEvent *event) {
-    //cout << "ControlPanel width: " << event->size().width() << " height: " << event->size().height() << endl;
     QWidget::resizeEvent(event);
 }
 
@@ -180,9 +177,6 @@ void ControlPanel::play()
 bool ControlPanel::checkCodec(const QString& filename)
 {
     if (MW->co->video_codec_name && filename != MW->co->input_filename) {
-
-        cout << "HAS VIDEO CODEC" << endl;
-
         AVFormatContext *fmt_ctx = nullptr;
         AVStream *video;
         int video_stream;
@@ -220,9 +214,9 @@ bool ControlPanel::checkCodec(const QString& filename)
     return true;
 }
 
-void ControlPanel::engage(int state)
+void ControlPanel::engage(bool checked)
 {
-    MW->filter()->engageFilter->setChecked(state);
+    MW->filter()->engageFilter->setChecked(checked);
 }
 
 void ControlPanel::test()
@@ -256,8 +250,9 @@ void ControlPanel::voldn()
 
 void ControlPanel::rewind()
 {
-    if (MW->is)
+    if (MW->is)  {
         MW->is->rewind();
+    }
 }
 
 void ControlPanel::fastforward()
@@ -272,7 +267,6 @@ void ControlPanel::previous()
         CameraPanel *cameraPanel = (CameraPanel*)MW->tabWidget->currentWidget();
         QModelIndex previous = cameraPanel->cameraList->previousIndex();
         if (previous.isValid()) {
-            cout << "Valid previous index" << endl;
             cameraPanel->cameraList->setCurrentIndex(previous);
             MW->mainPanel->controlPanel->play();
         }
@@ -333,22 +327,16 @@ void ControlPanel::mute()
     emit muting(muted);
 }
 
-void ControlPanel::restoreEngaged()
-{
-    MW->filter()->engageFilter->setChecked(lastEngaged);
-}
-
 void ControlPanel::quit()
 {
     if (MW->is)
         MW->is->abort_request = 1;
 
-    lastEngaged = MW->filter()->engageFilter->isChecked();
-    MW->filter()->engageFilter->setChecked(false);
-
     stopped = true;
     paused = false;
-    btnPlay->setStyleSheet(getButtonStyle("play"));
+
+    MW->filterChain->disengaged = true;
+    //btnPlay->setStyleSheet(getButtonStyle("play"));
     MW->co->input_filename = nullptr;
 
     SDL_Event event;

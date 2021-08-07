@@ -2,10 +2,12 @@
 #define ALARMPANEL_H
 
 #include <QCheckBox>
+#include <QLabel>
 #include <QRunnable>
 #include <QRadioButton>
 #include <QSettings>
 #include <QSlider>
+#include <QFile>
 
 #include "Utilities/kalman.h"
 #include "Utilities/paneldialog.h"
@@ -87,6 +89,8 @@ public:
     void autoSave() override;
     void feed(int count);
     QString key() const;
+    QString getTimestampFilename() const;
+    void writeToFile(const QString& str);
 
     int obj_id;
     AlarmNumberBox *minLimit;
@@ -104,11 +108,15 @@ public:
     QRadioButton *playContinuous;
     QPushButton *btnTest;
     QSlider *volumeSlider;
+    QLabel *filteredCount;
+    QFile *file = nullptr;
 
     bool minAlarmOn = false;
     bool maxAlarmOn = false;
-    high_resolution_clock::time_point minAlarmStart;
-    high_resolution_clock::time_point maxAlarmStart;
+    high_resolution_clock::time_point minAlarmStartOn;
+    high_resolution_clock::time_point minAlarmStartOff;
+    high_resolution_clock::time_point maxAlarmStartOn;
+    high_resolution_clock::time_point maxAlarmStartOff;
     high_resolution_clock::time_point reference;
 
     Kalman k_count;
@@ -133,8 +141,12 @@ public slots:
     void soundPlayFinished();
     void chkSoundClicked(bool);
     void chkColorClicked(bool);
+    void chkWriteClicked(bool);
+    void chkMinClicked(bool);
+    void chkMaxClicked(bool);
     void volumeChanged(int);
-    void alarmOff();
+    void minAlarmOff();
+    void maxAlarmOff();
     void mute(bool);
 
 };

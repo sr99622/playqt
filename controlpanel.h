@@ -6,9 +6,6 @@
 #include <QCheckBox>
 #include <QSlider>
 
-//#include "Frame.h"
-//#include "avexception.h"
-//#include "yolo_v2_class.hpp"
 #include "Utilities/displayslider.h"
 #include "Utilities/avexception.h"
 
@@ -22,7 +19,6 @@ public:
     bool checkCodec(const QString& filename);
     QString getButtonStyle(const QString& name) const;
     void styleButtons();
-    void restoreEngaged();
 
     QMainWindow *mainWindow;
     QCheckBox *engageFilter;
@@ -46,9 +42,6 @@ public:
     bool muted = false;
     bool paused = false;
     bool stopped = true;
-    bool lastEngaged;
-
-    //bool input_switched = false;
 
     AVExceptionHandler av;
 
@@ -70,7 +63,7 @@ public slots:
     void previous();
     void next();
     void singlestep();
-    void engage(int);
+    void engage(bool);
     void sliderMoved(int);
 
 };

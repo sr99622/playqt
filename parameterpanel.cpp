@@ -46,6 +46,7 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : Panel(parent)
     cpGroup->setLayout(cpLayout);
     QHBoxLayout *gLayout = new QHBoxLayout();
     gLayout->addWidget(cpGroup);
+    gLayout->setContentsMargins(0, 0, 0, 0);
     commandPanel->setLayout(gLayout);
 
     QLabel *lbl01 = new QLabel("Save the current command: ");
@@ -74,11 +75,34 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : Panel(parent)
     spGroup->setLayout(spLayout);
     QHBoxLayout *sLayout = new QHBoxLayout();
     sLayout->addWidget(spGroup);
+    sLayout->setContentsMargins(0, 0, 0, 0);
     storagePanel->setLayout(sLayout);
+
+    autoLoad = new QCheckBox("Auto Load Command ");
+    autoLoad->setChecked(MW->settings->value(autoLoadKey, false).toBool());
+    connect(autoLoad, SIGNAL(clicked(bool)), this, SLOT(autoLoadClicked(bool)));
+    cmds = new QComboBox(this);
+    fillAutoCmds();
+    cmds->setCurrentIndex(MW->settings->value(autoCmdKey, 0).toInt());
+    currentAutoCmd = cmds->currentText();
+
+    cout << "FUCK ME: " << currentAutoCmd.toStdString() << endl;
+
+    connect(cmds, SIGNAL(currentIndexChanged(int)), this, SLOT(autoCmdIndexChanged(int)));
+    QLabel *lbl02 = new QLabel("on Startup");
+
+    QWidget *autoPanel = new QWidget();
+    QGridLayout *aLayout = new QGridLayout();
+    aLayout->addWidget(autoLoad,    0, 0, 1, 1);
+    aLayout->addWidget(cmds,        0, 1, 1, 1);
+    aLayout->addWidget(lbl02,       0, 2, 1, 1);
+    aLayout->setContentsMargins(0, 0, 0, 0);
+    autoPanel->setLayout(aLayout);
 
     QGridLayout *mainLayout = new QGridLayout();
     mainLayout->addWidget(commandPanel,      0, 0, 1, 1);
     mainLayout->addWidget(storagePanel,      0, 1, 1, 1);
+    mainLayout->addWidget(autoPanel,         1, 0, 1, 2);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mainLayout);
 
@@ -92,12 +116,40 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : Panel(parent)
 
     savedCmdLines->setFocus();
     filters = ((OptionPanel*)MW->optionDialog->panel)->show_filters();
+
+    if (autoLoad->isChecked()) {
+        int index = cmds->currentIndex();
+        QListWidgetItem *item = savedCmdLines->item(index);
+        itemDoubleClicked(item);
+    }
 }
 
+void ParameterPanel::fillAutoCmds()
+{
+    QStringList list;
+    for (int i = 0; i < savedCmdLines->count(); i++) {
+        list << savedCmdLines->item(i)->text();
+    }
+    cmds->clear();
+    cmds->addItems(list);
+}
+
+void ParameterPanel::autoCmdIndexChanged(int index)
+{
+    MW->settings->setValue(autoCmdKey, index);
+}
+
+void ParameterPanel::autoLoadClicked(bool checked)
+{
+    MW->settings->setValue(autoLoadKey, checked);
+}
+
+/*
 void ParameterPanel::apply()
 {
     MW->runLoop();
 }
+*/
 
 void ParameterPanel::applyStyle(const ColorProfile& profile)
 {
@@ -225,11 +277,14 @@ void ParameterPanel::saveCmdLine()
         return;
     }
 
+    currentAutoCmd = cmds->currentText();
     StoredOption *storedOption = new StoredOption(cmdLineName->text());
     storedOption->arg = getOptionStorageString();
     savedCmdLines->addItem(storedOption);
     cmdLineName->setText("");
     saveSettings();
+    fillAutoCmds();
+    cmds->setCurrentText(currentAutoCmd);
 }
 
 const QString ParameterPanel::getOptionStorageString()
@@ -641,6 +696,9 @@ void SavedCmdLines::remove()
     QString msg = QString("You are about to delete the command '%1'\nAre you sure you want to continue?").arg(currentItem()->text());
     QMessageBox::StandardButton result = QMessageBox::question(this, "PlayQt", msg);
     if (result == QMessageBox::Yes) {
+
+        //MW->parameter()->currentAutoCmd = MW->parameter()->cmds->currentText();
+
         MW->parameter()->clearSettings();
 
         int row = currentRow();
@@ -656,7 +714,15 @@ void SavedCmdLines::remove()
         */
 
         MW->parameter()->saveSettings();
+        MW->parameter()->fillAutoCmds();
 
+        cout << "currentAutoCmd: " << MW->parameter()->currentAutoCmd.toStdString() << endl;
+
+        MW->parameter()->cmds->setCurrentText(MW->parameter()->currentAutoCmd);
+        if (MW->parameter()->currentAutoCmd.length() == 0) {
+            MW->parameter()->autoLoad->setChecked(false);
+            MW->parameter()->autoLoadClicked(false);
+        }
     }
 }
 

@@ -35,6 +35,7 @@ CameraListView::CameraListView(QMainWindow *parent)
 void CameraListView::mouseDoubleClickEvent(QMouseEvent *event)
 {
     //MW->cameraListDoubleClicked(currentIndex());
+    cout << "CameraListView::mouseDoubleClickEvent" << endl;
     Camera *camera = getCurrentCamera();
     if (camera) {
         QString rtsp = camera->onvif_data->stream_uri;
@@ -73,6 +74,23 @@ QModelIndex CameraListView::nextIndex() const
         }
     }
     return next;
+}
+
+void CameraListView::setCurrentCamera(const QString& cameraName)
+{
+    int row = -1;
+    for (int i = 0; i < model()->rowCount(); i++) {
+        Camera *camera = ((CameraListModel*)model())->getCameraAt(i);
+        if (camera->getCameraName() == cameraName) {
+            row = i;
+            break;
+        }
+    }
+
+    if (row > -1) {
+        QModelIndex index = model()->index(row, 0);
+        setCurrentIndex(index);
+    }
 }
 
 Camera *CameraListView::getCurrentCamera()

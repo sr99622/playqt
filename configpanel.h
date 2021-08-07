@@ -58,7 +58,7 @@ public:
 
 public slots:
     void setDefaultStyle();
-    void stateChanged(int);
+    void sysGuiClicked(bool);
 };
 
 class ConfigDialog : public PanelDialog

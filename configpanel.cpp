@@ -55,7 +55,7 @@ ConfigPanel::ConfigPanel(QMainWindow *parent) : Panel(parent)
     if (MW->settings->contains(sysGuiKey))
         useSystemGui->setChecked(MW->settings->value(sysGuiKey).toBool());
     sysGuiEnabled(useSystemGui->isChecked());
-    connect(useSystemGui, SIGNAL(stateChanged(int)), this, SLOT(stateChanged(int)));
+    connect(useSystemGui, SIGNAL(clicked(bool)), this, SLOT(sysGuiClicked(bool)));
 
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(cPanel,        0, 0, 1, 4);
@@ -109,11 +109,11 @@ void ConfigPanel::sysGuiEnabled(bool arg)
     restore->setEnabled(!arg);
 }
 
-void ConfigPanel::stateChanged(int state)
+void ConfigPanel::sysGuiClicked(bool checked)
 {
-    MW->settings->setValue(sysGuiKey, useSystemGui->isChecked());
+    MW->settings->setValue(sysGuiKey, checked);
     MW->applyStyle(getProfile());
-    sysGuiEnabled(useSystemGui->isChecked());
+    sysGuiEnabled(checked);
 }
 
 void ConfigPanel::setDefaultStyle()

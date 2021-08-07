@@ -118,6 +118,7 @@ public:
     ParameterPanel *parameter();
     CountPanel *count();
     QLabel *display();
+    DisplayContainer *dc();
 
     QString filename;
 
@@ -138,6 +139,7 @@ public:
     MessageBox *messageBox;
     ParameterDialog *parameterDialog;
     ConfigDialog *configDialog;
+    //QStatusBar *status;
 
     FilterDialog *filterDialog;
     FilterChain *filterChain;
@@ -164,8 +166,6 @@ public slots:
     void showHelp(const QString&);
     void msg(const QString&);
     void test();
-    void ping(vector<bbox_t>*);
-    void guiUpdate(int);
     void start();
     void splitterMoved(int, int);
     void autoSave();

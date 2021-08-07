@@ -23,10 +23,6 @@ protected:
     void keyPressEvent(QKeyEvent *e) override;
     bool event(QEvent *e) override;
 
-public slots:
-    void moved(int value);
-    void pressed();
-    void released();
 };
 
 #endif // DISPLAYSLIDER_H

@@ -41,7 +41,7 @@ public:
     FilterChain(QMainWindow *parent);
     ~FilterChain();
 
-    Frame fp;
+    Frame *fp;
     Frame *vp;
 
     QMainWindow *mainWindow;
@@ -50,6 +50,7 @@ public:
     bool counting = false;
     int count = 0;
     high_resolution_clock::time_point t1;
+    bool disengaged = false;
 
 public slots:
     void process(Frame *vp);

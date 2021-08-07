@@ -72,8 +72,6 @@ CameraPanel::CameraPanel(QMainWindow *parent)
     adminTab->setActive(false);
     applyButton->setEnabled(false);
 
-    connect(this, SIGNAL(stopStreaming()), mainWindow, SLOT(stopPlaying()));
-    connect(this, SIGNAL(startStreaming()), mainWindow, SLOT(startStreaming()));
     connect(this, SIGNAL(msg(QString)), mainWindow, SLOT(msg(QString)));
 
     CameraListModel *cameraListModel = cameraList->cameraListModel;
@@ -88,18 +86,28 @@ CameraPanel::CameraPanel(QMainWindow *parent)
     if (netIntf.length() > 0)
         configTab->networkInterfaces->setCurrentText(netIntf);
 
+    savedAutoCameraName = MW->settings->value(autoCameraKey, "").toString();
     discovery = new Discovery(this);
+    connect(discovery, SIGNAL(stopping()), this, SLOT(discoveryFinished()));
     cameraNames = new QSettings("Onvif", "Camera Names");
     foreach(QString key, cameraNames->allKeys())
         discovery->cameraAlias.insert(key, cameraNames->value(key).toString());
 
-    if (configTab->autoDiscovery->isChecked())
+    if (configTab->autoDiscovery->isChecked()) {
         discovery->start();
+    }
+    else {
+        configTab->autoLoad->setEnabled(false);
+        configTab->autoCamera->setEnabled(false);
+        configTab->autoLabel->setEnabled(false);
+    }
+    configTab->autoLoad->setChecked(MW->settings->value(autoLoadKey, false).toBool());
 }
 
 void CameraPanel::receiveOnvifData(OnvifData *onvif_data)
 {
     cameraList->cameraListModel->pushCamera(onvif_data);
+    configTab->autoCamera->addItem(onvif_data->camera_name);
 }
 
 void CameraPanel::discoverButtonClicked()
@@ -171,8 +179,44 @@ void CameraPanel::saveAutoDiscovery()
 
 void CameraPanel::saveNetIntf(const QString& name)
 {
-    cout << "net intf: " << name.toStdString() << endl;
     MW->settings->setValue(netIntfKey, name);
+}
+
+void CameraPanel::autoLoadClicked(bool checked)
+{
+    MW->settings->setValue(autoLoadKey, checked);
+}
+
+void CameraPanel::autoCameraChanged(int index)
+{
+    cout << "CameraPanel::autoCameraChanged: " << configTab->autoCamera->itemText(index).toStdString() << endl;
+    MW->settings->setValue(autoCameraKey, configTab->autoCamera->itemText(index));
+}
+
+void CameraPanel::discoveryFinished()
+{
+    cout << "CameraPanel::discoverFinished" << endl;
+    QComboBox *cmb = configTab->autoCamera;
+    QCheckBox *chk = configTab->autoLoad;
+
+    QStringList list;
+    for (int i = 0; i < cmb->count(); i++) {
+        list << cmb->itemText(i);
+    }
+
+    if (list.contains(savedAutoCameraName)) {
+        cmb->setCurrentText(savedAutoCameraName);
+        cameraList->setCurrentCamera(savedAutoCameraName);
+        autoCameraFound = true;
+    }
+    else {
+        autoCameraFound = false;
+    }
+
+    if (autoCameraFound && chk->isChecked()) {
+        cameraList->mouseDoubleClickEvent(nullptr);
+    }
+
 }
 
 void CameraPanel::signalStreamer(bool on)

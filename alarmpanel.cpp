@@ -17,7 +17,9 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     maxLimitTime->setMaximumWidth(boxWidth);
 
     chkMin = new AlarmCheckBox("Alarm if count goes below: ", key() + "/chkMin", MW->settings, false);
+    connect(chkMin, SIGNAL(clicked(bool)), this, SLOT(chkMinClicked(bool)));
     chkMax = new AlarmCheckBox("Alarm if count goes above: ", key() + "/chkMax", MW->settings, false);
+    connect(chkMax, SIGNAL(clicked(bool)), this, SLOT(chkMaxClicked(bool)));
 
     QLabel *lbl00 = new QLabel(" for ");
     QLabel *lbl01 = new QLabel(" seconds");
@@ -63,12 +65,15 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     btnTest->setMaximumWidth(btnTest->fontMetrics().boundingRect(btnTest->text()).width() * 1.5);
     connect(btnTest, SIGNAL(clicked()), this, SLOT(test()));
 
-    chkWrite = new AlarmCheckBox("Write File", key() + "/chkWrite", MW->settings, false);
-
     dirSetter = new DirectorySetter(mainWindow, "Dir");
     dirSetterKey = key() + "/dirSetter";
     dirSetter->setPath(MW->settings->value(dirSetterKey, QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString());
     connect(dirSetter, SIGNAL(directorySet(const QString&)), this, SLOT(setDirPath(const QString&)));
+
+    chkWrite = new AlarmCheckBox("Write File", key() + "/chkWrite", MW->settings, false);
+    connect(chkWrite, SIGNAL(clicked(bool)), this, SLOT(chkWriteClicked(bool)));
+    if (chkWrite->isChecked())
+        chkWriteClicked(true);
 
     QGridLayout *gLayout = new QGridLayout();
     gLayout->addWidget(chkSound,     0, 0, 1, 1);
@@ -82,7 +87,8 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     gLayout->addWidget(dirSetter,    4, 1, 1, 2);
     groupBox->setLayout(gLayout);
 
-    QPushButton *close = new QPushButton("Close");
+    filteredCount = new QLabel("0.00");
+    QLabel *lbl05 = new QLabel("Filtered Count:");
 
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(chkMin,        0, 0, 1, 1);
@@ -96,14 +102,16 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     layout->addWidget(maxLimitTime,  1, 3, 1, 1);
     layout->addWidget(lbl03,         1, 4, 1, 1);
     layout->addWidget(groupBox,      2, 0, 1, 5);
-    layout->addWidget(close,         3, 4, 1, 1);
+    layout->addWidget(lbl05,         3, 0, 1, 4, Qt::AlignRight);
+    layout->addWidget(filteredCount, 3, 4, 1, 1);
     setLayout(layout);
 
     player = new AlarmPlayer(mainWindow);
     player->filename = soundSetter->filename;
     player->audio.volume = volumeSlider->value();
     connect(player, SIGNAL(done()), this, SLOT(soundPlayFinished()));
-    connect(MW->control(), SIGNAL(quitting()), this, SLOT(alarmOff()));
+    connect(MW->control(), SIGNAL(quitting()), this, SLOT(minAlarmOff()));
+    connect(MW->control(), SIGNAL(quitting()), this, SLOT(maxAlarmOff()));
     connect(MW->control(), SIGNAL(muting(bool)), this, SLOT(mute(bool)));
 
     alarmProfile.bl = "#B33525";
@@ -120,6 +128,10 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
 AlarmPanel::~AlarmPanel()
 {
     player->stop();
+    if (file) {
+        file->flush();
+        file->close();
+    }
 }
 
 void AlarmPanel::mute(bool muted)
@@ -131,25 +143,45 @@ void AlarmPanel::mute(bool muted)
         volumeSlider->setEnabled(true);
 }
 
-void AlarmPanel::alarmOff()
+void AlarmPanel::minAlarmOff()
 {
-    cout << "AlarmPanel::alarmOff" << endl;
-    if (minAlarmOn || maxAlarmOn) {
+    if (minAlarmOn) {
         QString str;
-        QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Min Alarm for "
+        QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                          << " Stream Time: " << MW->dc()->elapsed->text()
+                          << "Min Alarm for "
                           << MW->count()->names[obj_id] << " turned off Manually";
         MW->msg(str);
+        writeToFile(str);
         minAlarmOn = false;
-        minAlarmStart = reference;
+        minAlarmStartOn = reference;
         MW->applyStyle(MW->config()->getProfile());
-        player->stop();
+        if (!maxAlarmOn)
+            player->stop();
+    }
+}
+
+void AlarmPanel::maxAlarmOff()
+{
+    if (maxAlarmOn) {
+        QString str;
+        QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                          << " Stream Time: " << MW->dc()->elapsed->text()
+                          << " Max Alarm for "
+                          << MW->count()->names[obj_id] << " turned off Manually";
+        MW->msg(str);
+        writeToFile(str);
+        maxAlarmOn = false;
+        maxAlarmStartOn = reference;
+        MW->applyStyle(MW->config()->getProfile());
+        if (!minAlarmOn)
+            player->stop();
     }
 }
 
 void AlarmPanel::feed(int count)
 {
     if (first_pass) {
-        cout << "First Pass" << endl;
         lastTime = high_resolution_clock::now();
         first_pass = false;
         return;
@@ -163,20 +195,27 @@ void AlarmPanel::feed(int count)
     else
         k_count.measure(count, msec);
 
+    char buf[16];
+    sprintf(buf, "%0.2f", k_count.xh00);
+    filteredCount->setText(buf);
+
     lastTime = now;
 
     if (chkMin->isChecked()) {
         if (k_count.xh00 < minLimit->floatValue()) {
-            if (duration_cast<milliseconds>(minAlarmStart - reference).count() == 0) {
-                minAlarmStart = now;
+            if (duration_cast<milliseconds>(minAlarmStartOn - reference).count() == 0) {
+                minAlarmStartOn = now;
             }
             else {
-                if (duration_cast<milliseconds>(now - minAlarmStart).count() > minLimitTime->floatValue() * 1000) {
+                if (duration_cast<milliseconds>(now - minAlarmStartOn).count() > minLimitTime->floatValue() * 1000) {
                     if (!minAlarmOn) {
                         QString str;
-                        QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Min Alarm Condition Met for "
-                                          << MW->count()->names[obj_id] << " count: " << k_count.xh00;
+                        QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                                          << " Stream Time: " << MW->dc()->elapsed->text()
+                                          << " Min Alarm for "
+                                          << MW->count()->names[obj_id] << " turned on - count: " << k_count.xh00;
                         MW->msg(str);
+                        writeToFile(str);
                         minAlarmOn = true;
                         if (chkColor->isChecked()) {
                             MW->applyStyle(alarmProfile);
@@ -192,33 +231,46 @@ void AlarmPanel::feed(int count)
         }
         else {
 
-            minAlarmStart = reference;
+            minAlarmStartOn = reference;
 
             if (minAlarmOn) {
-                QString str;
-                QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Min Alarm for "
-                                  << MW->count()->names[obj_id] << " turned off";
-                MW->msg(str);
-                minAlarmOn = false;
-                //minAlarmStart = reference;
-                MW->applyStyle(MW->config()->getProfile());
-                player->stop();
+                if (duration_cast<milliseconds>(minAlarmStartOff - reference).count() == 0) {
+                    minAlarmStartOff = now;
+                }
+                else {
+                    if (duration_cast<milliseconds>(now - minAlarmStartOff).count() > minLimitTime->floatValue() * 1000) {
+                        QString str;
+                        QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                                          << " Stream Time: " << MW->dc()->elapsed->text()
+                                          << " Min Alarm for "
+                                          << MW->count()->names[obj_id] << " turned off";
+                        MW->msg(str);
+                        writeToFile(str);
+                        minAlarmOn = false;
+                        minAlarmStartOff = reference;
+                        MW->applyStyle(MW->config()->getProfile());
+                        player->stop();
+                    }
+                }
             }
         }
     }
 
     if (chkMax->isChecked()) {
         if (k_count.xh00 > maxLimit->floatValue()) {
-            if (duration_cast<milliseconds>(maxAlarmStart - reference).count() == 0) {
-                maxAlarmStart = now;
+            if (duration_cast<milliseconds>(maxAlarmStartOn - reference).count() == 0) {
+                maxAlarmStartOn = now;
             }
             else {
-                if (duration_cast<milliseconds>(now - maxAlarmStart).count() > maxLimitTime->floatValue() * 1000) {
+                if (duration_cast<milliseconds>(now - maxAlarmStartOn).count() > maxLimitTime->floatValue() * 1000) {
                     if (!maxAlarmOn) {
                         QString str;
-                        QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Max Alarm Condition Met for "
-                                          << MW->count()->names[obj_id] << " count: " << k_count.xh00;
+                        QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                                          << " Stream Time: " << MW->dc()->elapsed->text()
+                                          << " Max Alarm for "
+                                          << MW->count()->names[obj_id] << " turned on - count: " << k_count.xh00;
                         MW->msg(str);
+                        writeToFile(str);
                         maxAlarmOn = true;
                         if (chkColor->isChecked()) {
                             MW->applyStyle(alarmProfile);
@@ -234,26 +286,51 @@ void AlarmPanel::feed(int count)
         }
         else {
 
-            maxAlarmStart = reference;
+            maxAlarmStartOn = reference;
 
             if (maxAlarmOn) {
-                QString str;
-                QTextStream(&str) << QTime::currentTime().toString("hh:mm:ss") << "Min Alarm for "
-                                  << MW->count()->names[obj_id] << " turned off";
-                MW->msg(str);
-                maxAlarmOn = false;
-                //minAlarmStart = reference;
-                MW->applyStyle(MW->config()->getProfile());
-                player->stop();
+                if (duration_cast<milliseconds>(maxAlarmStartOff - reference).count() == 0) {
+                    maxAlarmStartOff = now;
+                }
+                else {
+                    if (duration_cast<milliseconds>(now - maxAlarmStartOff).count() > maxLimitTime->floatValue() * 1000) {
+                        QString str;
+                        QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                                          << " Stream Time: " << MW->dc()->elapsed->text()
+                                          << " Max Alarm for "
+                                          << MW->count()->names[obj_id] << " turned off";
+                        MW->msg(str);
+                        writeToFile(str);
+                        maxAlarmOn = false;
+                        maxAlarmStartOff = reference;
+                        MW->applyStyle(MW->config()->getProfile());
+                        player->stop();
+                    }
+                }
             }
         }
     }
+}
 
+void AlarmPanel::writeToFile(const QString& str)
+{
+    QTextStream(file) << str << "\n";
+}
+
+void AlarmPanel::chkMinClicked(bool checked)
+{
+    if (!checked)
+        minAlarmOff();
+}
+
+void AlarmPanel::chkMaxClicked(bool checked)
+{
+    if (!checked)
+        maxAlarmOff();
 }
 
 void AlarmPanel::chkColorClicked(bool checked)
 {
-    cout << "AlarmPanel::chkColorClicked" << endl;
     if (minAlarmOn || maxAlarmOn) {
         if (checked)
             MW->applyStyle(alarmProfile);
@@ -274,6 +351,32 @@ void AlarmPanel::chkSoundClicked(bool checked)
             }
         }
     }
+}
+
+void AlarmPanel::chkWriteClicked(bool checked)
+{
+    if (checked) {
+        file = new QFile(getTimestampFilename(), this);
+        if (!file->open(QFile::WriteOnly | QFile::Text)) {
+            QMessageBox::warning(this, "PlayQt", QString("Unable to open file:\n%1").arg(file->fileName()));
+            return;
+        }
+        dirSetter->setEnabled(false);
+    }
+    else {
+        if (file) {
+            file->flush();
+            file->close();
+            file = nullptr;
+        }
+        dirSetter->setEnabled(true);
+    }
+}
+
+QString AlarmPanel::getTimestampFilename() const
+{
+    QString result = dirSetter->directory;
+    return result.append("/").append(QDateTime::currentDateTime().toString("yyyyMMddhhmmss")).append(".txt");
 }
 
 void AlarmPanel::autoSave()
@@ -308,14 +411,12 @@ void AlarmPanel::soundPlayFinished()
 
 void AlarmPanel::setSoundPath(const QString& path)
 {
-    cout << "AlarmPanel::setSoundPath: " << path.toStdString() << endl;
     player->filename = path;
     MW->settings->setValue(soundSetterKey, path);
 }
 
 void AlarmPanel::setDirPath(const QString& path)
 {
-    cout << "AlarmPanel::setDirPath" << path.toStdString() << endl;
     MW->settings->setValue(dirSetterKey, path);
 }
 
@@ -331,8 +432,6 @@ QString AlarmPanel::key() const
 
 void AlarmPanel::test()
 {
-    cout << "AlarmPanel::test" << endl;
-
     player->stop();
 
     if (player->filename.length() > 0) {

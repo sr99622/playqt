@@ -88,8 +88,8 @@ void Darknet::filter(Frame *vp)
 
     if (!loading) {
         result = model->infer(vp, threshold);
-        vector<bbox_t> pinger = result;
-        emit ping(&pinger);
+        vector<bbox_t> data = result;
+        emit send(&data);
 
         for (size_t i = 0; i < result.size(); i++) {
             if (obj_drawn[result[i].obj_id].isValid()) {
