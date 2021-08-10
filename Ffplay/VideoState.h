@@ -21,6 +21,7 @@ extern "C" {
 #include "Display.h"
 #include "CommandOptions.h"
 #include "simplefilter.h"
+#include "streampanel.h"
 #include "config.h"
 #include "Filters/filterchain.h"
 #include "Utilities/avexception.h"
@@ -115,6 +116,7 @@ public:
     void rewind();
     void fastforward();
     const QString formatTime(double time_in_seconds);
+    static int readStreamData(void *opaque, uint8_t *buffer, int size);
 
     double elapsed;
     double total;
@@ -126,6 +128,9 @@ public:
     SimpleFilter* filter;
     AVExceptionHandler av;
     SDL_mutex *display_mutex;
+    AVIOContext *stream_ctx = nullptr;
+    StreamData localData;
+    uint8_t *stream_data;
 
     CommandOptions* co;
     Display* disp;

@@ -51,6 +51,7 @@
 #include "optionpanel.h"
 #include "countpanel.h"
 #include "configpanel.h"
+#include "streampanel.h"
 
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
@@ -135,11 +136,11 @@ public:
     FilePanel *picturePanel;
     FilePanel *audioPanel;
     CameraPanel *cameraPanel;
+    StreamPanel *streamPanel;
     QTabWidget *tabWidget;
     MessageBox *messageBox;
     ParameterDialog *parameterDialog;
     ConfigDialog *configDialog;
-    //QStatusBar *status;
 
     FilterDialog *filterDialog;
     FilterChain *filterChain;

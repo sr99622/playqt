@@ -85,7 +85,7 @@ void FilePanel::doubleClicked(const QModelIndex& index)
             tree->setExpanded(index, !expanded);
         }
         else {
-            MW->mainPanel->controlPanel->play();
+            MW->control()->play();
         }
     }
 }

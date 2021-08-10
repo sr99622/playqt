@@ -1,6 +1,26 @@
 #include "VideoState.h"
 #include "mainwindow.h"
 
+int VideoState::readStreamData(void *opaque, uint8_t *buffer, int size)
+{
+    StreamData *data = (StreamData*)opaque;
+    cout << "readStreamData size: " << size
+         << " position: " << data->position
+         << " data size: " << data->size()
+         << endl;
+
+    int length = size;
+    if (data->position + size > data->size())
+        length = data->size() - data->position;
+
+    cout << "length: " << length << endl;
+
+    memcpy(buffer, (uint8_t*)data->mid(data->position, length).data(), size);
+    data->position += length;
+
+    return length;
+}
+
 int decode_interrupt_cb(void* ctx)
 {
     return ((VideoState*)ctx)->abort_request;
@@ -211,6 +231,8 @@ void VideoState::stream_close()
         stream_component_close(subtitle_stream);
 
     avformat_close_input(&ic);
+    if (stream_ctx)
+        av_free(stream_ctx);
 
     videoq.destroy();
     audioq.destroy();
@@ -2001,7 +2023,39 @@ int VideoState::read_thread()
     MW->msg(filename);
 
     try {
+        if (QString(filename).startsWith("youtube-dl:")) {
+            cout << "reading: " << filename << endl;
+
+            /*
+            strcpy(filename, "tiger.mp4");
+            while (!QFile(filename).exists())
+                QThread::msleep(100);
+
+            while (QFile(filename).size() < 1000000)
+                QThread::msleep(100);
+            */
+
+            unsigned char *buffer = (unsigned char*)av_malloc(8192);
+            if (!buffer) {
+                cout << "OUT OF MEMORY" << endl;
+                return -1;
+            }
+            cout << "buffer created" << endl;
+
+            //stream_ctx = avio_alloc_context(buffer, 8192, 0, &MW->streamData, readStreamData, 0, NULL);
+            stream_ctx = avio_alloc_context(buffer, 8192, 0, &MW->streamPanel->data, readStreamData, 0, NULL);
+            if (!stream_ctx) {
+                cout << "Failed to create stream_ctx" << endl;
+                return -1;
+            }
+            cout << "stream_ctx created" << endl;
+            ic->pb = stream_ctx;
+            ic->flags |= AVFMT_FLAG_CUSTOM_IO;
+        }
+
         av.ck(ret = avformat_open_input(&ic, filename, NULL, NULL), AOI);
+
+        cout << "VideoState->ic opened" << endl;
     }
     catch(AVException *e) {
         MW->msg(QString("Exception thrown in Decoder::fileInit during %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));

@@ -55,14 +55,16 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     videoPanel = new FilePanel(this, "Videos", QStandardPaths::writableLocation(QStandardPaths::MoviesLocation));
     picturePanel = new FilePanel(this, "Pictures", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
     audioPanel = new FilePanel(this, "Audio", QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
-
     cameraPanel = new CameraPanel(this);
+    streamPanel = new StreamPanel(this);
     tabWidget->addTab(videoPanel, tr("Videos"));
     tabWidget->addTab(picturePanel, tr("Pictures"));
     tabWidget->addTab(audioPanel, tr("Audio"));
     tabWidget->addTab(cameraPanel, tr("Cameras"));
+    tabWidget->addTab(streamPanel, tr("Streams"));
 
     mainPanel = new MainPanel(this);
+    connect(streamPanel, SIGNAL(play()), control(), SLOT(play()));
 
     splitter = new QSplitter(Qt::Orientation::Horizontal, this);
     splitter->addWidget(mainPanel);

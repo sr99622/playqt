@@ -100,14 +100,16 @@ void ControlPanel::play()
     QString selected_filename = "";
 
     if (MW->tabWidget->tabText(MW->tabWidget->currentIndex()) == "Cameras") {
-        CameraPanel *cameraPanel = (CameraPanel*)MW->tabWidget->currentWidget();
-        Camera *camera = cameraPanel->cameraList->getCurrentCamera();
+        Camera *camera = MW->cameraPanel->cameraList->getCurrentCamera();
         if (camera) {
             QString rtsp = camera->onvif_data->stream_uri;
             QString username = camera->onvif_data->username;
             QString password = camera->onvif_data->password;
             selected_filename = rtsp.mid(0, 7) + username + ":" + password + "@" + rtsp.mid(7);
         }
+    }
+    else if (MW->tabWidget->tabText(MW->tabWidget->currentIndex()) == "Streams") {
+        selected_filename = "youtube-dl: TESTING";
     }
     else {
         FilePanel *filePanel = (FilePanel*)MW->tabWidget->currentWidget();
