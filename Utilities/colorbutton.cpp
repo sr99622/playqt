@@ -37,7 +37,6 @@ QString ColorButton::getStyle() const
 
 void ColorButton::clicked()
 {
-    cout << "ColorButton::clicked" << endl;
     QColor result = QColorDialog::getColor(color, this, "PlayQt");
     if (result.isValid()) {
         color = result;

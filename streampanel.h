@@ -38,27 +38,19 @@ class StreamPanel : public Panel
 
 public:
     StreamPanel(QMainWindow *parent);
-    void keeper();
-    void readFromPipe();
-    void readFromErr();
-    void writeToPipe();
 
     QTextEdit *text;
     QProcess *process;
     StreamData data;
-    bool first_pass = true;
+    //bool first_pass = true;
 
 signals:
     void play();
-    void append(QByteArray*);
+    //void append(QByteArray*);
 
 public slots:
     void test();
     void clear();
-    void readStdOut();
-    void readStdErr();
-    void finished(int, QProcess::ExitStatus);
-
 };
 
 #endif // STREAMPANEL_H

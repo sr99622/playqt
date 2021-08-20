@@ -150,7 +150,6 @@ Filter *FilterPanel::getCurrentFilter()
 
 void FilterPanel::saveSettings(QSettings *settings)
 {
-    cout << "FilterPanel::saveSettings" << endl;
     for (int i = 0; i < filters.size(); i++) {
         QString arg = "FilterPanel_activeFilter_" + QString::number(i);
         settings->remove(arg);

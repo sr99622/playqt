@@ -121,6 +121,7 @@ public:
     double elapsed;
     double total;
     double current_time;
+    double last_time = 0;
     QString codec_name;
 
     QMainWindow* mainWindow;

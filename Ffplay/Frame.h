@@ -38,7 +38,6 @@ public:
     void pip(int ulc_x, int ulc_y, Frame *sub_vp);
     void allocateFrame(int width, int height, const AVPixelFormat& pix_fmt);
     void copy(Frame *vp);
-    void showPixelFormat();
 
     Mat toMat();
     void readMat(const Mat& mat);

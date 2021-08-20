@@ -48,7 +48,7 @@ public:
 signals:
     void msg(const QString&);
     void quitting();
-    void muting(bool);
+    void muting();
 
 public slots:
     void test();

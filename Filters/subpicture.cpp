@@ -31,9 +31,6 @@ SubPicture::SubPicture(QMainWindow *parent)
     name = "Sub Picture";
     panel = new Panel(mainWindow);
     mainWindow = parent;
-    //connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
-
-    //int buttonWidth = 50;
 
     textX = new NumberTextBox;
     textY = new NumberTextBox;
@@ -232,31 +229,24 @@ void SubPicture::keyReleaseEvent(QKeyEvent *event)
     if (event->isAutoRepeat())
         return;
 
-    //cout << "release event: " << event->key() << endl;
     if (event->modifiers() & Qt::ControlModifier) {
         switch (event->key()) {
         case Qt::Key_Semicolon:
-            //cout << "Left" << endl;
             stop();
             break;
         case Qt::Key_Apostrophe:
-            //cout << "Right" << endl;
             stop();
             break;
         case Qt::Key_BracketLeft:
-            //cout << "Up" << endl;
             stop();
             break;
         case Qt::Key_Slash:
-            //cout << "Down" << endl;
             stop();
             break;
         case Qt::Key_Comma:
-            //cout << "In" << endl;
             stop();
             break;
         case Qt::Key_Period:
-            //cout << "Out" << endl;
             stop();
             break;
         }
@@ -269,31 +259,24 @@ void SubPicture::keyPressEvent(QKeyEvent *event)
     if (event->isAutoRepeat())
         return;
 
-    //cout << "press event: " << event->key() << endl;
     if (event->modifiers() & Qt::ControlModifier) {
         switch (event->key()) {
         case Qt::Key_Semicolon:
-            //cout << "Left" << endl;
             move(-1, 0, 0);
             break;
         case Qt::Key_Apostrophe:
-            //cout << "Right" << endl;
             move(1, 0, 0);
             break;
         case Qt::Key_BracketLeft:
-            //cout << "Up" << endl;
             move(0, 1, 0);
             break;
         case Qt::Key_Slash:
-            //cout << "Down" << endl;
             move(0, -1, 0);
             break;
         case Qt::Key_Comma:
-            //cout << "In" << endl;
             move(0, 0, 1);
             break;
         case Qt::Key_Period:
-            //cout << "Out" << endl;
             move(0, 0, -1);
             break;
         }

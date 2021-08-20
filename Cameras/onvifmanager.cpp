@@ -52,7 +52,6 @@ VideoUpdater::VideoUpdater(QWidget *parent)
 
 void VideoUpdater::run()
 {
-    ((CameraPanel *)cameraPanel)->signalStreamer(false);
     OnvifData *onvif_data = ((CameraPanel *)cameraPanel)->camera->onvif_data;
     setVideoEncoderConfiguration(onvif_data);
     getProfile(onvif_data);

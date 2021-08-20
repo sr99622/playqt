@@ -112,7 +112,6 @@ void CameraPanel::receiveOnvifData(OnvifData *onvif_data)
 
 void CameraPanel::discoverButtonClicked()
 {
-    cout << "CameraPanel::discoverButtonClicked" << endl;
     discovery->start();
 }
 
@@ -189,13 +188,11 @@ void CameraPanel::autoLoadClicked(bool checked)
 
 void CameraPanel::autoCameraChanged(int index)
 {
-    cout << "CameraPanel::autoCameraChanged: " << configTab->autoCamera->itemText(index).toStdString() << endl;
     MW->settings->setValue(autoCameraKey, configTab->autoCamera->itemText(index));
 }
 
 void CameraPanel::discoveryFinished()
 {
-    cout << "CameraPanel::discoverFinished" << endl;
     QComboBox *cmb = configTab->autoCamera;
     QCheckBox *chk = configTab->autoLoad;
 
@@ -217,23 +214,6 @@ void CameraPanel::discoveryFinished()
         cameraList->mouseDoubleClickEvent(nullptr);
     }
 
-}
-
-void CameraPanel::signalStreamer(bool on)
-{
-    /*
-    if (on) {
-        emit msg("Streamer started by camera panel");
-        MW->controlPanel->streamerButton->animateClick(true);
-        MW->controlPanel->statusLabel->setText(QString("Updating configuration for camera %1").arg(camera->onvif_data->camera_name));
-    }
-    else {
-        emit msg("Streamer stopped for camera configuration changes");
-        applyButton->setEnabled(false);
-        MW->controlPanel->streamerButton->setEnabled(false);
-        emit stopStreaming();
-    }
-    */
 }
 
 void CameraPanel::refreshList()

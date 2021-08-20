@@ -25,7 +25,7 @@ int Decoder::decode_frame(AVFrame* frame, AVSubtitle* sub)
 	int ret = AVERROR(EAGAIN);
 
 	for (;;) {
-		AVPacket pkt1;
+        AVPacket pkt1;
 
 		if (queue->serial == pkt_serial) {
 			do {
@@ -113,22 +113,22 @@ int Decoder::decode_frame(AVFrame* frame, AVSubtitle* sub)
 			}
 			av_packet_unref(&pkt1);
 		}
-	}
+    }
 }
 
 int Decoder::start(int (*fn)(void*), const char* thread_name, void* arg)
 {
-	queue->start();
+    queue->start();
 	decoder_tid = SDL_CreateThread(fn, thread_name, arg);
 	if (!decoder_tid) {
-		return AVERROR(ENOMEM);
+        return AVERROR(ENOMEM);
 	}
-	return 0;
+    return 0;
 }
 
 void Decoder::init(AVCodecContext* avctx, PacketQueue* queue, SDL_cond* empty_queue_cond, AVPacket* flush_pkt)
 {
-	this->avctx = avctx;
+    this->avctx = avctx;
 	this->queue = queue;
 	this->empty_queue_cond = empty_queue_cond;
 	start_pts = AV_NOPTS_VALUE;

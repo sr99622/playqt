@@ -183,7 +183,7 @@ CommandOptions::CommandOptions()
     options[32].help = "force full screen";
 
     options[33].name = "an";
-    options[33].flags = OPT_BOOL | OPT_NO_GUI;
+    options[33].flags = OPT_BOOL;
     options[33].u.dst_ptr = &audio_disable;
     options[33].help = "disable audio";
 

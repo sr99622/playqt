@@ -62,10 +62,14 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
 
 void ControlPanel::styleButtons()
 {
-    if (!paused)
-        btnPlay->setStyleSheet(getButtonStyle("pause"));
-    else
+    if (MW->is == nullptr)
         btnPlay->setStyleSheet(getButtonStyle("play"));
+    else {
+        if (!paused)
+            btnPlay->setStyleSheet(getButtonStyle("pause"));
+        else
+            btnPlay->setStyleSheet(getButtonStyle("play"));
+    }
     btnStop->setStyleSheet(getButtonStyle("stop"));
     btnRewind->setStyleSheet(getButtonStyle("rewind"));
     btnFastForward->setStyleSheet(getButtonStyle("fast-forward"));
@@ -106,10 +110,8 @@ void ControlPanel::play()
             QString username = camera->onvif_data->username;
             QString password = camera->onvif_data->password;
             selected_filename = rtsp.mid(0, 7) + username + ":" + password + "@" + rtsp.mid(7);
+            MW->dc()->sliderPanel->hide();
         }
-    }
-    else if (MW->tabWidget->tabText(MW->tabWidget->currentIndex()) == "Streams") {
-        selected_filename = "youtube-dl: TESTING";
     }
     else {
         FilePanel *filePanel = (FilePanel*)MW->tabWidget->currentWidget();
@@ -118,6 +120,7 @@ void ControlPanel::play()
             QFileInfo info = filePanel->model->fileInfo(index);
             if (!info.isDir()) {
                 selected_filename = filePanel->model->filePath(index);
+                MW->dc()->sliderPanel->show();
             }
             else {
                 return;
@@ -236,18 +239,12 @@ void ControlPanel::volup()
 {
     if (MW->is)
         MW->is->update_volume(1, SDL_VOLUME_STEP);
-
-    if (MW->is)
-        cout << MW->is->audio_volume << endl;
 }
 
 void ControlPanel::voldn()
 {
     if (MW->is)
         MW->is->update_volume(-1, SDL_VOLUME_STEP);
-
-    if (MW->is)
-        cout << MW->is->audio_volume << endl;
 }
 
 void ControlPanel::rewind()
@@ -326,7 +323,7 @@ void ControlPanel::mute()
         btnMute->setStyleSheet(getButtonStyle("audio"));
     }
 
-    emit muting(muted);
+    emit muting();
 }
 
 void ControlPanel::quit()

@@ -107,7 +107,6 @@ CountPanel::~CountPanel()
 void CountPanel::autoSave()
 {
     if (changed) {
-        cout << "CountPanel::autoSave" << endl;
         MW->settings->setValue(hSplitKey, hSplit->saveState());
         MW->settings->setValue(headerKey, table->horizontalHeader()->saveState());
         changed = false;
@@ -161,7 +160,7 @@ void CountPanel::timeout()
 
     mutex.lock();
     QTextStream out(file);
-    out << QTime::currentTime().toString("hh:mm:ss") << ", " << MW->dc()->elapsed->text();
+    out << QTime::currentTime().toString("hh:mm:ss");
     for (pair<int, vector<int>>& count : counts) {
         int row = rowOf(count.first);
         if (row > -1) {
@@ -232,7 +231,6 @@ void CountPanel::intervalEdited()
 
 void CountPanel::setDir(const QString& arg)
 {
-    cout << "CountPanel::setDir" << endl;
     MW->settings->setValue(dirKey, arg);
 }
 

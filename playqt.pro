@@ -46,7 +46,7 @@ SOURCES += \
     Utilities/filepanel.cpp \
     Utilities/filesetter.cpp \
     Utilities/kalman.cpp \
-    Utilities/messagebox.cpp \
+    Utilities/messagedialog.cpp \
     Utilities/numbertextbox.cpp \
     Utilities/panel.cpp \
     Utilities/paneldialog.cpp \
@@ -107,7 +107,7 @@ HEADERS += \
     Utilities/filepanel.h \
     Utilities/filesetter.h \
     Utilities/kalman.h \
-    Utilities/messagebox.h \
+    Utilities/messagedialog.h \
     Utilities/numbertextbox.h \
     Utilities/panel.h \
     Utilities/paneldialog.h \

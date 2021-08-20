@@ -50,7 +50,6 @@ class CameraPanel : public QWidget
 
 public:
     CameraPanel(QMainWindow *parent);
-    void signalStreamer(bool on);
     void refreshList();
     void saveUsername();
     void savePassword();

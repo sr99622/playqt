@@ -49,7 +49,6 @@ PanelDialog::PanelDialog(QMainWindow *parent) : QDialog(parent, Qt::WindowSystem
 
 void PanelDialog::keyPressEvent(QKeyEvent *event)
 {
-    cout << "PanelDialog::keyPressEvent: " << event->key() << endl;
     if (event->modifiers() & Qt::ControlModifier) {
         QAction action(getSettingsKey());
         action.setShortcut(QKeySequence(Qt::CTRL | event->key()));
@@ -68,17 +67,13 @@ void PanelDialog::showEvent(QShowEvent *event)
     int x = MW->geometry().center().x() - w/2;
     int y = MW->geometry().center().y() - h/2;
 
-    cout << "getSettingsKey: " << getSettingsKey().toStdString() << endl;
-
     if (getSettingsKey().length() > 0) {
         if (MW->settings->contains(getSettingsKey())) {
-            cout << "Mainwindow contains settings key" << endl;
             QRect rect = MW->settings->value(getSettingsKey()).toRect();
             w = rect.width();
             h = rect.height();
             x = rect.x();
             y = rect.y();
-            cout << "x: " << x << " y: " << y << " w: " << w << " h: " << h << endl;
         }
     }
 
@@ -90,7 +85,6 @@ void PanelDialog::showEvent(QShowEvent *event)
 void PanelDialog::autoSave()
 {
     if (changed && shown && getSettingsKey().length() > 0) {
-        cout << "settings key: " << getSettingsKey().toStdString() << endl;
         MW->settings->setValue(getSettingsKey(), geometry());
         changed = false;
     }
@@ -116,7 +110,6 @@ void PanelDialog::moveEvent(QMoveEvent *event)
 
 void PanelDialog::closeEvent(QCloseEvent *event)
 {
-    //cout << "PanelDialog::closeEvent" << endl;
     autoSave();
     QDialog::closeEvent(event);
 }

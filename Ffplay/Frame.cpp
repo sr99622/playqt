@@ -73,11 +73,6 @@ void Frame::pip(int ulc_x, int ulc_y, Frame *sub_vp)
 void Frame::slice(int x, int y, Frame *sub_vp)
 {
 
-    //showPixelFormat();
-    //cout << "linesize[0]: " << frame->linesize[0] << endl;
-    //cout << "linesize[1]: " << frame->linesize[1] << endl;
-    //cout << "linesize[2]: " << frame->linesize[2] << endl;
-
     const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get((AVPixelFormat)format);
     if (pix_desc->flags & AV_PIX_FMT_FLAG_RGB) {
         int slice_height = sub_vp->frame->height;
@@ -111,7 +106,6 @@ bool Frame::writable()
 {
     if (!av_frame_is_writable(frame)) {
         if (av_frame_make_writable(frame) < 0) {
-            cout << "unable to make frame writable" << endl;
             return false;
         }
     }
@@ -151,7 +145,6 @@ void Frame::fillPixel(int x, int y, const YUVColor &color)
 
 void Frame::drawBox(const QRect &rect, int line_width, const YUVColor &color)
 {
-    //cout << "rect x: " << rect.x() << " y: " << rect.y() << " width: " << rect.width() << " height: " << rect.height() << endl;
     QMargins margins(1, 1, 1, 1);
 
     for (int i = 0; i < line_width; i++) {
@@ -270,23 +263,4 @@ Mat Frame::toMat()
   sws_scale(conversion, frame->data, frame->linesize, 0, height, &image.data, cvLinesizes);
   sws_freeContext(conversion);
   return image;
-}
-
-void Frame::showPixelFormat()
-{
-    const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get((AVPixelFormat)format);
-    cout << "pixel format: " << pix_desc->name << endl;
-    cout << "number of components: " << (int)pix_desc->nb_components << endl;
-    cout << "pixel bit depth: " << av_get_bits_per_pixel(pix_desc) << endl;
-
-    if (pix_desc->flags & AV_PIX_FMT_FLAG_PLANAR)
-        cout << "Planar format" << endl;
-    else
-        cout << "Packed format" << endl;
-
-    if (pix_desc->flags & AV_PIX_FMT_FLAG_RGB)
-        cout << "RGB format" << endl;
-    else
-        cout << "YUV format" << endl;
-
 }

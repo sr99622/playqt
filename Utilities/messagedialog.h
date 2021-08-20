@@ -19,28 +19,21 @@
 *
 *******************************************************************************/
 
-#ifndef MESSAGEBOX_H
-#define MESSAGEBOX_H
+#ifndef MESSAGEDIALOG_H
+#define MESSAGEDIALOG_H
 
 #include "paneldialog.h"
 #include <QMainWindow>
 #include <QTextEdit>
 
-class MessageBox : public PanelDialog
+class MessageDialog : public PanelDialog
 {
     Q_OBJECT
 
 public:
-    MessageBox(QMainWindow *parent);
-    int getDefaultWidth() override;
-    int getDefaultHeight() override;
-    QString getSettingsKey() const override;
+    MessageDialog(QMainWindow *parent);
 
     QTextEdit *message;
-
-    const int defaultWidth = 400;
-    const int defaultHeight = 400;
-    const QString settingsKey = "MessageBox/size";
 
 public slots:
     void clear();
@@ -48,4 +41,4 @@ public slots:
 
 };
 
-#endif // MESSAGEBOX_H
+#endif // MESSAGEDIALOG_H

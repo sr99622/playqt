@@ -34,17 +34,7 @@ CameraListView::CameraListView(QMainWindow *parent)
 
 void CameraListView::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    //MW->cameraListDoubleClicked(currentIndex());
-    cout << "CameraListView::mouseDoubleClickEvent" << endl;
-    Camera *camera = getCurrentCamera();
-    if (camera) {
-        QString rtsp = camera->onvif_data->stream_uri;
-        QString username = camera->onvif_data->username;
-        QString password = camera->onvif_data->password;
-        QString str = rtsp.mid(0, 7) + username + ":" + password + "@" + rtsp.mid(7);
-        MW->co->input_filename = av_strdup(str.toLatin1().data());
-        MW->runLoop();
-    }
+    MW->control()->play();
 }
 
 QModelIndex CameraListView::previousIndex() const
@@ -54,7 +44,6 @@ QModelIndex CameraListView::previousIndex() const
     if (index.isValid()) {
         if (index.row() > 0) {
             QRect rect = rectForIndex(index);
-            cout << "rect y: " << rect.y() << " rect.h: " << rect.height() << endl;
             QPoint previous_center = QPoint(rect.center().x(), rect.center().y() - rect.height());
             previous = indexAt(previous_center);
         }

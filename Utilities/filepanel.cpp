@@ -70,7 +70,6 @@ void FilePanel::setDirectory(const QString& path)
 void FilePanel::autoSave()
 {
     if (changed) {
-        cout << getHeaderKey().toStdString() << " written to settings" << endl;
         MW->settings->setValue(getHeaderKey(), tree->header()->saveState());
         changed = false;
     }
@@ -111,7 +110,6 @@ void FilePanel::showContextMenu(const QPoint &pos)
 
 void FilePanel::remove()
 {
-    cout << "FilePanel::remove" << endl;
     QModelIndex index = tree->currentIndex();
     if (!index.isValid())
         return;
@@ -133,7 +131,6 @@ void FilePanel::rename()
 }
 void FilePanel::info()
 {
-    cout << "FilePanel::info" << endl;
     QModelIndex index = tree->currentIndex();
     if (!index.isValid())
         return;
@@ -199,7 +196,7 @@ void FilePanel::info()
             << "duration: " << fmt_ctx->duration * av_q2d(av_get_time_base_q()) << "\n";
 
         emit msg(str);
-        MW->messageBox->show();
+        MW->messageDialog->show();
     }
     catch (AVException *e) {
         emit msg(QString("Unable to process audio stream %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));
@@ -252,7 +249,7 @@ void FilePanel::info()
             << "height: " << video->codecpar->height << "\n";
 
         emit msg(str);
-        MW->messageBox->show();
+        MW->messageDialog->show();
     }
     catch (AVException *e) {
         emit msg(QString("Unable to process video stream %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));

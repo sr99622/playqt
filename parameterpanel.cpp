@@ -86,8 +86,6 @@ ParameterPanel::ParameterPanel(QMainWindow *parent) : Panel(parent)
     cmds->setCurrentIndex(MW->settings->value(autoCmdKey, 0).toInt());
     currentAutoCmd = cmds->currentText();
 
-    cout << "FUCK ME: " << currentAutoCmd.toStdString() << endl;
-
     connect(cmds, SIGNAL(currentIndexChanged(int)), this, SLOT(autoCmdIndexChanged(int)));
     QLabel *lbl02 = new QLabel("on Startup");
 
@@ -488,41 +486,26 @@ void ParameterPanel::set(int option_index, QString option_arg)
 
     OptionDef *po = &MW->co->options[option_index];
     void *dst = po->u.dst_ptr;
-    //char *arg = parameter->text().toLatin1().data();
     const char *opt = po->name;
     QString name(opt);
     cout << "opt: " << name.toStdString() << endl;
     bool ok;
 
-    cout << "test 2" << endl;
-
     if (po->flags & OPT_STRING) {
         cout << "OPT_STRING" << endl;
-
         av_freep(dst);
         *(char **)dst = av_strdup(str.toLatin1().data());
-
-
-        /*
-        char *tmp;
-        tmp = av_strdup(arg);
-        av_freep(dst);
-
-        if (!tmp) {
-            cout << "ParameterPanel::set dst string error" << endl;
-            return;
-        }
-        *(char **)dst = tmp;
-        */
     }
     else if (po->flags & OPT_BOOL || po->flags & OPT_INT) {
         cout << "OPT_BOOL" << endl;
-        QString(arg).toInt(&ok);
+        char *dummy = option_arg.toLatin1().data();
+        QString tmp(dummy);
+        tmp.toInt(&ok);
         if (!ok) {
-            QMessageBox::warning(this, "PlayQt", QString("Incorrect format %1 is not a number").arg(arg));
+            QMessageBox::warning(this, "PlayQt", QString("Incorrect format %1 is not a number").arg(tmp));
             return;
         }
-        *(int *)dst = parse_number_or_die(opt, arg, OPT_INT64, INT_MIN, INT_MAX);
+        *(int *)dst = parse_number_or_die(opt, tmp.toLatin1().data(), OPT_INT64, INT_MIN, INT_MAX);
     }
     else if (po->flags & OPT_INT64) {
         cout << "OPT_INT64" << endl;

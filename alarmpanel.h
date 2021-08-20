@@ -107,6 +107,7 @@ public:
     QRadioButton *playOnce;
     QRadioButton *playContinuous;
     QPushButton *btnTest;
+    QPushButton *btnMute;
     QSlider *volumeSlider;
     QLabel *filteredCount;
     QFile *file = nullptr;
@@ -147,7 +148,7 @@ public slots:
     void volumeChanged(int);
     void minAlarmOff();
     void maxAlarmOff();
-    void mute(bool);
+    void mute();
 
 };
 

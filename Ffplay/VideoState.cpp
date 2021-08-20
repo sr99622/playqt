@@ -4,10 +4,14 @@
 int VideoState::readStreamData(void *opaque, uint8_t *buffer, int size)
 {
     StreamData *data = (StreamData*)opaque;
+
+    /**/
     cout << "readStreamData size: " << size
          << " position: " << data->position
          << " data size: " << data->size()
+         << " arg size: " << size
          << endl;
+    /**/
 
     int length = size;
     if (data->position + size > data->size())
@@ -1030,8 +1034,6 @@ void VideoState::show_status()
             sqsize,
             video_st ? viddec.avctx->pts_correction_num_faulty_dts : 0,
             video_st ? viddec.avctx->pts_correction_num_faulty_pts : 0);
-        //fflush(stdout);
-        //MW->status->showMessage(buf);
         last_time = cur_time;
     }
 }
@@ -1696,16 +1698,17 @@ int VideoState::stream_component_open(int stream_index)
         break;
     }
 
-
-    SDL_Event event;
-    SDL_memset(&event, 0, sizeof(event));
-    event.type = MW->sdlCustomEventType;
-    event.user.code = FILE_POSITION_UPDATE;
-    elapsed = ic->start_time * av_q2d(av_get_time_base_q());
-    total = ic->duration * av_q2d(av_get_time_base_q());
-    event.user.data1 = &elapsed;
-    event.user.data2 = &total;
-    SDL_PushEvent(&event);
+    if (!QString(filename).startsWith("rtsp://")) {
+        SDL_Event event;
+        SDL_memset(&event, 0, sizeof(event));
+        event.type = MW->sdlCustomEventType;
+        event.user.code = FILE_POSITION_UPDATE;
+        elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+        total = ic->duration * av_q2d(av_get_time_base_q());
+        event.user.data1 = &elapsed;
+        event.user.data2 = &total;
+        SDL_PushEvent(&event);
+    }
 
     goto out;
 
@@ -1780,7 +1783,7 @@ void VideoState::assign_read_options()
         AVDictionary** opts = setup_find_stream_info_opts(ic, codec_opts);
         int orig_nb_streams = ic->nb_streams;
 
-        ret = avformat_find_stream_info(ic, opts);
+        ret = avformat_find_stream_info(ic, NULL);
 
         for (int i = 0; i < orig_nb_streams; i++)
             av_dict_free(&opts[i]);
@@ -1820,6 +1823,8 @@ void VideoState::read_loop()
         MW->msg(str);
         return;
     }
+
+    total = ic->duration * av_q2d(av_get_time_base_q());
 
     for (;;) {
 
@@ -1994,16 +1999,20 @@ void VideoState::read_loop()
             av_packet_unref(pkt);
         }
 
-        current_time = pkt_ts * av_q2d(ic->streams[pkt->stream_index]->time_base);
-        SDL_Event event;
-        SDL_memset(&event, 0, sizeof(event));
-        event.type = MW->sdlCustomEventType;
-        event.user.code = FILE_POSITION_UPDATE;
-        elapsed = current_time;
-        total = ic->duration * av_q2d(av_get_time_base_q());
-        event.user.data1 = &current_time;
-        event.user.data2 = &total;
-        SDL_PushEvent(&event);
+        if (!QString(filename).startsWith("rtsp://")) {
+            current_time = av_gettime_relative();
+            if (!last_time || (current_time - last_time) >= 30000) {
+                SDL_Event event;
+                SDL_memset(&event, 0, sizeof(event));
+                event.type = MW->sdlCustomEventType;
+                event.user.code = FILE_POSITION_UPDATE;
+                elapsed = get_master_clock();
+                event.user.data1 = &elapsed;
+                event.user.data2 = &total;
+                SDL_PushEvent(&event);
+                last_time = current_time;
+            }
+        }
     }
     SDL_DestroyMutex(wait_mutex);
 }
@@ -2019,43 +2028,10 @@ int VideoState::read_thread()
         return ret;
     }
 
-    MW->msg("VideoState::read_thread");
     MW->msg(filename);
 
     try {
-        if (QString(filename).startsWith("youtube-dl:")) {
-            cout << "reading: " << filename << endl;
-
-            /*
-            strcpy(filename, "tiger.mp4");
-            while (!QFile(filename).exists())
-                QThread::msleep(100);
-
-            while (QFile(filename).size() < 1000000)
-                QThread::msleep(100);
-            */
-
-            unsigned char *buffer = (unsigned char*)av_malloc(8192);
-            if (!buffer) {
-                cout << "OUT OF MEMORY" << endl;
-                return -1;
-            }
-            cout << "buffer created" << endl;
-
-            //stream_ctx = avio_alloc_context(buffer, 8192, 0, &MW->streamData, readStreamData, 0, NULL);
-            stream_ctx = avio_alloc_context(buffer, 8192, 0, &MW->streamPanel->data, readStreamData, 0, NULL);
-            if (!stream_ctx) {
-                cout << "Failed to create stream_ctx" << endl;
-                return -1;
-            }
-            cout << "stream_ctx created" << endl;
-            ic->pb = stream_ctx;
-            ic->flags |= AVFMT_FLAG_CUSTOM_IO;
-        }
-
         av.ck(ret = avformat_open_input(&ic, filename, NULL, NULL), AOI);
-
-        cout << "VideoState->ic opened" << endl;
     }
     catch(AVException *e) {
         MW->msg(QString("Exception thrown in Decoder::fileInit during %1: %2\n").arg(av.tag(e->cmd_tag), e->error_text));
@@ -2127,7 +2103,6 @@ int VideoState::read_thread()
 
     realtime = is_realtime(ic);
     if (co->infinite_buffer < 0 && realtime) {
-        cout << "infinite buffer" << endl;
         co->infinite_buffer = 1;
     }
     else {
@@ -2155,6 +2130,12 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     is->auddec.flush_pkt = ((MainWindow*)mw)->flush_pkt;
     is->viddec.flush_pkt = ((MainWindow*)mw)->flush_pkt;
     is->subdec.flush_pkt = ((MainWindow*)mw)->flush_pkt;
+
+    QString str;
+    QTextStream(&str) << "VideoState::stream_open: "
+                      << is->co->input_filename;
+
+    ((MainWindow*)mw)->msg("VideoState::stream_open: ");
 
     if (!is)
         return NULL;

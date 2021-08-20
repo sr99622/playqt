@@ -61,6 +61,10 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     chkColor = new AlarmCheckBox("Change Color", key() + "/chkColor", MW->settings, false);
     connect(chkColor, SIGNAL(clicked(bool)), this, SLOT(chkColorClicked(bool)));
 
+    btnMute = new QPushButton();
+    btnMute->setStyleSheet(MW->control()->getButtonStyle("audio"));
+    connect(btnMute, SIGNAL(clicked()), MW->control(), SLOT(mute()));
+
     btnTest = new QPushButton("Test");
     btnTest->setMaximumWidth(btnTest->fontMetrics().boundingRect(btnTest->text()).width() * 1.5);
     connect(btnTest, SIGNAL(clicked()), this, SLOT(test()));
@@ -80,6 +84,7 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     gLayout->addWidget(soundSetter,  0, 1, 1, 2);
     gLayout->addWidget(btnTest,      1, 0, 1, 1, Qt::AlignCenter);
     gLayout->addWidget(playBox,      1, 1, 1, 2);
+    gLayout->addWidget(btnMute,      2, 0, 1, 1, Qt::AlignCenter);
     gLayout->addWidget(lbl04,        2, 1, 1, 1);
     gLayout->addWidget(volumeSlider, 2, 2, 1, 1);
     gLayout->addWidget(chkColor,     3, 0, 1, 1);
@@ -112,7 +117,7 @@ AlarmPanel::AlarmPanel(QMainWindow *parent, int obj_id) : Panel(parent)
     connect(player, SIGNAL(done()), this, SLOT(soundPlayFinished()));
     connect(MW->control(), SIGNAL(quitting()), this, SLOT(minAlarmOff()));
     connect(MW->control(), SIGNAL(quitting()), this, SLOT(maxAlarmOff()));
-    connect(MW->control(), SIGNAL(muting(bool)), this, SLOT(mute(bool)));
+    connect(MW->control(), SIGNAL(muting()), this, SLOT(mute()));
 
     alarmProfile.bl = "#B33525";
     alarmProfile.bm = "#8F0000";
@@ -134,13 +139,18 @@ AlarmPanel::~AlarmPanel()
     }
 }
 
-void AlarmPanel::mute(bool muted)
+void AlarmPanel::mute()
 {
+    bool muted = MW->control()->muted;
     player->mute(muted);
-    if (muted)
+    if (muted) {
         volumeSlider->setEnabled(false);
-    else
+        btnMute->setStyleSheet(MW->control()->getButtonStyle("mute"));
+    }
+    else {
         volumeSlider->setEnabled(true);
+        btnMute->setStyleSheet(MW->control()->getButtonStyle("audio"));
+    }
 }
 
 void AlarmPanel::minAlarmOff()
@@ -148,7 +158,6 @@ void AlarmPanel::minAlarmOff()
     if (minAlarmOn) {
         QString str;
         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
-                          << " Stream Time: " << MW->dc()->elapsed->text()
                           << "Min Alarm for "
                           << MW->count()->names[obj_id] << " turned off Manually";
         MW->msg(str);
@@ -166,7 +175,6 @@ void AlarmPanel::maxAlarmOff()
     if (maxAlarmOn) {
         QString str;
         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
-                          << " Stream Time: " << MW->dc()->elapsed->text()
                           << " Max Alarm for "
                           << MW->count()->names[obj_id] << " turned off Manually";
         MW->msg(str);
@@ -211,7 +219,6 @@ void AlarmPanel::feed(int count)
                     if (!minAlarmOn) {
                         QString str;
                         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
-                                          << " Stream Time: " << MW->dc()->elapsed->text()
                                           << " Min Alarm for "
                                           << MW->count()->names[obj_id] << " turned on - count: " << k_count.xh00;
                         MW->msg(str);
@@ -241,7 +248,6 @@ void AlarmPanel::feed(int count)
                     if (duration_cast<milliseconds>(now - minAlarmStartOff).count() > minLimitTime->floatValue() * 1000) {
                         QString str;
                         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
-                                          << " Stream Time: " << MW->dc()->elapsed->text()
                                           << " Min Alarm for "
                                           << MW->count()->names[obj_id] << " turned off";
                         MW->msg(str);
@@ -266,7 +272,6 @@ void AlarmPanel::feed(int count)
                     if (!maxAlarmOn) {
                         QString str;
                         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
-                                          << " Stream Time: " << MW->dc()->elapsed->text()
                                           << " Max Alarm for "
                                           << MW->count()->names[obj_id] << " turned on - count: " << k_count.xh00;
                         MW->msg(str);
@@ -296,7 +301,6 @@ void AlarmPanel::feed(int count)
                     if (duration_cast<milliseconds>(now - maxAlarmStartOff).count() > maxLimitTime->floatValue() * 1000) {
                         QString str;
                         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
-                                          << " Stream Time: " << MW->dc()->elapsed->text()
                                           << " Max Alarm for "
                                           << MW->count()->names[obj_id] << " turned off";
                         MW->msg(str);
@@ -382,7 +386,6 @@ QString AlarmPanel::getTimestampFilename() const
 void AlarmPanel::autoSave()
 {
     if (changed) {
-        cout << "AlarmPanel::autoSave" << endl;
         MW->settings->setValue(volumeKey, volumeSlider->value());
         changed = false;
     }
@@ -390,7 +393,6 @@ void AlarmPanel::autoSave()
 
 void AlarmPanel::volumeChanged(int volume)
 {
-    cout << "AlarmPanel::volumeChanged: " << volume << endl;
     player->audio.volume = volume;
     changed = true;
 }

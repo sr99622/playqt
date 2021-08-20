@@ -22,7 +22,7 @@ PacketQueue::~PacketQueue()
 
 int PacketQueue::init()
 {
-	mutex = SDL_CreateMutex();
+    mutex = SDL_CreateMutex();
     if (!mutex) {
         //av_log(NULL, AV_LOG_FATAL, "SDL_CreateMutex(): %s\n", SDL_GetError());
         cout << "SDL_CreateMutex error: " << SDL_GetError() << endl;
@@ -74,7 +74,7 @@ int PacketQueue::get(AVPacket* pkt, int block, int* serial)
 		}
 	}
 	SDL_UnlockMutex(mutex);
-	return ret;
+    return ret;
 }
 
 int PacketQueue::put_private(AVPacket* pkt)

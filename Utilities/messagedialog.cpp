@@ -19,7 +19,7 @@
 *
 *******************************************************************************/
 
-#include "messagebox.h"
+#include "messagedialog.h"
 
 #include <QPushButton>
 #include <QDialogButtonBox>
@@ -28,7 +28,7 @@
 #include <QClipboard>
 #include <QApplication>
 
-MessageBox::MessageBox(QMainWindow *parent) : PanelDialog(parent)
+MessageDialog::MessageDialog(QMainWindow *parent) : PanelDialog(parent)
 {
     setWindowTitle(tr("Messages"));
     message = new QTextEdit();
@@ -47,31 +47,22 @@ MessageBox::MessageBox(QMainWindow *parent) : PanelDialog(parent)
     dlgLayout->addWidget(buttonBox);
     setLayout(dlgLayout);
     message->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+
+    defaultWidth = 400;
+    defaultHeight = 400;
+    settingsKey = "MessageBox/size";
+
 }
 
-void MessageBox::clear()
+void MessageDialog::clear()
 {
     message->setText("");
 }
 
-void MessageBox::copy()
+void MessageDialog::copy()
 {
     fprintf(stderr, "this\n");
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(message->toPlainText());
 }
 
-int MessageBox::getDefaultWidth()
-{
-    return defaultWidth;
-}
-
-int MessageBox::getDefaultHeight()
-{
-    return defaultHeight;
-}
-
-QString MessageBox::getSettingsKey() const
-{
-    return settingsKey;
-}

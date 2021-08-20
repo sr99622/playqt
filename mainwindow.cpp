@@ -12,8 +12,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     settings = new QSettings("PlayQt", "Program Settings");
     configDialog = new ConfigDialog(this);
-    //status = new QStatusBar(this);
-    //setStatusBar(status);
 
     autoSaveTimer = new QTimer(this);
     connect(autoSaveTimer, SIGNAL(timeout()), this, SLOT(autoSave()));
@@ -56,15 +54,12 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     picturePanel = new FilePanel(this, "Pictures", QStandardPaths::writableLocation(QStandardPaths::PicturesLocation));
     audioPanel = new FilePanel(this, "Audio", QStandardPaths::writableLocation(QStandardPaths::MusicLocation));
     cameraPanel = new CameraPanel(this);
-    streamPanel = new StreamPanel(this);
     tabWidget->addTab(videoPanel, tr("Videos"));
     tabWidget->addTab(picturePanel, tr("Pictures"));
     tabWidget->addTab(audioPanel, tr("Audio"));
     tabWidget->addTab(cameraPanel, tr("Cameras"));
-    tabWidget->addTab(streamPanel, tr("Streams"));
 
     mainPanel = new MainPanel(this);
-    connect(streamPanel, SIGNAL(play()), control(), SLOT(play()));
 
     splitter = new QSplitter(Qt::Orientation::Horizontal, this);
     splitter->addWidget(mainPanel);
@@ -75,7 +70,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     setCentralWidget(splitter);
 
-    messageBox = new MessageBox(this);
+    messageDialog = new MessageDialog(this);
     filterDialog = new FilterDialog(this);
     optionDialog = new OptionDialog(this);
     parameterDialog = new ParameterDialog(this);
@@ -190,7 +185,7 @@ void MainWindow::menuAction(QAction *action)
     else if (action->text() == "&Set Parameters" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_S))
         if (parameterDialog->isVisible()) parameterDialog->hide(); else parameterDialog->show();
     else if (action->text() == "Messa&ges" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_G))
-        if (messageBox->isVisible()) messageBox->hide(); else messageBox->show();
+        if (messageDialog->isVisible()) messageDialog->hide(); else messageDialog->show();
     else if (action->text() == "&Count" || action->shortcut() == QKeySequence(Qt::CTRL | Qt::Key_C))
         if (countDialog->isVisible()) countDialog->hide(); else countDialog->show();
     else if (action->text() == "&Options")
@@ -236,7 +231,6 @@ void MainWindow::runLoop()
 void MainWindow::start()
 {
     if (co->input_filename) {
-
         QString str;
         QTextStream(&str) << "start: " << co->input_filename << " at " << QTime::currentTime().toString("hh:mm:ss");
         msg(str);
@@ -255,6 +249,7 @@ void MainWindow::start()
             QString title = "PlayQt - " + fi.fileName();
             setWindowTitle(title);
         }
+
         is = VideoState::stream_open(this);
         e->event_loop();
     }
@@ -326,8 +321,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::msg(const QString &str)
 {
-    messageBox->message->append(str);
-    messageBox->message->ensureCursorVisible();
+    messageDialog->message->append(str);
+    messageDialog->message->ensureCursorVisible();
 }
 
 void MainWindow::openFile()

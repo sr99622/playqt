@@ -42,7 +42,7 @@
 #include "Utilities/avexception.h"
 #include "Utilities/cudaexception.h"
 #include "Utilities/filepanel.h"
-#include "Utilities/messagebox.h"
+#include "Utilities/messagedialog.h"
 #include "Filters/filterpanel.h"
 #include "Filters/filterchain.h"
 #include "Cameras/camerapanel.h"
@@ -51,7 +51,6 @@
 #include "optionpanel.h"
 #include "countpanel.h"
 #include "configpanel.h"
-#include "streampanel.h"
 
 enum CustomEventCode {
     FILE_POSITION_UPDATE,
@@ -136,9 +135,8 @@ public:
     FilePanel *picturePanel;
     FilePanel *audioPanel;
     CameraPanel *cameraPanel;
-    StreamPanel *streamPanel;
     QTabWidget *tabWidget;
-    MessageBox *messageBox;
+    MessageDialog *messageDialog;
     ParameterDialog *parameterDialog;
     ConfigDialog *configDialog;
 
