@@ -158,6 +158,7 @@ void AlarmPanel::minAlarmOff()
     if (minAlarmOn) {
         QString str;
         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                          << " Stream Time: " << MW->is->formatTime(MW->is->get_master_clock())
                           << "Min Alarm for "
                           << MW->count()->names[obj_id] << " turned off Manually";
         MW->msg(str);
@@ -175,6 +176,7 @@ void AlarmPanel::maxAlarmOff()
     if (maxAlarmOn) {
         QString str;
         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                          << " Stream Time: " << MW->is->formatTime(MW->is->get_master_clock())
                           << " Max Alarm for "
                           << MW->count()->names[obj_id] << " turned off Manually";
         MW->msg(str);
@@ -219,6 +221,7 @@ void AlarmPanel::feed(int count)
                     if (!minAlarmOn) {
                         QString str;
                         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                                          << " Stream Time: " << MW->is->formatTime(MW->is->get_master_clock())
                                           << " Min Alarm for "
                                           << MW->count()->names[obj_id] << " turned on - count: " << k_count.xh00;
                         MW->msg(str);
@@ -248,6 +251,7 @@ void AlarmPanel::feed(int count)
                     if (duration_cast<milliseconds>(now - minAlarmStartOff).count() > minLimitTime->floatValue() * 1000) {
                         QString str;
                         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                                          << " Stream Time: " << MW->is->formatTime(MW->is->get_master_clock())
                                           << " Min Alarm for "
                                           << MW->count()->names[obj_id] << " turned off";
                         MW->msg(str);
@@ -272,6 +276,7 @@ void AlarmPanel::feed(int count)
                     if (!maxAlarmOn) {
                         QString str;
                         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                                          << " Stream Time: " << MW->is->formatTime(MW->is->get_master_clock())
                                           << " Max Alarm for "
                                           << MW->count()->names[obj_id] << " turned on - count: " << k_count.xh00;
                         MW->msg(str);
@@ -301,6 +306,7 @@ void AlarmPanel::feed(int count)
                     if (duration_cast<milliseconds>(now - maxAlarmStartOff).count() > maxLimitTime->floatValue() * 1000) {
                         QString str;
                         QTextStream(&str) << "System Time: " << QTime::currentTime().toString("hh:mm:ss")
+                                          << " Stream Time: " << MW->is->formatTime(MW->is->get_master_clock())
                                           << " Max Alarm for "
                                           << MW->count()->names[obj_id] << " turned off";
                         MW->msg(str);

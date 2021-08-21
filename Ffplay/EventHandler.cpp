@@ -18,6 +18,9 @@ void EventHandler::event_loop()
         feed();
     }
 
+    MW->control()->engageFilter->setChecked(false);
+    MW->filter()->engageFilter->setChecked(false);
+
     if (MW->is != nullptr)
         MW->is->stream_close();
 

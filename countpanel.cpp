@@ -115,6 +115,9 @@ void CountPanel::autoSave()
 
 void CountPanel::feed(vector<bbox_t> *detections)
 {
+    if (saveOn->isChecked() && file == nullptr)
+        saveOnClicked(true);
+
     sums.clear();
     for (const bbox_t detection : *detections) {
         int obj_id = detection.obj_id;
@@ -160,7 +163,8 @@ void CountPanel::timeout()
 
     mutex.lock();
     QTextStream out(file);
-    out << QTime::currentTime().toString("hh:mm:ss");
+    out << QTime::currentTime().toString("hh:mm:ss") << ", ";
+    out << MW->is->formatTime(MW->is->get_master_clock());
     for (pair<int, vector<int>>& count : counts) {
         int row = rowOf(count.first);
         if (row > -1) {
@@ -237,7 +241,7 @@ void CountPanel::setDir(const QString& arg)
 QString CountPanel::getTimestampFilename() const
 {
     QString result = dirSetter->directory;
-    return result.append("/").append(QDateTime::currentDateTime().toString("yyyyMMddhhmmss")).append(".txt");
+    return result.append("/").append(QDateTime::currentDateTime().toString("yyyyMMddhhmmss")).append(".csv");
 }
 
 void CountPanel::headerChanged(int arg1, int arg2, int arg3)
