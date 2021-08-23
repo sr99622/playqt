@@ -57,7 +57,6 @@ ControlPanel::ControlPanel(QMainWindow *parent) : QWidget(parent)
     connect(engageFilter, SIGNAL(clicked(bool)), this, SLOT(engage(bool)));
     connect(volumeSlider, SIGNAL(sliderMoved(int)), this, SLOT(sliderMoved(int)));
     connect(this, SIGNAL(msg(const QString&)), mainWindow, SLOT(msg(const QString&)));
-
 }
 
 void ControlPanel::styleButtons()
@@ -222,6 +221,19 @@ bool ControlPanel::checkCodec(const QString& filename)
 void ControlPanel::engage(bool checked)
 {
     MW->filter()->engageFilter->setChecked(checked);
+    saveEngageSetting(checked);
+}
+
+void ControlPanel::saveEngageSetting(bool arg)
+{
+    MW->settings->setValue(engageKey, arg);
+}
+
+void ControlPanel::restoreEngageSetting()
+{
+    bool arg = MW->settings->value(engageKey, false).toBool();
+    engageFilter->setChecked(arg);
+    MW->filter()->engageFilter->setChecked(arg);
 }
 
 void ControlPanel::test()
@@ -334,6 +346,7 @@ void ControlPanel::quit()
     stopped = true;
     paused = false;
 
+    //MW->count()->saveOnClicked(false);
     MW->filterChain->disengaged = true;
     //btnPlay->setStyleSheet(getButtonStyle("play"));
     MW->co->input_filename = nullptr;

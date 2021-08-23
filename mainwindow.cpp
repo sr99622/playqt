@@ -137,6 +137,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     connect(co, SIGNAL(showHelp(const QString&)), optionDialog->panel, SLOT(showConfig(const QString&)));
 
     applyStyle(config()->getProfile());
+    control()->restoreEngageSetting();
 
     sdlCustomEventType = SDL_RegisterEvents(1);
     av_init_packet(&flush_pkt);

@@ -1959,8 +1959,10 @@ void VideoState::read_loop()
                 eof = 1;
 
                 // stream has reached eof
-                if (!paused)
+                if (!paused) {
+                    cout << "VideoState:: stream has reached eof" << endl;
                     MW->control()->quit();
+                }
             }
             if (ic->pb && ic->pb->error)
                 break;

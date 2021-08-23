@@ -70,10 +70,14 @@ void PanelDialog::showEvent(QShowEvent *event)
     if (getSettingsKey().length() > 0) {
         if (MW->settings->contains(getSettingsKey())) {
             QRect rect = MW->settings->value(getSettingsKey()).toRect();
-            w = rect.width();
-            h = rect.height();
-            x = rect.x();
-            y = rect.y();
+            if (rect.width() + rect.x() < MW->screen->geometry().width() &&
+                    rect.height() + rect.y() < MW->screen->geometry().height())
+            {
+                w = rect.width();
+                h = rect.height();
+                x = rect.x();
+                y = rect.y();
+            }
         }
     }
 

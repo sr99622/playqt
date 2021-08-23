@@ -94,6 +94,8 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     layout->addWidget(filePanel,  1, 0, 1, 1);
     layout->setRowStretch(0, 10);
     setLayout(layout);
+
+    connect(MW->control(), SIGNAL(quitting()), this, SLOT(shutdown()));
 }
 
 CountPanel::~CountPanel()
@@ -165,6 +167,9 @@ void CountPanel::timeout()
     QTextStream out(file);
     out << QTime::currentTime().toString("hh:mm:ss") << ", ";
     out << MW->is->formatTime(MW->is->get_master_clock());
+    sort(counts.begin(), counts.end(), [](const pair<int, vector<int>>& left, const pair<int, vector<int>>& right) {
+        return left.first < right.first;
+    });
     for (pair<int, vector<int>>& count : counts) {
         int row = rowOf(count.first);
         if (row > -1) {
@@ -203,9 +208,14 @@ void CountPanel::saveOnClicked(bool checked)
 
         QTextStream out(file);
         out << "system time, stream time";
-        for (int i = 0; i < table->rowCount(); i++) {
-            out << ", " << table->item(i, 0)->text() << " total, avg, std dev";
-        }
+        vector<int> output_ids;
+        for (int i = 0; i < table->rowCount(); i++)
+            output_ids.push_back(idFromName(table->item(i, 0)->text()));
+
+        sort(output_ids.begin(), output_ids.end());
+        for (int i = 0; i < output_ids.size(); i++)
+            out << ", " <<  names[output_ids[i]] << " total, avg, std dev";
+
         out << "\n";
 
         list->setEnabled(false);
@@ -214,6 +224,8 @@ void CountPanel::saveOnClicked(bool checked)
         timer->start(interval * 1000);
     }
     else {
+        shutdown();
+        /*
         timer->stop();
         if (file) {
             file->flush();
@@ -223,9 +235,24 @@ void CountPanel::saveOnClicked(bool checked)
         list->setEnabled(true);
         dirSetter->setEnabled(true);
         intervalPanel->setEnabled(true);
+        */
     }
 
     MW->settings->setValue(saveOnKey, checked);
+}
+
+void CountPanel::shutdown()
+{
+    if (timer->isActive())
+        timer->stop();
+    if (file) {
+        file->flush();
+        file->close();
+        file = nullptr;
+    }
+    list->setEnabled(true);
+    dirSetter->setEnabled(true);
+    intervalPanel->setEnabled(true);
 }
 
 void CountPanel::intervalEdited()

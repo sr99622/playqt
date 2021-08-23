@@ -19,6 +19,8 @@ public:
     bool checkCodec(const QString& filename);
     QString getButtonStyle(const QString& name) const;
     void styleButtons();
+    void saveEngageSetting(bool arg);
+    void restoreEngageSetting();
 
     QMainWindow *mainWindow;
     QCheckBox *engageFilter;
@@ -42,6 +44,8 @@ public:
     bool muted = false;
     bool paused = false;
     bool stopped = true;
+
+    const QString engageKey = "ControlPanel/engage";
 
     AVExceptionHandler av;
 

@@ -114,6 +114,7 @@ public slots:
     void saveOnClicked(bool);
     void intervalEdited();
     void timeout();
+    void shutdown();
 
 };
 

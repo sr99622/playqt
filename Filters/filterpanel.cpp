@@ -115,10 +115,17 @@ void FilterPanel::autoSave()
     }
 }
 
+void FilterPanel::engage(bool checked)
+{
+    MW->control()->engageFilter->setChecked(checked);
+    MW->control()->saveEngageSetting(checked);
+}
+
 void FilterPanel::toggleEngage()
 {
     engageFilter->setChecked(!engageFilter->isChecked());
     MW->control()->engageFilter->setChecked(engageFilter->isChecked());
+    MW->control()->saveEngageSetting(engageFilter->isChecked());
 }
 
 void FilterPanel::styleButtons()
@@ -315,11 +322,6 @@ void FilterPanel::tabChanged(int index)
         }
     }
     */
-}
-
-void FilterPanel::engage(bool checked)
-{
-    MW->mainPanel->controlPanel->engageFilter->setChecked(checked);
 }
 
 bool FilterPanel::isFilterActive(Filter *filter) {
