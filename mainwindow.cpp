@@ -129,6 +129,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&Options"));
+    helpMenu->addAction(tr("Clear Settings"));
 
     connect(fileMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
     connect(mediaMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
@@ -138,6 +139,17 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
 
     applyStyle(config()->getProfile());
     control()->restoreEngageSetting();
+
+    QString str;
+    int deviceCount;
+    cudaGetDeviceCount(&deviceCount);
+    QTextStream(&str) << "found " << deviceCount << " available cuda devices\n";
+    for (int i = 0; i < deviceCount; i++) {
+        cudaDeviceProp prop;
+        cudaGetDeviceProperties(&prop, i);
+        QTextStream(&str) << "name: " << prop.name << "\ncompute capability major: " << prop.major << " minor: " << prop.minor;
+    }
+    msg(str);
 
     sdlCustomEventType = SDL_RegisterEvents(1);
     av_init_packet(&flush_pkt);
@@ -156,7 +168,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         connect(launcher, SIGNAL(done()), control(), SLOT(play()));
         QThreadPool::globalInstance()->tryStart(launcher);
     }
-
 }
 
 void MainWindow::menuAction(QAction *action)
@@ -193,6 +204,10 @@ void MainWindow::menuAction(QAction *action)
         optionDialog->show();
     else if (action->text() == "Conf&ig")
         configDialog->show();
+    else if (action->text() == "Clear Settings") {
+        clearSettings = true;
+        settings->clear();
+    }
 }
 
 void MainWindow::autoSave()
@@ -315,7 +330,8 @@ void MainWindow::splitterMoved(int pos, int index)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    autoSave();
+    if (!clearSettings)
+        autoSave();
     control()->quit();
     QMainWindow::closeEvent(event);
 }

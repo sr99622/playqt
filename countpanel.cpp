@@ -5,19 +5,24 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
 {
     darknet = (Darknet*)MW->filter()->getFilterByName("Darknet");
     connect(darknet, SIGNAL(send(vector<bbox_t>*)), this, SLOT(feed(vector<bbox_t>*)));
+    connect(darknet, SIGNAL(namesSet()), this, SLOT(setNames()));
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
+    list = new QListWidget();
+    setNames();
+
+    /*
     for (int i = 0; i < darknet->obj_names.size(); i++)
         names.push_back(darknet->obj_names[i].c_str());
 
-    list = new QListWidget();
     list->addItems(names);
     for (int i = 0; i < list->count(); i++) {
         list->item(i)->setFlags(list->item(i)->flags() | Qt::ItemIsUserCheckable);
         list->item(i)->setCheckState(Qt::Unchecked);
     }
+    */
 
     table = new QTableWidget(0, 4);
     table->horizontalHeader()->setStyleSheet(QString("QHeaderView::section:last {border-right: 1px solid %1;}").arg(MW->config()->fd->color.name()));
@@ -29,13 +34,12 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     if (MW->settings->contains(headerKey)) {
         table->horizontalHeader()->restoreState(MW->settings->value(headerKey).toByteArray());
     }
-    /*
     else {
         table->setColumnWidth(0, 60);
         table->setColumnWidth(1, 60);
         table->setColumnWidth(2, 60);
+        table->setColumnWidth(3, 60);
     }
-    */
 
     for (int i = 0; i < names.size(); i++) {
         ObjDrawer objDrawer(mainWindow, i);
@@ -46,7 +50,7 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     connect(table->horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this, SLOT(headerChanged(int, int, int)));
     connect(table->horizontalHeader(), SIGNAL(sectionMoved(int, int, int)), this, SLOT(headerChanged(int, int, int)));
     connect(list, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(itemClicked(QListWidgetItem*)));
-    connect(list, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*)));
+    //connect(list, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemChanged(QListWidgetItem*)));
 
     hSplit = new QSplitter(this);
     hSplit->addWidget(list);
@@ -103,6 +107,27 @@ CountPanel::~CountPanel()
     if (file) {
         file->flush();
         file->close();
+    }
+}
+
+void CountPanel::setNames() {
+
+    for (int i = 0; i < list->count(); i++) {
+        if (list->item(i)->checkState() == Qt::Checked) {
+            int obj_id = idFromName(list->item(i)->text());
+            removeLine(obj_id);
+        }
+    }
+
+    list->clear();
+
+    for (int i = 0; i < darknet->obj_names.size(); i++)
+        names.push_back(darknet->obj_names[i].c_str());
+
+    list->addItems(names);
+    for (int i = 0; i < list->count(); i++) {
+        list->item(i)->setFlags(list->item(i)->flags() | Qt::ItemIsUserCheckable);
+        list->item(i)->setCheckState(Qt::Unchecked);
     }
 }
 
@@ -371,6 +396,16 @@ void CountPanel::addNewLine(int obj_id)
     table->setCellWidget(table->rowCount()-1, 3, setter);
 }
 
+void CountPanel::removeLine(int obj_id)
+{
+    int index = rowOf(obj_id);
+    ObjDrawer *objDrawer = (ObjDrawer*)table->cellWidget(index, 2);
+    objDrawer->signalShown(obj_id, YUVColor());
+    MW->settings->remove(objDrawer->getSettingsKey());
+    table->removeCellWidget(index, 2);
+    table->removeRow(index);
+}
+
 void CountPanel::itemChanged(QListWidgetItem *item)
 {
     QString name = item->text();
@@ -380,12 +415,7 @@ void CountPanel::itemChanged(QListWidgetItem *item)
         addNewLine(obj_id);
     }
     else {
-        int index = rowOf(obj_id);
-        ObjDrawer *objDrawer = (ObjDrawer*)table->cellWidget(index, 2);
-        objDrawer->signalShown(obj_id, YUVColor());
-        MW->settings->remove(objDrawer->getSettingsKey());
-        table->removeCellWidget(index, 2);
-        table->removeRow(index);
+        removeLine(obj_id);
     }
 }
 
@@ -395,6 +425,8 @@ void CountPanel::itemClicked(QListWidgetItem *item)
             item->setCheckState(Qt::Unchecked);
     else
         item->setCheckState(Qt::Checked);
+
+    itemChanged(item);
 }
 
 AlarmSetter::AlarmSetter(QMainWindow *parent, int obj_id)

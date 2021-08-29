@@ -232,6 +232,8 @@ void Darknet::setNames(const QString &path)
         obj_names.push_back(line);
         obj_drawn.push_back(YUVColor());
     }
+
+    emit namesSet();
 }
 
 void Darknet::cfgEdited(const QString &text)

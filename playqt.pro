@@ -169,3 +169,5 @@ RESOURCES += resources/resources.qrc
 
 DISTFILES += resources/darkstyle.qss \
              resources/resources.rcc
+
+RC_ICONS = playqt.ico

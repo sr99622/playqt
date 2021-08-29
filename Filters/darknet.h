@@ -93,6 +93,7 @@ public:
 
 signals:
     void send(vector<bbox_t>*);
+    void namesSet();
 
 public slots:
     void setNames(const QString&);

@@ -78,6 +78,7 @@ public:
     int rowOf(int obj_id);
     int idFromName(const QString& name);
     void addNewLine(int obj_id);
+    void removeLine(int obj_id);
     QString getTimestampFilename() const;
     void addCount(int obj_id, int count);
 
@@ -115,6 +116,7 @@ public slots:
     void intervalEdited();
     void timeout();
     void shutdown();
+    void setNames();
 
 };
 

@@ -158,6 +158,8 @@ public:
     const QString geometryKey = "MainWindow/geometry";
     const QString splitterKey = "MainWindow/splitter";
 
+    bool clearSettings = false;
+
 public slots:
     void runLoop();
     void poll();
