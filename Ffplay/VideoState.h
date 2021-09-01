@@ -120,8 +120,6 @@ public:
 
     double elapsed;
     double total;
-    double current_time;
-    double last_time = 0;
     QString codec_name;
 
     QMainWindow* mainWindow;
@@ -141,6 +139,7 @@ public:
     AVInputFormat* iformat;
     AVFormatContext* ic;
     SDL_cond* continue_read_thread;
+    bool seeking = false;
 
     int abort_request;
     int force_refresh;

@@ -10,7 +10,7 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     filename = QString(co->input_filename);
     av_log_set_level(AV_LOG_PANIC);
 
-    settings = new QSettings("PlayQt", "Program Settings");
+    settings = new QSettings("playqt", "Program Settings");
     configDialog = new ConfigDialog(this);
 
     autoSaveTimer = new QTimer(this);
@@ -29,19 +29,6 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
         restoreGeometry(settings->value(geometryKey).toByteArray());
     else
         setGeometry(defaultGeometry);
-
-    QString title = "PlayQt";
-    if (co->input_filename) {
-        if (!strcmp(co->input_filename, "-")) {
-            title = title + " - pipe:";
-        }
-        else {
-            QFileInfo fi(co->input_filename);
-            title = title + " - " + fi.fileName();
-        }
-    }
-
-    setWindowTitle(title);
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(poll()));
@@ -126,10 +113,10 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     toolsMenu->addAction(actCount);
     QAction *actConfig = new QAction(tr("Conf&ig"));
     toolsMenu->addAction(actConfig);
+    toolsMenu->addAction(tr("Clear Settings"));
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&Options"));
-    helpMenu->addAction(tr("Clear Settings"));
 
     connect(fileMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
     connect(mediaMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuAction(QAction*)));
@@ -140,6 +127,23 @@ MainWindow::MainWindow(CommandOptions *co, QWidget *parent) : QMainWindow(parent
     applyStyle(config()->getProfile());
     control()->restoreEngageSetting();
 
+    QString title = "playqt";
+    if (co->input_filename) {
+        if (QString(co->input_filename).endsWith("playqt.ico")) {
+            co->input_filename = NULL;
+        }
+        else {
+            if (!strcmp(co->input_filename, "-")) {
+                title = title + " - pipe:";
+             }
+             else {
+                QFileInfo fi(co->input_filename);
+                title = title + " - " + fi.fileName();
+            }
+        }
+    }
+
+    setWindowTitle(title);
     QString str;
     int deviceCount;
     cudaGetDeviceCount(&deviceCount);
@@ -206,7 +210,10 @@ void MainWindow::menuAction(QAction *action)
         configDialog->show();
     else if (action->text() == "Clear Settings") {
         clearSettings = true;
-        settings->clear();
+        QString str = "Warning - you are about to delete all of your settings\nAre you sure you want to do this?";
+        QMessageBox::StandardButton result = QMessageBox::question(this, "playqt", str);
+        if (result == QMessageBox::Yes)
+            settings->clear();
     }
 }
 
@@ -255,14 +262,14 @@ void MainWindow::start()
             CameraPanel *cameraPanel = (CameraPanel*)tabWidget->currentWidget();
             Camera *camera = cameraPanel->cameraList->getCurrentCamera();
             if (camera) {
-                QString title = "PlayQt - ";
+                QString title = "playqt - ";
                 title += camera->onvif_data->camera_name;
                 setWindowTitle(title);
             }
         }
         else {
             QFileInfo fi(co->input_filename);
-            QString title = "PlayQt - " + fi.fileName();
+            QString title = "playqt - " + fi.fileName();
             setWindowTitle(title);
         }
 

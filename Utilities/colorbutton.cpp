@@ -37,7 +37,7 @@ QString ColorButton::getStyle() const
 
 void ColorButton::clicked()
 {
-    QColor result = QColorDialog::getColor(color, this, "PlayQt");
+    QColor result = QColorDialog::getColor(color, this, "playqt");
     if (result.isValid()) {
         color = result;
         button->setStyleSheet(getStyle());

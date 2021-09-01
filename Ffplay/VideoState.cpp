@@ -1,30 +1,6 @@
 #include "VideoState.h"
 #include "mainwindow.h"
 
-int VideoState::readStreamData(void *opaque, uint8_t *buffer, int size)
-{
-    StreamData *data = (StreamData*)opaque;
-
-    /**/
-    cout << "readStreamData size: " << size
-         << " position: " << data->position
-         << " data size: " << data->size()
-         << " arg size: " << size
-         << endl;
-    /**/
-
-    int length = size;
-    if (data->position + size > data->size())
-        length = data->size() - data->position;
-
-    cout << "length: " << length << endl;
-
-    memcpy(buffer, (uint8_t*)data->mid(data->position, length).data(), size);
-    data->position += length;
-
-    return length;
-}
-
 int decode_interrupt_cb(void* ctx)
 {
     return ((VideoState*)ctx)->abort_request;
@@ -139,6 +115,20 @@ void VideoState::video_image_display()
     if (sp) {
         SDL_RenderCopy(disp->renderer, sub_texture, NULL, &rect);
     }
+
+    // Update slider position to show elapsed time
+    elapsed = get_master_clock();
+    double percentage = (1000 * elapsed) / total;
+    MW->dc()->slider->setValue(percentage);
+    MW->dc()->elapsed->setText(MW->is->formatTime(elapsed));
+    MW->dc()->total->setText(MW->is->formatTime(total));
+
+    // Close stream if finished
+    AVStream *video = ic->streams[video_stream];
+    bool isPicture = video->codec->framerate.num == 0 && video->codec->framerate.den == 0;
+    if (eof && pictq.nb_remaining() == 0 && !isPicture)
+        MW->control()->quit();
+
 }
 
 int VideoState::compute_mod(int a, int b)
@@ -1698,17 +1688,8 @@ int VideoState::stream_component_open(int stream_index)
         break;
     }
 
-    if (!QString(filename).startsWith("rtsp://")) {
-        SDL_Event event;
-        SDL_memset(&event, 0, sizeof(event));
-        event.type = MW->sdlCustomEventType;
-        event.user.code = FILE_POSITION_UPDATE;
-        elapsed = ic->start_time * av_q2d(av_get_time_base_q());
-        total = ic->duration * av_q2d(av_get_time_base_q());
-        event.user.data1 = &elapsed;
-        event.user.data2 = &total;
-        SDL_PushEvent(&event);
-    }
+    elapsed = ic->start_time * av_q2d(av_get_time_base_q());
+    total = ic->duration * av_q2d(av_get_time_base_q());
 
     goto out;
 
@@ -1957,12 +1938,6 @@ void VideoState::read_loop()
                 if (subtitle_stream >= 0)
                     subtitleq.put_nullpacket(subtitle_stream);
                 eof = 1;
-
-                // stream has reached eof
-                if (!paused) {
-                    cout << "VideoState:: stream has reached eof" << endl;
-                    MW->control()->quit();
-                }
             }
             if (ic->pb && ic->pb->error)
                 break;
@@ -1999,21 +1974,6 @@ void VideoState::read_loop()
         }
         else {
             av_packet_unref(pkt);
-        }
-
-        if (!QString(filename).startsWith("rtsp://")) {
-            current_time = av_gettime_relative();
-            if (!last_time || (current_time - last_time) >= 30000) {
-                SDL_Event event;
-                SDL_memset(&event, 0, sizeof(event));
-                event.type = MW->sdlCustomEventType;
-                event.user.code = FILE_POSITION_UPDATE;
-                elapsed = get_master_clock();
-                event.user.data1 = &elapsed;
-                event.user.data2 = &total;
-                SDL_PushEvent(&event);
-                last_time = current_time;
-            }
         }
     }
     SDL_DestroyMutex(wait_mutex);
@@ -2180,17 +2140,6 @@ VideoState* VideoState::stream_open(QMainWindow *mw)
     is->extclk.init_clock(&is->extclk.serial);
     is->audio_clock_serial = -1;
 
-    /*
-    if (is->co->startup_volume < 0)
-        av_log(NULL, AV_LOG_WARNING, "-volume=%d < 0, setting to 0\n", is->co->startup_volume);
-    if (is->co->startup_volume > 100)
-        av_log(NULL, AV_LOG_WARNING, "-volume=%d > 100, setting to 100\n", is->co->startup_volume);
-    is->co->startup_volume = av_clip(is->co->startup_volume, 0, 100);
-    is->co->startup_volume = av_clip(SDL_MIX_MAXVOLUME * is->co->startup_volume / 100, 0, SDL_MIX_MAXVOLUME);
-    //is->audio_volume = is->co->startup_volume;
-    is->muted = 0;
-    */
-
     is->audio_volume = ((MainWindow*)mw)->mainPanel->controlPanel->volumeSlider->value();
     if (((MainWindow*)mw)->mainPanel->controlPanel->muted)
         is->audio_volume = 0;
@@ -2228,33 +2177,6 @@ void VideoState::refresh_loop_wait_event(SDL_Event* event) {
     }
 }
 
-/*
-void VideoState::event_loop()
-{
-    SDL_Event event;
-    double incr, pos, frac;
-
-    for (;;) {
-        double x;
-        refresh_loop_wait_event(&event);
-        switch (event.type) {
-        case SDL_KEYDOWN:
-            if (co->exit_on_keydown || event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_q) {
-                do_exit();
-                break;
-            }
-            break;
-        case SDL_QUIT:
-        case FF_QUIT_EVENT:
-            do_exit();
-            break;
-        default:
-            break;
-        }
-    }
-}
-*/
-
 void VideoState::do_exit()
 {
     stream_close();
@@ -2273,5 +2195,30 @@ void VideoState::do_exit()
     SDL_Quit();
     av_log(NULL, AV_LOG_QUIET, "%s", "");
     exit(0);
+}
+
+// Experimental code for streaming to be worked on in next release
+int VideoState::readStreamData(void *opaque, uint8_t *buffer, int size)
+{
+    StreamData *data = (StreamData*)opaque;
+
+    /**/
+    cout << "readStreamData size: " << size
+         << " position: " << data->position
+         << " data size: " << data->size()
+         << " arg size: " << size
+         << endl;
+    /**/
+
+    int length = size;
+    if (data->position + size > data->size())
+        length = data->size() - data->position;
+
+    cout << "length: " << length << endl;
+
+    memcpy(buffer, (uint8_t*)data->mid(data->position, length).data(), size);
+    data->position += length;
+
+    return length;
 }
 

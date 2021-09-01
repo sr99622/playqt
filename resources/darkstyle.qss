@@ -3,13 +3,19 @@ QWidget {
     color : foreground_light;
 }
 
-QMenuBar:item:selected {
-    background-color : background_dark;
-    color : selection_light;
+QMenuBar::item:selected {
+    background-color : background_medium;
+    color : selection_medium;
 }
 
-QMenu:item:selected {
-    color : selection_light;
+QMenu::item {
+    padding : 2px 16px;
+}
+
+QMenu::item:selected {
+    background-color : background_medium;
+    color : selection_medium;
+    border : 1px solid foreground_dark;
 }
 
 QMainWindow { 
@@ -268,11 +274,15 @@ QListView::item:hover {
 
 QListView::item:selected {
     background-color : background_light;
-    color : selection_light;
+    color : selection_medium;
 }
 
 QListView::item:selected:!active {
     color : foreground_light;
+}
+
+QListView::item:selected:active {
+    color : selection_light;
 }
 
 QListWidget {
@@ -487,6 +497,10 @@ QTabBar::tab:top {
 }
 
 QTabBar::tab:first {
+    border-left : 1px solid foreground_dark;
+}
+
+QTabBar::tab:only-one {
     border-left : 1px solid foreground_dark;
 }
 

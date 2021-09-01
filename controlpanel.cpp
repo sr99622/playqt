@@ -109,7 +109,6 @@ void ControlPanel::play()
             QString username = camera->onvif_data->username;
             QString password = camera->onvif_data->password;
             selected_filename = rtsp.mid(0, 7) + username + ":" + password + "@" + rtsp.mid(7);
-            MW->dc()->sliderPanel->hide();
         }
     }
     else {
@@ -134,7 +133,7 @@ void ControlPanel::play()
             MW->co->input_filename = av_strdup(selected_filename.toLatin1().data());
         }
         else {
-            QMessageBox::critical(mainWindow, "PlayQt", "No current file, please select a file from the playlist");
+            QMessageBox::critical(mainWindow, "playqt", "No current file, please select a file from the playlist");
             return;
         }
     }
@@ -198,7 +197,7 @@ bool ControlPanel::checkCodec(const QString& filename)
                     QFileInfo fi(filename);
                     QTextStream(&str) << "User specified codec '" << forced_codec_name << "' may not support the codec '" << cd->name
                                       << "'\n found in the file '" << fi.fileName() << "'   Do you want to proceed anyway ?";
-                    QMessageBox::StandardButton result = QMessageBox::question(MW, "PlayQt", str);
+                    QMessageBox::StandardButton result = QMessageBox::question(MW, "playqt", str);
                     if (result == QMessageBox::No) {
                         if (fmt_ctx)
                             avformat_close_input(&fmt_ctx);

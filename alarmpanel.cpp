@@ -368,7 +368,7 @@ void AlarmPanel::chkWriteClicked(bool checked)
     if (checked) {
         file = new QFile(getTimestampFilename(), this);
         if (!file->open(QFile::WriteOnly | QFile::Text)) {
-            QMessageBox::warning(this, "PlayQt", QString("Unable to open file:\n%1").arg(file->fileName()));
+            QMessageBox::warning(this, "playqt", QString("Unable to open file:\n%1").arg(file->fileName()));
             return;
         }
         dirSetter->setEnabled(false);
@@ -447,7 +447,7 @@ void AlarmPanel::test()
         testing = true;
     }
     else {
-        QMessageBox::warning(this, "PlayQt", "No sound file has been specified");
+        QMessageBox::warning(this, "playqt", "No sound file has been specified");
     }
 }
 

@@ -266,12 +266,12 @@ void ParameterPanel::saveCmdLine()
     cout << "ParameterPanel::saveCmdLine" << cmdLineEquiv->text().toStdString() << endl;
 
     if (cmdLineEquiv->text().length() == 0) {
-        QMessageBox::warning(this, "PlayQt", "No command line is currently set");
+        QMessageBox::warning(this, "playqt", "No command line is currently set");
         return;
     }
 
     if (cmdLineName->text().length() == 0) {
-        QMessageBox::warning(this, "PlayQt", "Command name is required");
+        QMessageBox::warning(this, "playqt", "Command name is required");
         return;
     }
 
@@ -469,12 +469,12 @@ void ParameterPanel::set(int option_index, QString option_arg)
     cout << "description: " << options->currentText().toStdString() << endl;
 
     if (option_index < 0) {
-        QMessageBox::warning(this, "PlayQt", "No option specified, please select an option from the drop down box");
+        QMessageBox::warning(this, "playqt", "No option specified, please select an option from the drop down box");
         return;
     }
 
     if (option_arg.length() == 0) {
-        QMessageBox::warning(this, "PlayQt", "Incomplete parameter specification.  Arguments are required for all parameters");
+        QMessageBox::warning(this, "playqt", "Incomplete parameter specification.  Arguments are required for all parameters");
         return;
     }
     cout << "option_arg: " << option_arg.toStdString() << endl;
@@ -502,7 +502,7 @@ void ParameterPanel::set(int option_index, QString option_arg)
         QString tmp(dummy);
         tmp.toInt(&ok);
         if (!ok) {
-            QMessageBox::warning(this, "PlayQt", QString("Incorrect format %1 is not a number").arg(tmp));
+            QMessageBox::warning(this, "playqt", QString("Incorrect format %1 is not a number").arg(tmp));
             return;
         }
         *(int *)dst = parse_number_or_die(opt, tmp.toLatin1().data(), OPT_INT64, INT_MIN, INT_MAX);
@@ -511,7 +511,7 @@ void ParameterPanel::set(int option_index, QString option_arg)
         cout << "OPT_INT64" << endl;
         QString(arg).toLong(&ok);
         if (!ok) {
-            QMessageBox::warning(this, "PlayQt", QString("Incorrect format %1 is not a number").arg(arg));
+            QMessageBox::warning(this, "playqt", QString("Incorrect format %1 is not a number").arg(arg));
             return;
         }
         *(int64_t *)dst = parse_number_or_die(opt, arg, OPT_INT64, INT64_MIN, INT64_MAX);
@@ -520,7 +520,7 @@ void ParameterPanel::set(int option_index, QString option_arg)
         cout << "OPT_TIME" << endl;
         QString(arg).toLong(&ok);
         if (!ok) {
-            QMessageBox::warning(this, "PlayQt", QString("Incorrect format %1 is not a number").arg(arg));
+            QMessageBox::warning(this, "playqt", QString("Incorrect format %1 is not a number").arg(arg));
             return;
         }
         *(int64_t *)dst = parse_time_or_die(opt, arg, 1);
@@ -529,7 +529,7 @@ void ParameterPanel::set(int option_index, QString option_arg)
         cout << "OPT_FLOAT" << endl;
         QString(arg).toFloat(&ok);
         if (!ok) {
-            QMessageBox::warning(this, "PlayQt", QString("Incorrect format %1 is not a number").arg(arg));
+            QMessageBox::warning(this, "playqt", QString("Incorrect format %1 is not a number").arg(arg));
             return;
         }
         *(float *)dst = parse_number_or_die(opt, arg, OPT_FLOAT, -INFINITY, INFINITY);
@@ -538,7 +538,7 @@ void ParameterPanel::set(int option_index, QString option_arg)
         cout << "OPT_DOUBLE" << endl;
         QString(arg).toDouble(&ok);
         if (!ok) {
-            QMessageBox::warning(this, "PlayQt", QString("Incorrect format %1 is not a number").arg(arg));
+            QMessageBox::warning(this, "playqt", QString("Incorrect format %1 is not a number").arg(arg));
             return;
         }
         *(double *)dst = parse_number_or_die(opt, arg, OPT_DOUBLE, -INFINITY, INFINITY);
@@ -550,7 +550,7 @@ void ParameterPanel::set(int option_index, QString option_arg)
         if (name == "ss" || name == "t") {
             str.toFloat(&ok);
             if (!ok) {
-                QMessageBox::warning(this, "PlayQt", QString("Incorrect format %1 is not a number").arg(str));
+                QMessageBox::warning(this, "playqt", QString("Incorrect format %1 is not a number").arg(str));
                 return;
             }
         }
@@ -576,7 +576,7 @@ void ParameterPanel::set(int option_index, QString option_arg)
 
         int ret = po->u.func_arg(NULL, opt, str.toLatin1().data());
         if (ret < 0) {
-            QMessageBox::warning(this, "PlayQt", "Data entered in incorrect format");
+            QMessageBox::warning(this, "playqt", "Data entered in incorrect format");
             return;
         }
     }
@@ -646,7 +646,7 @@ ParameterDialog::ParameterDialog(QMainWindow *parent) : PanelDialog(parent)
     layout->addWidget(panel);
     setLayout(layout);
 
-    defaultWidth = 400;
+    defaultWidth = 420;
     defaultHeight = 320;
     settingsKey = "ParameterDialog/size";
 }
@@ -677,7 +677,7 @@ SavedCmdLines::SavedCmdLines(QMainWindow *parent) : QListWidget(parent)
 void SavedCmdLines::remove()
 {
     QString msg = QString("You are about to delete the command '%1'\nAre you sure you want to continue?").arg(currentItem()->text());
-    QMessageBox::StandardButton result = QMessageBox::question(this, "PlayQt", msg);
+    QMessageBox::StandardButton result = QMessageBox::question(this, "playqt", msg);
     if (result == QMessageBox::Yes) {
 
         //MW->parameter()->currentAutoCmd = MW->parameter()->cmds->currentText();

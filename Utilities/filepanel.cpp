@@ -114,7 +114,7 @@ void FilePanel::remove()
     if (!index.isValid())
         return;
 
-    int ret = QMessageBox::warning(this, "PlayQt",
+    int ret = QMessageBox::warning(this, "playqt",
                                    "You are about to delete this file.\n"
                                    "Are you sure you want to continue?",
                                    QMessageBox::Ok | QMessageBox::Cancel);

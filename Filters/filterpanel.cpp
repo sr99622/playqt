@@ -368,8 +368,8 @@ FilterDialog::FilterDialog(QMainWindow *parent) : PanelDialog(parent)
     layout->addWidget(panel);
     setLayout(layout);
 
-    defaultWidth = 520;
-    defaultHeight = 600;
+    defaultWidth = 345;
+    defaultHeight = 440;
     settingsKey = "FilterDialog/geometry";
 }
 
@@ -377,14 +377,6 @@ FilterPanel *FilterDialog::getPanel()
 {
     return (FilterPanel*)panel;
 }
-
-/*
-void FilterDialog::closeEvent(QCloseEvent *event)
-{
-    getPanel()->engageFilter->setChecked(false);
-    PanelDialog::closeEvent(event);
-}
-*/
 
 void FilterDialog::keyPressEvent(QKeyEvent *event)
 {

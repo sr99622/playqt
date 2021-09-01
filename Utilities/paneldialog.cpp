@@ -25,23 +25,6 @@
 PanelDialog::PanelDialog(QMainWindow *parent) : QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint)
 {
     mainWindow = parent;
-
-    /*
-    QRect gm;
-
-    if (MW->settings->contains(getSettingsKey())) {
-        gm = MW->settings->value(getSettingsKey()).toRect();
-    }
-    else {
-        int w = getDefaultWidth();
-        int h = getDefaultHeight();
-        int x = MW->geometry().center().x() - w/2;
-        int y = MW->geometry().center().y() - h/2;
-        gm = QRect(x, y, w, h);
-    }
-    setGeometry(gm);
-    */
-
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(autoSave()));
     timer->start(10000);

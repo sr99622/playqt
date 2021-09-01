@@ -53,10 +53,9 @@
 #include "configpanel.h"
 
 enum CustomEventCode {
-    FILE_POSITION_UPDATE,
-    SLIDER_POSITION_UPDATE,
     FLUSH
 };
+
 
 #define APP_DEFAULT_WIDTH 1200
 #define APP_DEFAULT_HEIGHT 600

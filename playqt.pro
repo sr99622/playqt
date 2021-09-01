@@ -162,7 +162,11 @@ LIBS += -L$$(CONTRIB_PATH)/lib \
         -ldarknet \
         -llibsdl2 \
         -llibonvif \
-        -lopencv_world451
+        -lopencv_core451 \
+        -lopencv_highgui451 \
+        -lopencv_imgcodecs451 \
+        -lopencv_imgproc451 \
+        -lopencv_videoio451
 
 
 RESOURCES += resources/resources.qrc

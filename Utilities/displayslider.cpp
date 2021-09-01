@@ -52,6 +52,7 @@ void DisplaySlider::mouseReleaseEvent(QMouseEvent *e)
     if (MW->is->ic->start_time != AV_NOPTS_VALUE)
         ts += MW->is->ic->start_time;
     MW->is->stream_seek(ts, 0, 0);
+
     MW->filterChain->disengaged = false;
 
     //QSlider::mouseReleaseEvent(e);

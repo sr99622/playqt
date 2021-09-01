@@ -13,17 +13,6 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     list = new QListWidget();
     setNames();
 
-    /*
-    for (int i = 0; i < darknet->obj_names.size(); i++)
-        names.push_back(darknet->obj_names[i].c_str());
-
-    list->addItems(names);
-    for (int i = 0; i < list->count(); i++) {
-        list->item(i)->setFlags(list->item(i)->flags() | Qt::ItemIsUserCheckable);
-        list->item(i)->setCheckState(Qt::Unchecked);
-    }
-    */
-
     table = new QTableWidget(0, 4);
     table->horizontalHeader()->setStyleSheet(QString("QHeaderView::section:last {border-right: 1px solid %1;}").arg(MW->config()->fd->color.name()));
     QStringList headers;
@@ -55,8 +44,14 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     hSplit = new QSplitter(this);
     hSplit->addWidget(list);
     hSplit->addWidget(table);
-    if (MW->settings->contains(hSplitKey))
+    if (MW->settings->contains(hSplitKey)) {
         hSplit->restoreState(MW->settings->value(hSplitKey).toByteArray());
+    }
+    else {
+        QList<int> splitSizes;
+        splitSizes << 105 << 220;
+        hSplit->setSizes(splitSizes);
+    }
     connect(hSplit, SIGNAL(splitterMoved(int, int)), this, SLOT(hSplitMoved(int, int)));
 
     dirSetter = new DirectorySetter(mainWindow, "Save Directory");
@@ -100,6 +95,7 @@ CountPanel::CountPanel(QMainWindow *parent) : Panel(parent)
     setLayout(layout);
 
     connect(MW->control(), SIGNAL(quitting()), this, SLOT(shutdown()));
+
 }
 
 CountPanel::~CountPanel()
@@ -220,14 +216,14 @@ void CountPanel::saveOnClicked(bool checked)
     if (checked) {
         int interval = txtInterval->intValue();
         if (interval == 0) {
-            QMessageBox::warning(this, "PlayQt", "Save on Interval must be set to continue");
+            QMessageBox::warning(this, "playqt", "Save on Interval must be set to continue");
             saveOn->setCheckState(Qt::Unchecked);
             return;
         }
 
         file = new QFile(getTimestampFilename(), this);
         if (!file->open(QFile::WriteOnly | QFile::Text)) {
-            QMessageBox::warning(this, "PlayQt", QString("Unable to open file:\n%1").arg(file->fileName()));
+            QMessageBox::warning(this, "playqt", QString("Unable to open file:\n%1").arg(file->fileName()));
             return;
         }
 
@@ -250,17 +246,6 @@ void CountPanel::saveOnClicked(bool checked)
     }
     else {
         shutdown();
-        /*
-        timer->stop();
-        if (file) {
-            file->flush();
-            file->close();
-            file = nullptr;
-        }
-        list->setEnabled(true);
-        dirSetter->setEnabled(true);
-        intervalPanel->setEnabled(true);
-        */
     }
 
     MW->settings->setValue(saveOnKey, checked);
@@ -526,12 +511,15 @@ void ObjDrawer::chkShowClicked(bool checked)
 
 void ObjDrawer::btnColorClicked()
 {
-    color = QColorDialog::getColor(color, MW->countDialog, "PlayQt");
-    btnColor->setStyleSheet(getButtonStyle());
-    MW->settings->setValue(getSettingsKey(), saveState());
+    QColor result = QColorDialog::getColor(color, MW->countDialog, "playqt");
+    if (result.isValid()) {
+        color = result;
+        btnColor->setStyleSheet(getButtonStyle());
+        MW->settings->setValue(getSettingsKey(), saveState());
 
-    if (show)
-        emit colored(obj_id, YUVColor(color));
+        if (show)
+            emit colored(obj_id, YUVColor(color));
+    }
 }
 
 CountDialog::CountDialog(QMainWindow *parent) : PanelDialog(parent)
@@ -542,7 +530,7 @@ CountDialog::CountDialog(QMainWindow *parent) : PanelDialog(parent)
     layout->addWidget(panel);
     setLayout(layout);
 
-    defaultWidth = 600;
-    defaultHeight = 400;
+    defaultWidth = 410;
+    defaultHeight = 280;
     settingsKey = "CountDialog/geometry";
 }

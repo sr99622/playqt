@@ -60,7 +60,7 @@ ConfigPanel::ConfigPanel(QMainWindow *parent) : Panel(parent)
     QGridLayout *layout = new QGridLayout();
     layout->addWidget(cPanel,        0, 0, 1, 4);
     layout->addWidget(useSystemGui,  1, 0, 1, 1);
-    layout->addWidget(restore,       2, 4, 1, 1);
+    layout->addWidget(restore,       2, 3, 1, 1);
     setLayout(layout);
 
 }
@@ -144,8 +144,8 @@ ConfigDialog::ConfigDialog(QMainWindow *parent) : PanelDialog(parent)
     layout->addWidget(panel);
     setLayout(layout);
 
-    defaultWidth = 600;
-    defaultHeight = 400;
+    defaultWidth = 510;
+    defaultHeight = 165;
     settingsKey = "ConfigPanel/geometry";
 
 }
