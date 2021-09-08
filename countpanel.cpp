@@ -368,8 +368,13 @@ void CountPanel::addNewLine(int obj_id)
     sum->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     sum->setFlags(sum->flags() & ~Qt::ItemIsEditable);
     table->setItem(table->rowCount()-1, 1, sum);
-    if (MW->settings->contains(objDrawer->getSettingsKey()))
+    if (MW->settings->contains(objDrawer->getSettingsKey())) {
         objDrawer->restoreState(MW->settings->value(objDrawer->getSettingsKey()).toString());
+    }
+    else {
+        objDrawer->chkShow->setChecked(true);
+        objDrawer->show = true;
+    }
     list->item(objDrawer->obj_id)->setCheckState(Qt::Checked);
     connect(objDrawer, SIGNAL(shown(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));
     connect(objDrawer, SIGNAL(colored(int, const YUVColor&)), darknet, SLOT(draw(int, const YUVColor&)));

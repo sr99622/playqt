@@ -211,6 +211,8 @@ void CameraPanel::discoveryFinished()
     }
 
     if (autoCameraFound && chk->isChecked()) {
+        int index = MW->tabWidget->indexOf(this);
+        MW->tabWidget->setCurrentIndex(index);
         cameraList->mouseDoubleClickEvent(nullptr);
     }
 

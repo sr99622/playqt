@@ -53,6 +53,7 @@
 #include "configpanel.h"
 
 enum CustomEventCode {
+    FILE_POSITION_UPDATE,
     FLUSH
 };
 

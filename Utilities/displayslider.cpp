@@ -28,7 +28,7 @@ void DisplaySlider::mouseMoveEvent(QMouseEvent *e)
         if (output.startsWith("00:"))
             output = output.mid(3);
 
-        const QPoint pos = mapToGlobal(QPoint(e->position().x(), geometry().top()));
+        const QPoint pos = mapToGlobal(QPoint(e->position().x(), geometry().top() - 40));
         QToolTip::showText(pos, output);
         last_position_x = e->position().x();
     }

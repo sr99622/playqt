@@ -15,6 +15,7 @@ class TreeView : public QTreeView
 
 public:
     TreeView(QWidget *parent);
+    void keyPressEvent(QKeyEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 };

@@ -964,6 +964,7 @@ int VideoState::audio_decode_frame()
     else
         audio_clock = NAN;
     audio_clock_serial = af->serial;
+
     return resampled_data_size;
 }
 
@@ -1248,8 +1249,10 @@ int VideoState::audio_thread()
                 auddec.finished = auddec.pkt_serial;
 #endif
         }
+
     } while (ret >= 0 || ret == AVERROR(EAGAIN) || ret == AVERROR_EOF);
 the_end:
+
 #if CONFIG_AVFILTER
     avfilter_graph_free(&agraph);
 #endif
@@ -1415,6 +1418,7 @@ void VideoState::sdl_audio_callback(Uint8* stream, int len)
 {
     int audio_size, len1;
 
+    static int64_t last_time = co->audio_callback_time;
     co->audio_callback_time = av_gettime_relative();
 
     while (len > 0) {
@@ -1445,6 +1449,7 @@ void VideoState::sdl_audio_callback(Uint8* stream, int len)
         len -= len1;
         stream += len1;
         audio_buf_index += len1;
+
     }
     audio_write_buf_size = audio_buf_size - audio_buf_index;
     /* Let's assume the audio driver that is used by SDL has two periods. */
@@ -1452,6 +1457,25 @@ void VideoState::sdl_audio_callback(Uint8* stream, int len)
         audclk.set_clock_at(audio_clock - (double)(2 * audio_hw_buf_size + audio_write_buf_size) / audio_tgt.bytes_per_sec, audio_clock_serial, co->audio_callback_time / 1000000.0);
         extclk.sync_clock_to_slave(&audclk);
     }
+
+    // Update slider position using SDL event from separate thread if audio only
+    /*
+    if (!video_st) {
+        int64_t cur_time = av_gettime_relative();
+        if (cur_time - last_time >= 30000) {
+            SDL_Event event;
+            SDL_memset(&event, 0, sizeof(event));
+            event.type = MW->sdlCustomEventType;
+            event.user.code = FILE_POSITION_UPDATE;
+            elapsed = get_master_clock();
+            total = ic->duration * av_q2d(av_get_time_base_q());
+            event.user.data1 = &elapsed;
+            event.user.data2 = &total;
+            SDL_PushEvent(&event);
+            last_time = cur_time;
+        }
+    }
+    */
 }
 
 int VideoState::audio_open(int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params)

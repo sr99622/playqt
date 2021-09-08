@@ -124,16 +124,14 @@ HEADERS += \
     simplefilter.h \
     streampanel.h
 
-#CUDA_DIR = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2"
-#CONTRIB_DIR = "C:/Users/sr996/Projects/contrib
-#OPENCV_PATH = "C:/Users/sr996/opencv"
+#CUDA_PATH = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.2"
+#CONTRIB_PATH = "C:/Users/sr996/Projects/contrib
 
 INCLUDEPATH += $$(CUDA_PATH)/include \
                $$(CONTRIB_PATH)/include/SDL \
                $$(CONTRIB_PATH)/include \
                $$(CONTRIB_PATH)/include/darknet \
                $$(CONTRIB_PATH)/include/libxml2 \
-               $$(OPENCV_PATH)/include
 
 LIBS += -L$$(CUDA_PATH)/lib/x64 \
         -lcudart \

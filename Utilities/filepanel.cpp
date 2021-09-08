@@ -264,6 +264,15 @@ TreeView::TreeView(QWidget *parent) : QTreeView(parent)
 
 }
 
+void TreeView::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Delete) {
+        ((FilePanel*)parent())->remove();
+    }
+    else {
+        QTreeView::keyPressEvent(event);
+    }
+}
 
 void TreeView::mouseDoubleClickEvent(QMouseEvent *event)
 {
