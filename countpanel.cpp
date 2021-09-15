@@ -108,6 +108,8 @@ CountPanel::~CountPanel()
 
 void CountPanel::setNames() {
 
+    cout << "CountPanel::setNames" << endl;
+
     for (int i = 0; i < list->count(); i++) {
         if (list->item(i)->checkState() == Qt::Checked) {
             int obj_id = idFromName(list->item(i)->text());
@@ -116,6 +118,7 @@ void CountPanel::setNames() {
     }
 
     list->clear();
+    names.clear();
 
     for (int i = 0; i < darknet->obj_names.size(); i++)
         names.push_back(darknet->obj_names[i].c_str());

@@ -52,10 +52,20 @@ void FilterChain::process(Frame *vp)
         fp->copy(vp);
     }
     else {
-        Frame *tmp = MW->is->pictq.peek_last();
+        bool found = false;
+        Frame *tmp = MW->is->pictq.peek_next();
         if (tmp) {
             if (tmp->frame->width) {
                 fp->copy(tmp);
+                found = true;
+            }
+        }
+        if (!found) {
+            Frame *tmp = MW->is->pictq.peek_last();
+            if (tmp) {
+                if (tmp->frame->width) {
+                    fp->copy(tmp);
+                }
             }
         }
     }
@@ -74,15 +84,21 @@ void FilterChain::process(Frame *vp)
     if (interval > 1000) {
         counting = false;
         float fps = 1000 * count / (float)interval;
+        /*
         if (!k_fps.initialized)
             k_fps.initialize(fps, 0, 0.2f, 0.1f);
         else
             k_fps.measure(fps, interval);
         char buf[64];
         sprintf(buf, "%0.2f", max(k_fps.xh00, 0.0f));
+        //panel->fps->setText(buf);
+        */
+        char buf[64];
+        sprintf(buf, "%0.2f", fps);
         panel->fps->setText(buf);
     }
 
+    /*
     if (!k_time.initialized)
         k_time.initialize(msec, 0, 0.2f, 0.1f);
     else
@@ -90,6 +106,9 @@ void FilterChain::process(Frame *vp)
 
     char buf[64];
     sprintf(buf, "%0.0f", max(k_time.xh00, 0.0f));
+    */
+    char buf[64];
+    sprintf(buf, "%d", msec);
     panel->filterTime->setText(buf);
 }
 

@@ -116,13 +116,6 @@ void VideoState::video_image_display()
         SDL_RenderCopy(disp->renderer, sub_texture, NULL, &rect);
     }
 
-    // Update slider position to show elapsed time
-    elapsed = get_master_clock();
-    double percentage = (1000 * elapsed) / total;
-    MW->dc()->slider->setValue(percentage);
-    MW->dc()->elapsed->setText(MW->is->formatTime(elapsed));
-    MW->dc()->total->setText(MW->is->formatTime(total));
-
     // Close stream if finished
     AVStream *video = ic->streams[video_stream];
     bool isPicture = video->codec->framerate.num == 0 && video->codec->framerate.den == 0;
@@ -1170,6 +1163,15 @@ void VideoState::video_refresh(double* remaining_time)
     if (co->show_status)
         show_status();
 
+    if (audio_st)
+        elapsed = audclk.get_clock();
+    else
+        elapsed = get_master_clock();
+
+    double percentage = (1000 * elapsed) / total;
+    MW->dc()->slider->setValue(percentage);
+    MW->dc()->elapsed->setText(MW->is->formatTime(elapsed));
+    MW->dc()->total->setText(MW->is->formatTime(total));
 }
 
 int VideoState::audio_thread()
@@ -1457,25 +1459,6 @@ void VideoState::sdl_audio_callback(Uint8* stream, int len)
         audclk.set_clock_at(audio_clock - (double)(2 * audio_hw_buf_size + audio_write_buf_size) / audio_tgt.bytes_per_sec, audio_clock_serial, co->audio_callback_time / 1000000.0);
         extclk.sync_clock_to_slave(&audclk);
     }
-
-    // Update slider position using SDL event from separate thread if audio only
-    /*
-    if (!video_st) {
-        int64_t cur_time = av_gettime_relative();
-        if (cur_time - last_time >= 30000) {
-            SDL_Event event;
-            SDL_memset(&event, 0, sizeof(event));
-            event.type = MW->sdlCustomEventType;
-            event.user.code = FILE_POSITION_UPDATE;
-            elapsed = get_master_clock();
-            total = ic->duration * av_q2d(av_get_time_base_q());
-            event.user.data1 = &elapsed;
-            event.user.data2 = &total;
-            SDL_PushEvent(&event);
-            last_time = cur_time;
-        }
-    }
-    */
 }
 
 int VideoState::audio_open(int64_t wanted_channel_layout, int wanted_nb_channels, int wanted_sample_rate, struct AudioParams* audio_hw_params)
@@ -2075,6 +2058,9 @@ int VideoState::read_thread()
 
     if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
         stream_component_open(st_index[AVMEDIA_TYPE_AUDIO]);
+    }
+    else {
+        av_sync_type = AV_SYNC_VIDEO_MASTER;
     }
 
     ret = -1;

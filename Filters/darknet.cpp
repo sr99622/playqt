@@ -129,9 +129,11 @@ void Darknet::clearModel()
 
 void Darknet::loadModel()
 {
+    MW->filterChain->disengaged = true;
     clearModel();
     model = new DarknetModel(mainWindow);
     model->initialize(cfg->filename, weights->filename, names->filename, 0);
+    MW->filterChain->disengaged = false;
 }
 
 void Darknet::setModelDimensions()
@@ -216,6 +218,7 @@ void Darknet::clearSettings()
 
 void Darknet::setNames(const QString &path)
 {
+    cout << "Darknet::setNames" << endl;
     MW->settings->setValue(namesKey, path);
 
     ifstream file(path.toStdString());
