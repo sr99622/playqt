@@ -1,6 +1,6 @@
 <table style="border: none">
 <tr>
-<td><img src="resources/playqt_256.png" alt="playqt"></td>
+<td style="width:256px"><img src="resources/playqt_256.png" alt="playqt"></td>
 <td>
 <p>
 Windows GUI framework using ffplay integrated with darknet neural network to process high definition real time streams.  Accurate object counting in 1080 resolution video at 18 fps running on an NVIDIA RTX 3080.
