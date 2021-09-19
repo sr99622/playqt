@@ -53,5 +53,6 @@
         <file>stop_lo.png</file>
         <file>branch_closed_lo.png</file>
         <file>small_arrow_left_lo.png</file>
+        <file>playqt_256.png</file>
     </qresource>
 </RCC>
