@@ -3,7 +3,11 @@ Windows GUI Version of ffplay integrated with darknet neural network.
 Compiled with Qt Creator using Qt version 6.0.2 which in turn
 depends upon MS Visual Studio 2019.
 
-**WORK IN PROGRESS**
+The core of the program is a C++ wrapper around ffplay which is
+used to process video that is fed through the darknet object
+detector.  The number of each of the objects is classified by
+type and the results may be recorded in Excel compatible 
+format.
 
 To compile, you will need the contrib libraries found at 
 
@@ -24,7 +28,7 @@ The contrib libraries are only configured for release version of the
 program, so when you set up the Qt Creator environment, be sure to 
 set it for Release configuration, not Debug.
 
-At runtime, the program will look for some dll's in the contrib/lib 
+At runtime, the program will look for some dll's in the contrib/bin 
 directory, so you will want to add that to your path.  
 
 https://developer.nvidia.com/cuda-toolkit
