@@ -1,5 +1,4 @@
-<font face="Arial">
-<table>
+<table style="border: none">
 <tr>
 <td><img src="resources/playqt_256.png" alt="playqt"></td>
 <td>
