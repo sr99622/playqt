@@ -170,6 +170,8 @@ LIBS += -L$$(CONTRIB_PATH)/lib \
 RESOURCES += resources/resources.qrc
 
 DISTFILES += resources/darkstyle.qss \
+             docs/st_pete.png \
+             docs/st_pete_small.png \
              playqt.ico \
              resources/resources.rcc
 
