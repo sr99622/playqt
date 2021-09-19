@@ -1,5 +1,5 @@
 <font face="Arial">
-<table cellspacing="0" cellpadding="0">
+<table>
 <tr>
 <td><img src="resources/playqt_256.png" alt="playqt"></td>
 <td>
@@ -13,7 +13,7 @@ The program will respond to the same command line options as ffplay and can be u
 </table>
 <a href="docs/st_pete.png"><img src="docs/st_pete_small.png"></a>
 <br>
-
+table {border: none;}
 
 Compiled with Qt Creator using Qt version 6.0.2 which in turn depends upon MS Visual Studio 2019.
 <p>
