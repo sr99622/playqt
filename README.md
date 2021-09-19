@@ -1,4 +1,4 @@
-<h2>playqt</h2>
+<h2>playqt</h2><picture><img src="resources/playqt_256.png"></picture>
 Windows GUI Version of ffplay integrated with darknet neural network.
 Compiled with Qt Creator using Qt version 6.0.2 which in turn
 depends upon MS Visual Studio 2019.
