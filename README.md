@@ -2,10 +2,12 @@
 <table>
 <tr>
 <td><img src="resources/playqt_256.png" alt="playqt"></td>
-<td>Windows GUI framework using ffplay integrated with darknet neural network to process high definition real time streams.  Accurate object counting in 1080 resolution video at 18 fps running on an NVIDIA RTX 3080.
-<br>
+<td>
+<p>
+Windows GUI framework using ffplay integrated with darknet neural network to process high definition real time streams.  Accurate object counting in 1080 resolution video at 18 fps running on an NVIDIA RTX 3080.
+<p>
 An installable version of the program for Windows is avialable at <a href="https://sourceforge.net/projects/playqt/">SOURCEFORGE</a>
-<br>
+<p>
 The program will respond to the same command line options as ffplay and can be used with other command line tools such as ffmpeg and youtube-dl to process a wide variety of media.
 </td></tr>
 </table>
