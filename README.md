@@ -8,8 +8,7 @@ The program will respond to the same command line options as ffplay and can be u
 <p>
 <center><a href="docs/st_pete.png"><img src="docs/st_pete_small.png"></a></center>
 <h2>Features</h2>
-<p>
-The core of the program is a C++ wrapper around ffplay which is used to process video that is fed through the darknet object detector.  playqt behaves as any normal media client, but is optimized for use with machine learning libraries.
+<p>The core of the program is a C++ wrapper around ffplay which is used to process video that is fed through the darknet object detector.  playqt behaves as any normal media client, but is optimized for use with machine learning libraries.
 <p>
 A built in camera control module uses ONVIF to control real time streams.  There is an object counting module that tallies the results of the detections for each frame of the video feed and will summarize them in an Excel compatible csv file.  Traffic analyis and people counting are easily achived using the built in counter.
 <p>
@@ -28,7 +27,7 @@ The contrib libraries are only configured for release version of the program, so
 At runtime, the program will look for some dll's in the contrib/bin directory, so you will want to add that to your path.  
 <p>
 <h2>Model Configuration</h2>
-The program must be configured after installation to connect to the AI model. A sample model is provided on this site. Download and unzip the model.zip file in your installation directory. By default this will be %HOMEPATH%/playqt.
+<p>The program must be configured after installation to connect to the AI model. A sample model is provided on this site. Download and unzip the model.zip file in your installation directory. By default this will be %HOMEPATH%/playqt.
 <p>
 Once the model has been unzipped, launch the program and use the menu bar at the top to go to Tools->Filters. On the right hand top side of the filter screen are the available filters, double click on darknet to activate the AI model screen.
 <p>
