@@ -8,13 +8,15 @@ The program will respond to the same command line options as ffplay and can be u
 <p>
 <center><a href="docs/st_pete.png"><img src="docs/st_pete_small.png"></a></center>
 <h2>Features</h2>
-<p>The core of the program is a C++ wrapper around ffplay which is used to process video that is fed through the darknet object detector.  playqt behaves as any normal media client, but is optimized for use with machine learning libraries.
+<p>
+The core of the program is a C++ wrapper around ffplay which is used to process video that is fed through the darknet object detector.  playqt behaves as any normal media client, but is optimized for use with machine learning libraries.
 <p>
 A built in camera control module uses ONVIF to control real time streams.  There is an object counting module that tallies the results of the detections for each frame of the video feed and will summarize them in an Excel compatible csv file.  Traffic analyis and people counting are easily achived using the built in counter.
 <p>
 playqt includes an alarm module that can be configured by the user.  Because of the level of control over the model parameters and alarm criteria, it is possible to virtually eliminate false alarms, even in very noisy conditions.  High and low count alarms are available.
 <p>
 <h2>Compilation</h2>
+<p>
 The program is built using Qt6 Creator, MSVC 2019, and the NVIDIA GPU Computing Toolkit, and CUDNN.  Libraries needed for the build can be found at <a href="https://sourceforge.net/projects/playqt/files/">contrib.zip</a> at the playqt repository on sourceforge.
 <p>
 The build is set up to find the contrib libraries using the environment variable CONTRIB_PATH pointing to the location
@@ -27,7 +29,8 @@ The contrib libraries are only configured for release version of the program, so
 At runtime, the program will look for some dll's in the contrib/bin directory, so you will want to add that to your path.  
 <p>
 <h2>Model Configuration</h2>
-<p>The program must be configured after installation to connect to the AI model. A sample model is provided on this site. Download and unzip the model.zip file in your installation directory. By default this will be %HOMEPATH%/playqt.
+<p>
+The program must be configured after installation to connect to the AI model. A sample model is provided on this site. Download and unzip the model.zip file in your installation directory. By default this will be %HOMEPATH%/playqt.
 <p>
 Once the model has been unzipped, launch the program and use the menu bar at the top to go to Tools->Filters. On the right hand top side of the filter screen are the available filters, double click on darknet to activate the AI model screen.
 <p>
@@ -38,9 +41,9 @@ The model resolution can be adjusted in even increments of 32. Higher resolution
 To learn more about darknet, visit https://github.com/AlexeyAB/darknet for an excellent description of the framework and resources for developing customized models.  Darknet model code was compiled from a fork of AlexeyAB/darknet
 <p>
 <h2>Camera Configuration</h2>
+<p>
 Full control of ONVIF compatible cameras is available from the Cameras tab on the right side of the main screen. The config sub tab can be used to implement automatic discovery and launch of cameras.
 <p>
-   
 If all cameras are configured to use the same user name and password, the common boxes may be filled for the info to be used during discovery. If the Auto Discovery box is checked, playqt will find the cameras on startup. The Auto Load Camera field nay specify a camera to start automatically at launch.
 <p>
 If the host computer has more than one network interface, it is possible to specify which network to use during the discovery. This feature is especially useful for isolating cameras on a subnet, a good practice that can improve performance and security.
