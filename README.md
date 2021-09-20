@@ -30,7 +30,7 @@ At runtime, the program will look for some dll's in the contrib/bin directory, s
 <p>
 <h2>Model Configuration</h2>
 <p>
-The program must be configured after installation to connect to the AI model. A sample model is provided on this site. Download and unzip the model.zip file in your installation directory. By default this will be %HOMEPATH%/playqt.
+The program must be configured after installation to connect to the AI model. A sample model is provided at <a href="https://sourceforge.net/projects/playqt/files/">model.zip</a>. Download and unzip the model.zip file in your installation directory. By default this will be %HOMEPATH%/playqt.
 <p>
 Once the model has been unzipped, launch the program and use the menu bar at the top to go to Tools->Filters. On the right hand top side of the filter screen are the available filters, double click on darknet to activate the AI model screen.
 <p>
