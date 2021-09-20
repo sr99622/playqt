@@ -40,7 +40,8 @@ To learn more about darknet, visit https://github.com/AlexeyAB/darknet for an ex
 <p>
 <h2>Camera Configuration</h2>
 Full control of ONVIF compatible cameras is available from the Cameras tab on the right side of the main screen. The config sub tab can be used to implement automatic discovery and launch of cameras.
-<br><p>
+<p>
+   
 If all cameras are configured to use the same user name and password, the common boxes may be filled for the info to be used during discovery. If the Auto Discovery box is checked, playqt will find the cameras on startup. The Auto Load Camera field nay specify a camera to start automatically at launch.
 <p>
 If the host computer has more than one network interface, it is possible to specify which network to use during the discovery. This feature is especially useful for isolating cameras on a subnet, a good practice that can improve performance and security.
