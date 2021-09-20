@@ -6,6 +6,7 @@ An installable version of the program for Windows is avialable at <a href="https
 <p>
 The program will respond to the same command line options as ffplay and can be used with other command line tools such as ffmpeg and youtube-dl to process a wide variety of media.
 <p>
+<p>
 <center><a href="docs/st_pete.png"><img src="docs/st_pete_small.png"></a></center>
 <h2>Features</h2>
 <p>
