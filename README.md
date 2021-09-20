@@ -87,15 +87,18 @@ Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
 <p>
-1. The origin of this software must not be misrepresented; you must not
+<ol type="1">
+<li> The origin of this software must not be misrepresented; you must not
    claim that you wrote the original software. If you use this software
    in a product, an acknowledgment in the product documentation would be
-   appreciated but is not required. 
-2. Altered source versions must be plainly marked as such, and must not be
-   misrepresented as being the original software.
-3. This notice may not be removed or altered from any source distribution.
+   appreciated but is not required. </li>
+<li> Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.</li>
+<li> This notice may not be removed or altered from any source distribution.</li>
+</ol>
 <p>
 <h3>LIBXML</h3>
+<p>
 Except where otherwise noted in the source code (e.g. the files hash.c,
 list.c and the trio files, which are covered by a similar licence but
 with different Copyright notices) all the files are:
@@ -125,7 +128,7 @@ DEALINGS IN THE SOFTWARE.
 This library is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation; either version 3 of the License, or (at your
-option) any later version. (See <http://www.gnu.org/copyleft/lesser.html>.)
+option) any later version. (See http://www.gnu.org/copyleft/lesser.html.)
 <p>
 This library is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
