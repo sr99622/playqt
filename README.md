@@ -17,7 +17,7 @@ playqt includes an alarm module that can be configured by the user.  Because of 
 <p>
 <h2>Compilation</h2>
 <p>
-The program is built using Qt6 Creator, MSVC 2019, and the NVIDIA GPU Computing Toolkit, and CUDNN.  Libraries needed for the build can be found at <a href="https://sourceforge.net/projects/playqt/files/model.zip/download">contrib.zip</a> at the playqt repository on sourceforge.
+The program is built using Qt6 Creator, MSVC 2019, and the NVIDIA GPU Computing Toolkit, and CUDNN.  Libraries needed for the build can be found at <a href="https://sourceforge.net/projects/playqt/files/">contrib.zip</a> at the playqt repository on sourceforge.
 <p>
 The build is set up to find the contrib libraries using the environment variable CONTRIB_PATH pointing to the location
 where the libraries were unzipped.
